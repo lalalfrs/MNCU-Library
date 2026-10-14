@@ -93,6 +93,11 @@
         <section aria-labelledby="judul-beranda" class="flex flex-col justify-between px-1 lg:min-h-[calc(100vh-8.5rem)] lg:px-[26px]">
             <div class="my-auto grid items-center gap-8 py-6 md:grid-cols-[1fr_auto] lg:gap-14 lg:py-12">
                 <div class="max-w-3xl">
+                    {{-- Logo MNC University di atas Header dan subtext --}}
+                    <div class="mb-5 inline-flex items-center">
+                        <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-16 w-auto sm:h-20 lg:h-24">
+                    </div>
+
                     <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[48px]">
                         Perpustakaan MNC University
                     </h1>
@@ -113,8 +118,49 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center rounded-2xl bg-subtle p-8 md:p-8 lg:p-10">
-                    <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-44 w-auto sm:h-52 md:h-56 lg:h-64">
+                {{-- Statistik Pengunjung menggantikan posisi logo di Hero --}}
+                <div class="w-full md:w-[360px] lg:w-[420px] rounded-2xl border border-line bg-white p-6 shadow-sm lg:p-7">
+                    <div class="flex items-center justify-between border-b border-line pb-4">
+                        <div>
+                            <span class="text-xs font-semibold uppercase tracking-wider text-primary">Live Monitoring</span>
+                            <h2 class="text-lg font-semibold text-ink sm:text-xl">Statistik Pengunjung</h2>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Aktif
+                        </span>
+                    </div>
+
+                    <dl class="mt-5 flex flex-col gap-3">
+                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
+                            <div>
+                                <dt class="text-xs text-muted">Hari ini</dt>
+                                <span class="text-[11px] text-ink-secondary">Kunjungan unik hari ini</span>
+                            </div>
+                            <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
+                            <div>
+                                <dt class="text-xs text-muted">Bulan ini</dt>
+                                <span class="text-[11px] text-ink-secondary">{{ now()->translatedFormat('F Y') }}</span>
+                            </div>
+                            <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
+                            <div>
+                                <dt class="text-xs text-muted">Total Kunjungan</dt>
+                                <span class="text-[11px] text-ink-secondary">Akumulasi pengunjung</span>
+                            </div>
+                            <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-4 flex items-center justify-between border-t border-line pt-3 text-[11px] text-muted">
+                        <span>Pembaruan otomatis</span>
+                        <span class="font-medium text-primary">MNC University Library</span>
+                    </div>
                 </div>
             </div>
 
@@ -244,77 +290,48 @@
             <div class="mt-5 h-1 rounded-full bg-track"></div>
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-[3fr_2fr] lg:gap-[30px]">
-            {{-- Acara / event --}}
-            <section aria-labelledby="judul-acara" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
-                <div class="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <h2 id="judul-acara" class="text-base font-medium text-ink lg:text-xl">Acara Mendatang</h2>
-                        <p class="mt-1 text-[13px] text-muted lg:text-base">Kelas literasi, bedah buku, dan kegiatan perpustakaan lainnya.</p>
-                    </div>
-                    {{-- TODO (integrasi): arahkan ke halaman event lengkap. --}}
-                    <a href="{{ route('acara.index') }}" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
-                        Semua acara
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
-                    </a>
+        {{-- Acara / event --}}
+        <section aria-labelledby="judul-acara" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <h2 id="judul-acara" class="text-base font-medium text-ink lg:text-xl">Acara Mendatang</h2>
+                    <p class="mt-1 text-[13px] text-muted lg:text-base">Kelas literasi, bedah buku, dan kegiatan perpustakaan lainnya.</p>
                 </div>
+                {{-- TODO (integrasi): arahkan ke halaman event lengkap. --}}
+                <a href="{{ route('acara.index') }}" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
+                    Semua acara
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                </a>
+            </div>
 
-                @forelse ($upcomingEvents as $eventItem)
-                    @if ($loop->first)
-                        <ul class="mt-5 flex flex-col gap-3">
-                    @endif
-                            <li>
-                                {{-- TODO (integrasi): arahkan ke detail event. --}}
-                                <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-4 rounded-lg border border-line bg-white p-3 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle lg:p-4">
-                                    <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
-                                        <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
-                                        <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
-                                    </span>
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block truncate text-[15px] font-medium text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
-                                        <span class="mt-0.5 block truncate text-[13px] text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
-                                    </span>
-                                    <span class="hidden shrink-0 text-sm font-medium text-primary sm:inline">Lihat detail &rarr;</span>
-                                </a>
-                            </li>
-                    @if ($loop->last)
-                        </ul>
-                    @endif
-                @empty
-                    <div class="mt-5 rounded-lg border border-line bg-subtle p-6 text-center">
-                        <p class="text-base text-ink">Belum ada acara terjadwal.</p>
-                        <p class="mt-1 text-[13px] text-muted">Jadwal kegiatan perpustakaan akan diumumkan di sini.</p>
-                    </div>
-                @endforelse
-            </section>
-
-            {{-- Statistik pengunjung. --}}
-            <section aria-labelledby="judul-statistik" class="flex flex-col rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 id="judul-statistik" class="text-base font-medium text-ink lg:text-xl">Statistik Pengunjung</h2>
-                        <p class="mt-1 text-[13px] text-muted lg:text-base">Jumlah kunjungan ke perpustakaan.</p>
-                    </div>
-                    <span class="inline-flex size-2 rounded-full bg-emerald-500 animate-pulse" title="Sistem monitoring aktif"></span>
+            @forelse ($upcomingEvents as $eventItem)
+                @if ($loop->first)
+                    <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @endif
+                        <li>
+                            {{-- TODO (integrasi): arahkan ke detail event. --}}
+                            <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle">
+                                <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
+                                    <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
+                                    <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-[15px] font-medium text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
+                                    <span class="mt-0.5 block truncate text-[13px] text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
+                                </span>
+                                <span class="hidden shrink-0 text-sm font-medium text-primary sm:inline">Lihat &rarr;</span>
+                            </a>
+                        </li>
+                @if ($loop->last)
+                    </ul>
+                @endif
+            @empty
+                <div class="mt-5 rounded-lg border border-line bg-subtle p-6 text-center">
+                    <p class="text-base text-ink">Belum ada acara terjadwal.</p>
+                    <p class="mt-1 text-[13px] text-muted">Jadwal kegiatan perpustakaan akan diumumkan di sini.</p>
                 </div>
-
-                <dl class="mt-5 grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
-                        <dt class="text-xs text-muted lg:text-sm">Hari ini</dt>
-                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
-                        <dt class="text-xs text-muted lg:text-sm">Bulan ini</dt>
-                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
-                        <dt class="text-xs text-muted lg:text-sm">Total kunjungan</dt>
-                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
-                    </div>
-                </dl>
-                <p class="mt-4 text-[13px] text-muted">Data kunjungan diperbarui secara real-time.</p>
-            </section>
-        </div>
+            @endforelse
+        </section>
 
         {{-- Map --}}
         <section aria-labelledby="judul-lokasi" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
