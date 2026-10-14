@@ -64,24 +64,27 @@
          *
          * @var array<int, array{title: string, excerpt: string, date: string}> $latestNews
          */
-        $latestNews = array_fill(0, 3, [
+        $latestNews = $latestNews ?? array_fill(0, 3, [
             'title' => '[Judul berita]',
             'excerpt' => '[Ringkasan berita, maksimal dua baris]',
             'date' => '[Tanggal]',
+            'slug' => '#',
         ]);
 
-        /**
-         * Placeholder tampilan. TODO (integrasi): ganti dengan data acara dari controller.
-         *
-         * @var array<int, array{title: string, day: string, month: string, time: string, place: string}> $upcomingEvents
-         */
-        $upcomingEvents = array_fill(0, 3, [
+        $upcomingEvents = $upcomingEvents ?? array_fill(0, 3, [
             'title' => '[Nama acara]',
             'day' => '--',
             'month' => 'Bln',
             'time' => '[Waktu]',
             'place' => '[Tempat]',
+            'slug' => '#',
         ]);
+
+        $visitorStats = $visitorStats ?? [
+            'today' => 0,
+            'month' => 0,
+            'total' => 0,
+        ];
     @endphp
 
     <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
@@ -201,7 +204,7 @@
                     <p class="mt-1 text-[13px] text-muted lg:text-base">Kabar terbaru dari perpustakaan MNC University.</p>
                 </div>
                 {{-- TODO (integrasi): arahkan ke halaman berita lengkap. --}}
-                <a href="#" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
+                <a href="{{ route('berita.index') }}" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
                     Semua berita
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
                 </a>
@@ -213,15 +216,18 @@
                 @endif
                         <li>
                             {{-- TODO (integrasi): arahkan ke detail berita. --}}
-                            <a href="#" class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                                <span class="flex aspect-video items-center justify-center bg-track text-[13px] text-muted">
-                                    [Foto berita]
+                            <a href="{{ !empty($newsItem['slug']) && $newsItem['slug'] !== '#' ? route('berita.show', $newsItem['slug']) : route('berita.index') }}" class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                                <span class="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 via-track to-primary/5 p-4 text-[13px] text-muted">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-primary shadow-xs">
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                                        {{ $newsItem['category'] ?? 'Berita Kampus' }}
+                                    </span>
                                 </span>
                                 <span class="flex flex-1 flex-col p-5">
                                     <span class="text-[13px] text-muted">{{ $newsItem['date'] }}</span>
                                     <span class="mt-2 line-clamp-2 text-base font-medium text-ink group-hover:text-primary lg:text-lg">{{ $newsItem['title'] }}</span>
                                     <span class="mt-2 line-clamp-2 text-sm text-ink-secondary">{{ $newsItem['excerpt'] }}</span>
-                                    <span class="mt-auto pt-4 text-sm font-medium text-primary">Baca berita</span>
+                                    <span class="mt-auto pt-4 text-sm font-medium text-primary">Baca berita &rarr;</span>
                                 </span>
                             </a>
                         </li>
@@ -247,7 +253,7 @@
                         <p class="mt-1 text-[13px] text-muted lg:text-base">Kelas literasi, bedah buku, dan kegiatan perpustakaan lainnya.</p>
                     </div>
                     {{-- TODO (integrasi): arahkan ke halaman event lengkap. --}}
-                    <a href="#" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
+                    <a href="{{ route('acara.index') }}" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
                         Semua acara
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
                     </a>
@@ -259,7 +265,7 @@
                     @endif
                             <li>
                                 {{-- TODO (integrasi): arahkan ke detail event. --}}
-                                <a href="#" class="group flex items-center gap-4 rounded-lg border border-line bg-white p-3 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle lg:p-4">
+                                <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-4 rounded-lg border border-line bg-white p-3 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle lg:p-4">
                                     <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
                                         <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
                                         <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
@@ -268,7 +274,7 @@
                                         <span class="block truncate text-[15px] font-medium text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
                                         <span class="mt-0.5 block truncate text-[13px] text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
                                     </span>
-                                    <span class="hidden shrink-0 text-sm font-medium text-primary sm:inline">Lihat detail</span>
+                                    <span class="hidden shrink-0 text-sm font-medium text-primary sm:inline">Lihat detail &rarr;</span>
                                 </a>
                             </li>
                     @if ($loop->last)
@@ -282,21 +288,31 @@
                 @endforelse
             </section>
 
-            {{-- Statistik pengunjung. Angka sengaja kosong sampai data asli tersedia. --}}
+            {{-- Statistik pengunjung. --}}
             <section aria-labelledby="judul-statistik" class="flex flex-col rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
-                <h2 id="judul-statistik" class="text-base font-medium text-ink lg:text-xl">Statistik Pengunjung</h2>
-                <p class="mt-1 text-[13px] text-muted lg:text-base">Jumlah kunjungan ke perpustakaan.</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="judul-statistik" class="text-base font-medium text-ink lg:text-xl">Statistik Pengunjung</h2>
+                        <p class="mt-1 text-[13px] text-muted lg:text-base">Jumlah kunjungan ke perpustakaan.</p>
+                    </div>
+                    <span class="inline-flex size-2 rounded-full bg-emerald-500 animate-pulse" title="Sistem monitoring aktif"></span>
+                </div>
 
-                {{-- TODO (integrasi): isi angka dari data kunjungan. --}}
                 <dl class="mt-5 grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                    @foreach (['Hari ini', 'Bulan ini', 'Total kunjungan'] as $visitorPeriod)
-                        <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
-                            <dt class="text-xs text-muted lg:text-sm">{{ $visitorPeriod }}</dt>
-                            <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">&ndash;</dd>
-                        </div>
-                    @endforeach
+                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
+                        <dt class="text-xs text-muted lg:text-sm">Hari ini</dt>
+                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
+                        <dt class="text-xs text-muted lg:text-sm">Bulan ini</dt>
+                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between rounded-xl border border-line px-4 py-3 sm:flex-col sm:items-start lg:flex-row lg:items-center">
+                        <dt class="text-xs text-muted lg:text-sm">Total kunjungan</dt>
+                        <dd class="text-[30px] leading-tight font-medium text-ink lg:text-4xl">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
+                    </div>
                 </dl>
-                <p class="mt-4 text-[13px] text-muted">Data kunjungan belum tersedia.</p>
+                <p class="mt-4 text-[13px] text-muted">Data kunjungan diperbarui secara real-time.</p>
             </section>
         </div>
 

@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Berita;
+use App\Models\VisitorLog;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
+
+class BeritaController extends Controller
+{
+    /**
+     * Display a listing of library news.
+     */
+    public function index(Request $request): View
+    {
+        VisitorLog::recordVisit();
+
+        $q = trim((string) $request->query('q', ''));
+        $kategori = trim((string) $request->query('kategori', ''));
+
+        $query = Berita::published();
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q): void {
+                $sub->where('title', 'like', "%{$q}%")
+                    ->orWhere('excerpt', 'like', "%{$q}%")
+                    ->orWhere('content', 'like', "%{$q}%");
+            });
+        }
+
+        if ($kategori !== '') {
+            $query->where('category', $kategori);
+        }
+
+        $beritas = $query->paginate(9)->withQueryString();
+        $categories = Berita::published()->distinct()->pluck('category');
+
+        return view('berita.index', compact('beritas', 'categories', 'q', 'kategori'));
+    }
+
+    /**
+     * Display the specified news article.
+     */
+    public function show(string $slug): View
+    {
+        VisitorLog::recordVisit();
+
+        $berita = Berita::where('slug', $slug)->firstOrFail();
+        $berita->increment('views_count');
+
+        $relatedNews = Berita::published()
+            ->where('id', '!=', $berita->id)
+            ->take(3)
+            ->get();
+
+        return view('berita.show', compact('berita', 'relatedNews'));
+    }
+}
