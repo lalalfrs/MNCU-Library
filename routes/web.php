@@ -4,6 +4,10 @@ use App\Http\Controllers\LibraryController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'beranda')->name('beranda');
+// Halaman Informasi Perpustakaan
+Route::view('/tentang-kami', 'tentang-kami')->name('tentang-kami');
+Route::view('/kontak', 'kontak')->name('kontak');
+Route::view('/pustakawan', 'pustakawan')->name('pustakawan');
 
 // Chatbot & Bantuan Pemustaka
 Route::match(['get', 'post'], '/chat', [LibraryController::class, 'chat'])->name('chat');

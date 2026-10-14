@@ -21,9 +21,9 @@
              * @var array<int, array{label: string, href: string}> $navigationItems
              */
             $navigationItems = [
-                ['label' => 'Tentang Kami', 'href' => '#'],
-                ['label' => 'Kontak', 'href' => '#'],
-                ['label' => 'Pustakawan', 'href' => '#'],
+                ['label' => 'Tentang Kami', 'href' => route('tentang-kami')],
+                ['label' => 'Kontak', 'href' => route('kontak')],
+                ['label' => 'Pustakawan', 'href' => route('pustakawan')],
                 ['label' => 'Chatbot / Bantuan', 'href' => route('chat')],
             ];
         @endphp
