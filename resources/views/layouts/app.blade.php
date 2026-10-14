@@ -24,7 +24,7 @@
                 ['label' => 'Tentang Kami', 'href' => '#'],
                 ['label' => 'Kontak', 'href' => '#'],
                 ['label' => 'Pustakawan', 'href' => '#'],
-                ['label' => 'Bantuan', 'href' => '#'],
+                ['label' => 'Chatbot / Bantuan', 'href' => route('chat')],
             ];
         @endphp
 

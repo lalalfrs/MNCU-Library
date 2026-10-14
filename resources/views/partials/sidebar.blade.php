@@ -50,13 +50,21 @@
                             <path d="m6 9 6 6 6-6" />
                         </svg>
                     </summary>
-                    {{-- TODO (integrasi): isi href tiap layanan. --}}
                     <ul class="pb-2">
-                        @foreach (['Katalog OPAC', 'Repository', 'E-Journal', 'OJS per Prodi', 'E-Book'] as $serviceLabel)
+                        @php
+                            $sidebarServices = [
+                                ['label' => 'Katalog OPAC', 'href' => route('opac')],
+                                ['label' => 'Repository', 'href' => route('repository')],
+                                ['label' => 'E-Journal', 'href' => route('ejournal')],
+                                ['label' => 'OJS per Prodi', 'href' => route('ojs')],
+                                ['label' => 'E-Book', 'href' => route('ebook')],
+                            ];
+                        @endphp
+                        @foreach ($sidebarServices as $service)
                             <li>
-                                <a href="#" class="flex h-10 items-center gap-2.5 pl-[62px] text-sm text-[#4B5563] hover:text-primary md:h-11 md:pl-20 md:text-base">
+                                <a href="{{ $service['href'] }}" class="flex h-10 items-center gap-2.5 pl-[62px] text-sm text-[#4B5563] hover:text-primary md:h-11 md:pl-20 md:text-base">
                                     <span class="size-1.5 rounded-full bg-ink" aria-hidden="true"></span>
-                                    {{ $serviceLabel }}
+                                    {{ $service['label'] }}
                                 </a>
                             </li>
                         @endforeach

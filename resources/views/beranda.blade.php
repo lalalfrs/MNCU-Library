@@ -15,8 +15,8 @@
             [
                 'title' => 'Repository',
                 'description' => 'Skripsi, tesis, dan karya ilmiah sivitas MNC University.',
-                'href' => '#',
-                'isExternal' => true,
+                'href' => route('repository'),
+                'isExternal' => false,
                 'icon' => 'M3 7.5h18M5 7.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7.5M4 4h16v3.5H4zM10 11.5h4',
                 'iconBox' => 'bg-[#7C3AED]/8 text-[#7C3AED]',
                 'linkColor' => 'text-[#7C3AED]',
@@ -26,8 +26,8 @@
             [
                 'title' => 'E-Journal',
                 'description' => 'Jurnal elektronik yang dilanggan perpustakaan.',
-                'href' => '#',
-                'isExternal' => true,
+                'href' => route('ejournal'),
+                'isExternal' => false,
                 'icon' => 'M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v5h5M9.5 13h6M9.5 16.5h6',
                 'iconBox' => 'bg-[#2563EB]/8 text-[#2563EB]',
                 'linkColor' => 'text-[#2563EB]',
@@ -37,7 +37,7 @@
             [
                 'title' => 'OJS per Prodi',
                 'description' => 'Pilih program studi untuk membuka jurnal OJS-nya.',
-                'href' => '#',
+                'href' => route('ojs'),
                 'isExternal' => false,
                 'icon' => 'M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18',
                 'iconBox' => 'bg-[#059669]/8 text-[#047857]',
@@ -48,8 +48,8 @@
             [
                 'title' => 'E-Book',
                 'description' => 'Buku elektronik yang bisa dibaca dari perangkat apa pun.',
-                'href' => '#',
-                'isExternal' => true,
+                'href' => route('ebook'),
+                'isExternal' => false,
                 'icon' => 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10.5 17.5h3',
                 'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]',
                 'linkColor' => 'text-[#E11D48]',
@@ -132,7 +132,7 @@
 
             {{-- Kartu utama: satu-satunya layanan yang berupa halaman di situs ini, jadi diberi porsi lebih besar. --}}
             {{-- TODO (integrasi): arahkan ke route halaman OPAC. --}}
-            <a href="#" class="group mt-6 flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
+            <a href="{{ route('opac') }}" class="group mt-6 flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
                 <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/8 text-primary lg:size-20">
                     <svg class="size-10 lg:size-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M4 19.5V5a2 2 0 0 1 2-2h11v13H6a2 2 0 0 0-2 2zm0 0A1.5 1.5 0 0 0 5.5 21H17" />
