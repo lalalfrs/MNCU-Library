@@ -64,4 +64,22 @@ class LibraryPagesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Koleksi E-Book');
     }
+
+    public function test_tentang_kami_page_is_successful(): void
+    {
+        $response = $this->get(route('tentang-kami'));
+        $response->assertStatus(200);
+    }
+
+    public function test_kontak_page_is_successful(): void
+    {
+        $response = $this->get(route('kontak'));
+        $response->assertStatus(200);
+    }
+
+    public function test_pustakawan_page_is_successful(): void
+    {
+        $response = $this->get(route('pustakawan'));
+        $response->assertStatus(200);
+    }
 }
