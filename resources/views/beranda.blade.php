@@ -105,14 +105,12 @@
                         Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
                     </p>
                     <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#layanan" class="inline-flex h-12 items-center rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                        <a href="#layanan" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                            <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
                             Pilih Layanan Perpustakaan
                         </a>
                         <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
-                            <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
+                            <i class="fa-solid fa-location-dot text-primary text-base" aria-hidden="true"></i>
                             Lokasi Kampus
                         </a>
                     </div>
@@ -121,45 +119,71 @@
                 {{-- Statistik Pengunjung menggantikan posisi logo di Hero --}}
                 <div class="w-full md:w-[360px] lg:w-[420px] rounded-2xl border border-line bg-white p-6 shadow-sm lg:p-7">
                     <div class="flex items-center justify-between border-b border-line pb-4">
-                        <div>
-                            <span class="text-xs font-semibold uppercase tracking-wider text-primary">Live Monitoring</span>
-                            <h2 class="text-lg font-semibold text-ink sm:text-xl">Statistik Pengunjung</h2>
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <i class="fa-solid fa-chart-simple text-base" aria-hidden="true"></i>
+                            </span>
+                            <div>
+                                <span class="text-xs font-semibold uppercase tracking-wider text-primary">Live Monitoring</span>
+                                <h2 class="text-lg font-semibold text-ink sm:text-xl">Statistik Pengunjung</h2>
+                            </div>
                         </div>
                         <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-pulse" aria-hidden="true"></i>
                             Aktif
                         </span>
                     </div>
 
                     <dl class="mt-5 flex flex-col gap-3">
                         <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
-                            <div>
-                                <dt class="text-xs text-muted">Hari ini</dt>
-                                <span class="text-[11px] text-ink-secondary">Kunjungan unik hari ini</span>
+                            <div class="flex items-center gap-3">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <i class="fa-solid fa-user-clock text-sm" aria-hidden="true"></i>
+                                </span>
+                                <div>
+                                    <dt class="text-xs text-muted">Hari ini</dt>
+                                    <span class="text-[11px] text-ink-secondary">Kunjungan unik hari ini</span>
+                                </div>
                             </div>
                             <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
                         </div>
 
                         <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
-                            <div>
-                                <dt class="text-xs text-muted">Bulan ini</dt>
-                                <span class="text-[11px] text-ink-secondary">{{ now()->translatedFormat('F Y') }}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-[#7C3AED]">
+                                    <i class="fa-solid fa-calendar-check text-sm" aria-hidden="true"></i>
+                                </span>
+                                <div>
+                                    <dt class="text-xs text-muted">Bulan ini</dt>
+                                    <span class="text-[11px] text-ink-secondary">{{ now()->translatedFormat('F Y') }}</span>
+                                </div>
                             </div>
                             <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
                         </div>
 
                         <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-4 py-3.5 transition-colors hover:bg-subtle">
-                            <div>
-                                <dt class="text-xs text-muted">Total Kunjungan</dt>
-                                <span class="text-[11px] text-ink-secondary">Akumulasi pengunjung</span>
+                            <div class="flex items-center gap-3">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                    <i class="fa-solid fa-users text-sm" aria-hidden="true"></i>
+                                </span>
+                                <div>
+                                    <dt class="text-xs text-muted">Total Kunjungan</dt>
+                                    <span class="text-[11px] text-ink-secondary">Akumulasi pengunjung</span>
+                                </div>
                             </div>
                             <dd class="text-2xl font-bold text-primary sm:text-3xl">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
                         </div>
                     </dl>
 
                     <div class="mt-4 flex items-center justify-between border-t border-line pt-3 text-[11px] text-muted">
-                        <span>Pembaruan otomatis</span>
-                        <span class="font-medium text-primary">MNC University Library</span>
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
+                            Pembaruan otomatis
+                        </span>
+                        <span class="font-medium text-primary flex items-center gap-1">
+                            <i class="fa-solid fa-building-columns text-xs" aria-hidden="true"></i>
+                            MNC University Library
+                        </span>
                     </div>
                 </div>
             </div>
