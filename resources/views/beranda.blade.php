@@ -7,9 +7,8 @@
     @php
         /**
          * Layanan di bawah kartu utama (Katalog OPAC). Warna aksen mengikuti tabel §2.1 spesifikasi.
-         * TODO (integrasi): isi 'href' dengan URL layanan / route halaman OJS per prodi.
          *
-         * @var array<int, array{title: string, description: string, href: string, isExternal: bool, icon: string, iconBox: string, linkColor: string, hoverBorder: string, accentLine: string}> $digitalServices
+         * @var array<int, array{title: string, description: string, href: string, isExternal: bool, faIcon: string, iconBox: string, linkColor: string, hoverBorder: string, accentLine: string, typeBadge: string}> $digitalServices
          */
         $digitalServices = [
             [
@@ -17,44 +16,48 @@
                 'description' => 'Skripsi, tesis, dan karya ilmiah sivitas MNC University.',
                 'href' => route('repository'),
                 'isExternal' => false,
-                'icon' => 'M3 7.5h18M5 7.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7.5M4 4h16v3.5H4zM10 11.5h4',
-                'iconBox' => 'bg-[#7C3AED]/8 text-[#7C3AED]',
+                'faIcon' => 'fa-solid fa-graduation-cap',
+                'iconBox' => 'bg-[#7C3AED]/10 text-[#7C3AED]',
                 'linkColor' => 'text-[#7C3AED]',
                 'hoverBorder' => 'hover:border-[#DDD6FE]',
                 'accentLine' => 'from-[#8B5CF6] to-[#D946EF]',
+                'typeBadge' => 'Karya Ilmiah',
             ],
             [
                 'title' => 'E-Journal',
                 'description' => 'Jurnal elektronik yang dilanggan perpustakaan.',
                 'href' => route('ejournal'),
                 'isExternal' => false,
-                'icon' => 'M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v5h5M9.5 13h6M9.5 16.5h6',
-                'iconBox' => 'bg-[#2563EB]/8 text-[#2563EB]',
+                'faIcon' => 'fa-solid fa-newspaper',
+                'iconBox' => 'bg-[#2563EB]/10 text-[#2563EB]',
                 'linkColor' => 'text-[#2563EB]',
                 'hoverBorder' => 'hover:border-[#BFDBFE]',
                 'accentLine' => 'from-[#0EA5E9] to-[#2563EB]',
+                'typeBadge' => 'Jurnal Online',
             ],
             [
                 'title' => 'OJS per Prodi',
                 'description' => 'Pilih program studi untuk membuka jurnal OJS-nya.',
                 'href' => route('ojs'),
                 'isExternal' => false,
-                'icon' => 'M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18',
-                'iconBox' => 'bg-[#059669]/8 text-[#047857]',
+                'faIcon' => 'fa-solid fa-layer-group',
+                'iconBox' => 'bg-[#059669]/10 text-[#047857]',
                 'linkColor' => 'text-[#047857]',
                 'hoverBorder' => 'hover:border-[#A7F3D0]',
                 'accentLine' => 'from-[#10B981] to-[#14B8A6]',
+                'typeBadge' => 'Portal OJS',
             ],
             [
                 'title' => 'E-Book',
                 'description' => 'Buku elektronik yang bisa dibaca dari perangkat apa pun.',
                 'href' => route('ebook'),
                 'isExternal' => false,
-                'icon' => 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10.5 17.5h3',
-                'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]',
+                'faIcon' => 'fa-solid fa-tablet-screen-button',
+                'iconBox' => 'bg-[#E11D48]/10 text-[#E11D48]',
                 'linkColor' => 'text-[#E11D48]',
                 'hoverBorder' => 'hover:border-[#FECDD3]',
                 'accentLine' => 'from-[#F43F5E] to-[#EC4899]',
+                'typeBadge' => 'Buku Digital',
             ],
         ];
 
@@ -204,22 +207,17 @@
             </div>
 
             {{-- Kartu utama: satu-satunya layanan yang berupa halaman di situs ini, jadi diberi porsi lebih besar. --}}
-            {{-- TODO (integrasi): arahkan ke route halaman OPAC. --}}
             <a href="{{ route('opac') }}" class="group mt-6 flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
-                <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/8 text-primary lg:size-20">
-                    <svg class="size-10 lg:size-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M4 19.5V5a2 2 0 0 1 2-2h11v13H6a2 2 0 0 0-2 2zm0 0A1.5 1.5 0 0 0 5.5 21H17" />
-                        <circle cx="16.5" cy="16.5" r="3" fill="white" />
-                        <path d="m18.7 18.7 2.3 2.3" />
-                    </svg>
+                <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-105 lg:size-20">
+                    <i class="fa-solid fa-book-open-reader text-3xl lg:text-4xl text-primary" aria-hidden="true"></i>
                 </span>
                 <span class="flex-1">
                     <span class="block text-xl font-medium text-ink lg:text-2xl">Katalog OPAC</span>
                     <span class="mt-1.5 block text-sm leading-relaxed text-ink-secondary lg:text-base">Cari buku teks, monograf, dan referensi fisik. Cek ketersediaan eksemplar dan lokasi nomor panggil rak secara real-time.</span>
                 </span>
-                <span class="inline-flex items-center gap-1.5 text-base font-semibold text-primary lg:text-lg">
+                <span class="inline-flex items-center gap-2 text-base font-semibold text-primary lg:text-lg">
                     Buka Katalog
-                    <svg class="size-5 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                    <i class="fa-solid fa-arrow-right text-base transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true"></i>
                 </span>
             </a>
 
@@ -232,10 +230,8 @@
                             class="group flex h-full flex-col rounded-xl border border-line bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 {{ $digitalService['hoverBorder'] }}"
                         >
                             <span class="flex items-start gap-4">
-                                <span class="flex size-[60px] shrink-0 items-center justify-center rounded-xl {{ $digitalService['iconBox'] }}">
-                                    <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="{{ $digitalService['icon'] }}" />
-                                    </svg>
+                                <span class="flex size-[60px] shrink-0 items-center justify-center rounded-xl {{ $digitalService['iconBox'] }} transition-transform duration-200 group-hover:scale-105">
+                                    <i class="{{ $digitalService['faIcon'] }} text-2xl lg:text-3xl" aria-hidden="true"></i>
                                 </span>
                                 <span>
                                     <span class="block text-base font-medium text-ink lg:text-lg">{{ $digitalService['title'] }}</span>
@@ -246,15 +242,14 @@
                             <span class="mt-auto block pt-4">
                                 <span class="block h-px bg-line"></span>
                                 <span class="mt-4 flex items-center justify-between text-sm">
-                                    <span class="text-ink">{{ $digitalService['isExternal'] ? 'Situs eksternal' : 'Halaman prodi' }}</span>
-                                    <span class="inline-flex items-center gap-1 font-medium {{ $digitalService['linkColor'] }}">
+                                    <span class="text-ink">{{ $digitalService['typeBadge'] ?? ($digitalService['isExternal'] ? 'Situs eksternal' : 'Layanan digital') }}</span>
+                                    <span class="inline-flex items-center gap-1.5 font-medium {{ $digitalService['linkColor'] }}">
                                         Buka
                                         @if ($digitalService['isExternal'])
-                                            {{-- Panah diagonal menandai tautan membuka tab baru ke situs lain. --}}
-                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
                                             <span class="sr-only">(tab baru)</span>
                                         @else
-                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                                            <i class="fa-solid fa-chevron-right text-xs transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true"></i>
                                         @endif
                                     </span>
                                 </span>

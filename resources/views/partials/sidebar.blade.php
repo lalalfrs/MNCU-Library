@@ -53,17 +53,17 @@
                     <ul class="pb-2">
                         @php
                             $sidebarServices = [
-                                ['label' => 'Katalog OPAC', 'href' => route('opac')],
-                                ['label' => 'Repository', 'href' => route('repository')],
-                                ['label' => 'E-Journal', 'href' => route('ejournal')],
-                                ['label' => 'OJS per Prodi', 'href' => route('ojs')],
-                                ['label' => 'E-Book', 'href' => route('ebook')],
+                                ['label' => 'Katalog OPAC', 'href' => route('opac'), 'faIcon' => 'fa-solid fa-book-open-reader text-primary'],
+                                ['label' => 'Repository', 'href' => route('repository'), 'faIcon' => 'fa-solid fa-graduation-cap text-[#7C3AED]'],
+                                ['label' => 'E-Journal', 'href' => route('ejournal'), 'faIcon' => 'fa-solid fa-newspaper text-[#2563EB]'],
+                                ['label' => 'OJS per Prodi', 'href' => route('ojs'), 'faIcon' => 'fa-solid fa-layer-group text-[#047857]'],
+                                ['label' => 'E-Book', 'href' => route('ebook'), 'faIcon' => 'fa-solid fa-tablet-screen-button text-[#E11D48]'],
                             ];
                         @endphp
                         @foreach ($sidebarServices as $service)
                             <li>
-                                <a href="{{ $service['href'] }}" class="flex h-10 items-center gap-2.5 pl-[62px] text-sm text-[#4B5563] hover:text-primary md:h-11 md:pl-20 md:text-base">
-                                    <span class="size-1.5 rounded-full bg-ink" aria-hidden="true"></span>
+                                <a href="{{ $service['href'] }}" class="flex h-10 items-center gap-3 pl-[62px] text-sm text-[#4B5563] hover:text-primary md:h-11 md:pl-20 md:text-base">
+                                    <i class="{{ $service['faIcon'] }} w-4 text-center text-xs" aria-hidden="true"></i>
                                     {{ $service['label'] }}
                                 </a>
                             </li>
