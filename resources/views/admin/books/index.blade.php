@@ -6,7 +6,7 @@
 @section('content')
     <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 py-6 lg:px-6 lg:py-8">
         {{-- Breadcrumb & Header --}}
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
                     <a href="{{ route('beranda') }}" class="hover:text-primary">Beranda</a>
@@ -19,11 +19,36 @@
                     Manajemen Katalog Koleksi Buku
                 </h1>
                 <p class="mt-0.5 text-xs text-ink-secondary sm:text-sm">
-                    Kelola koleksi buku cetak, e-book, data bibliografi, dan eksemplar rak perpustakaan.
+                    Kelola koleksi buku cetak, e-book, data bibliografi, serta visualisasi tampilan tabel atau grid.
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                {{-- Switcher Mode Tampilan: Row (Tabel) vs Grid (Kartu) --}}
+                <div class="flex items-center rounded-xl border border-line bg-subtle/80 p-1 shadow-inner">
+                    <button
+                        type="button"
+                        id="btn-view-table"
+                        onclick="switchBookView('table')"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 {{ $viewMode === 'table' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-ink' }}"
+                        title="Tampilan Tabel (Row)"
+                    >
+                        <i class="fa-solid fa-table-list text-xs"></i>
+                        <span class="hidden sm:inline">Tabel</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="btn-view-grid"
+                        onclick="switchBookView('grid')"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 {{ $viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-ink' }}"
+                        title="Tampilan Kartu (Grid)"
+                    >
+                        <i class="fa-solid fa-border-all text-xs"></i>
+                        <span class="hidden sm:inline">Grid</span>
+                    </button>
+                </div>
+
+                {{-- Tombol Tambah Buku --}}
                 <a
                     href="{{ route('admin.books.create') }}"
                     class="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-dark active:scale-[0.98] sm:h-11 sm:text-sm"
@@ -36,7 +61,9 @@
 
         {{-- Filter & Pencarian Bar --}}
         <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-            <form method="GET" action="{{ route('admin.books.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <form method="GET" action="{{ route('admin.books.index') }}" id="filter-form" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <input type="hidden" name="view" id="filter-view-input" value="{{ $viewMode }}">
+
                 <div class="relative flex-1">
                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
@@ -72,7 +99,7 @@
                         <option value="">Semua Format</option>
                         @foreach ($types as $type)
                             <option value="{{ $type->id_jenis_buku }}" {{ $jenisId === $type->id_jenis_buku ? 'selected' : '' }}>
-                                {{ $type->nama_jenis }}
+                                {{ $type->nama_jenis_buku }}
                             </option>
                         @endforeach
                     </select>
@@ -86,7 +113,7 @@
 
                     @if ($q !== '' || $kategoriId !== '' || $jenisId !== '')
                         <a
-                            href="{{ route('admin.books.index') }}"
+                            href="{{ route('admin.books.index', ['view' => $viewMode]) }}"
                             class="inline-flex h-10 items-center justify-center rounded-xl border border-line px-3 text-xs font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:text-sm"
                             title="Reset Filter"
                         >
@@ -97,8 +124,8 @@
             </form>
         </div>
 
-        {{-- Tabel Koleksi Buku --}}
-        <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+        {{-- 1. TAMPILAN TABEL (ROW VIEW) --}}
+        <div id="books-table-view" class="{{ $viewMode === 'grid' ? 'hidden' : '' }} overflow-hidden rounded-2xl border border-line bg-white shadow-card">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs sm:text-sm">
                     <thead class="border-b border-line bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -115,7 +142,7 @@
                             <tr class="transition-colors hover:bg-[#F9FAFB]">
                                 <td class="px-5 py-4">
                                     <div class="flex items-start gap-3.5">
-                                        <div class="relative h-16 w-11 shrink-0 overflow-hidden rounded-md border border-line bg-subtle">
+                                        <div class="relative h-16 w-11 shrink-0 overflow-hidden rounded-md border border-line bg-subtle shadow-xs">
                                             @if ($book->sampul_buku)
                                                 <img src="{{ $book->sampul_buku }}" alt="{{ $book->judul_buku }}" class="h-full w-full object-cover">
                                             @else
@@ -136,7 +163,7 @@
                                 <td class="px-5 py-4 whitespace-nowrap">
                                     <div class="flex flex-col gap-1">
                                         <span class="inline-flex w-fit items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium text-blue-800">
-                                            {{ $book->jenisBuku?->nama_jenis ?? 'Buku Cetak' }}
+                                            {{ $book->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak' }}
                                         </span>
                                         <span class="text-xs text-muted">{{ $book->kategoriBuku?->nama_kategori ?? '-' }}</span>
                                     </div>
@@ -193,12 +220,174 @@
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            @if ($books->hasPages())
-                <div class="border-t border-line px-5 py-4">
-                    {{ $books->links() }}
+        {{-- 2. TAMPILAN GRID (CARD VIEW) --}}
+        <div id="books-grid-view" class="{{ $viewMode === 'table' ? 'hidden' : '' }}">
+            @if ($books->isEmpty())
+                <div class="rounded-2xl border border-line bg-white p-12 text-center shadow-card">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-book-open text-3xl text-muted/40"></i>
+                        <p class="font-medium text-ink">Tidak ada koleksi buku ditemukan.</p>
+                        <p class="text-xs text-muted">Coba ubah kata kunci pencarian atau filter kategori.</p>
+                    </div>
+                </div>
+            @else
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    @foreach ($books as $book)
+                        <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                            {{-- Sampul Buku --}}
+                            <div class="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-subtle to-slate-100">
+                                @if ($book->sampul_buku)
+                                    <img
+                                        src="{{ $book->sampul_buku }}"
+                                        alt="{{ $book->judul_buku }}"
+                                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        loading="lazy"
+                                    >
+                                @else
+                                    <div class="flex h-full w-full flex-col items-center justify-center p-4 text-center text-muted">
+                                        <div class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                                            <i class="fa-solid fa-book text-2xl"></i>
+                                        </div>
+                                        <span class="mt-2 text-xs font-medium text-ink/70">Tanpa Sampul</span>
+                                    </div>
+                                @endif
+
+                                {{-- Badges Melayang di Atas Gambar --}}
+                                <div class="absolute inset-x-2.5 top-2.5 flex items-center justify-between gap-1.5">
+                                    <span class="inline-flex items-center rounded-md border border-line/60 bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-xs backdrop-blur">
+                                        {{ $book->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak' }}
+                                    </span>
+                                    <span class="inline-flex items-center rounded-md bg-slate-900/80 px-2 py-0.5 font-mono text-[10px] font-medium text-white shadow-xs backdrop-blur">
+                                        {{ $book->id_buku }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Isi Rincian Kartu --}}
+                            <div class="flex flex-1 flex-col p-4">
+                                {{-- Kategori --}}
+                                <div class="flex items-center justify-between text-[11px] text-muted">
+                                    <span class="font-medium text-primary">{{ $book->kategoriBuku?->nama_kategori ?? 'Umum' }}</span>
+                                    <span>{{ $book->tahun_terbit ?? '-' }}</span>
+                                </div>
+
+                                {{-- Judul Buku --}}
+                                <h3 class="mt-1.5 line-clamp-2 text-sm font-bold text-ink transition-colors group-hover:text-primary">
+                                    {{ $book->judul_buku }}
+                                </h3>
+
+                                {{-- Pengarang & Penerbit --}}
+                                <div class="mt-2 space-y-1 text-xs text-muted">
+                                    <p class="truncate" title="Penulis">
+                                        <i class="fa-solid fa-user-pen mr-1.5 text-[10px] text-primary/70"></i>
+                                        {{ $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan' }}
+                                    </p>
+                                    <p class="truncate" title="Penerbit">
+                                        <i class="fa-solid fa-building-columns mr-1.5 text-[10px] text-primary/70"></i>
+                                        {{ $book->penerbit?->nama_penerbit ?? 'Penerbit MNCU' }}
+                                    </p>
+                                    @if ($book->isbn)
+                                        <p class="font-mono text-[11px] text-muted/80 truncate">
+                                            ISBN: {{ $book->isbn }}
+                                        </p>
+                                    @endif
+                                </div>
+
+                                {{-- Action Bar di Bagian Bawah Kartu --}}
+                                <div class="mt-auto flex items-center gap-2 pt-4 border-t border-line">
+                                    <a
+                                        href="{{ route('admin.books.edit', $book->id_buku) }}"
+                                        class="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-subtle/40 text-xs font-semibold text-ink transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                                    >
+                                        <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                        <span>Ubah</span>
+                                    </a>
+
+                                    <form
+                                        action="{{ route('admin.books.destroy', $book->id_buku) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} dari katalog?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="inline-flex size-9 items-center justify-center rounded-xl border border-red-200 text-red-600 transition-colors hover:bg-red-50"
+                                            title="Hapus Buku"
+                                        >
+                                            <i class="fa-regular fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             @endif
         </div>
+
+        {{-- Pagination (Berlaku untuk Tabel & Grid) --}}
+        @if ($books->hasPages())
+            <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
+                {{ $books->links() }}
+            </div>
+        @endif
     </div>
+
+    {{-- Script Switcher Row (Tabel) <-> Grid (Kartu) --}}
+    <script>
+        function switchBookView(mode) {
+            const tableView = document.getElementById('books-table-view');
+            const gridView = document.getElementById('books-grid-view');
+            const btnTable = document.getElementById('btn-view-table');
+            const btnGrid = document.getElementById('btn-view-grid');
+            const filterInput = document.getElementById('filter-view-input');
+
+            if (mode === 'grid') {
+                tableView.classList.add('hidden');
+                gridView.classList.remove('hidden');
+
+                btnGrid.className = 'inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 bg-white text-primary shadow-sm';
+                btnTable.className = 'inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 text-muted hover:text-ink';
+            } else {
+                gridView.classList.add('hidden');
+                tableView.classList.remove('hidden');
+
+                btnTable.className = 'inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 bg-white text-primary shadow-sm';
+                btnGrid.className = 'inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150 text-muted hover:text-ink';
+            }
+
+            if (filterInput) {
+                filterInput.value = mode;
+            }
+
+            // Simpan preferensi ke localStorage
+            try {
+                localStorage.setItem('mncu_books_view_preference', mode);
+            } catch (e) {}
+
+            // Update URL query string tanpa reload jika didukung
+            if (window.history && window.history.replaceState) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('view', mode);
+                window.history.replaceState(null, '', url.toString());
+            }
+        }
+
+        // Sinkronisasi preferensi saat halaman dimuat jika tidak ditentukan di URL
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+
+            if (!viewParam) {
+                const savedPreference = localStorage.getItem('mncu_books_view_preference');
+                if (savedPreference === 'grid' || savedPreference === 'table') {
+                    switchBookView(savedPreference);
+                }
+            }
+        });
+    </script>
 @endsection
+

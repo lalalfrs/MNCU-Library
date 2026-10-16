@@ -114,16 +114,22 @@ class AuthTest extends TestCase
     }
 
     /**
-     * Pastikan pengguna yang sedang login dapat keluar (logout) dengan aman.
+     * Pastikan pengguna yang sedang login dapat keluar (logout) dengan aman dan token Sanctum terhapus.
      */
     public function test_authenticated_user_can_logout(): void
     {
         $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
         $this->actingAs($admin);
 
+        // Buat token Sanctum untuk menguji penghapusan token saat logout
+        $token = $admin->createToken('test-logout-token');
+        $this->assertNotNull($token);
+        $this->assertSame(1, $admin->tokens()->count());
+
         $response = $this->post('/logout');
 
         $response->assertRedirect(route('login'));
         $this->assertGuest();
+        $this->assertSame(0, $admin->tokens()->count());
     }
 }

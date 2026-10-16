@@ -35,4 +35,9 @@ class JenisBuku extends Model
     {
         return $this->hasMany(Buku::class, 'id_jenis_buku', 'id_jenis_buku');
     }
+
+    public function getNamaJenisAttribute(): ?string
+    {
+        return $this->nama_jenis_buku;
+    }
 }

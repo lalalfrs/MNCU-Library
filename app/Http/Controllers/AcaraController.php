@@ -60,7 +60,7 @@ class AcaraController extends Controller
         $acara = Acara::where('slug', $slug)->firstOrFail();
 
         $otherEvents = Acara::upcoming()
-            ->where('id', '!=', $acara->id)
+            ->where('id_acara', '!=', $acara->id_acara)
             ->take(3)
             ->get();
 

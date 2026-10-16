@@ -172,4 +172,55 @@ class AdminManagementTest extends TestCase
         $response->assertRedirect(route('admin.books.index'));
         $this->assertDatabaseHas('buku', ['judul_buku' => 'Pengantar Pemrograman Modern dengan Laravel 12']);
     }
+
+    /**
+     * Pengujian pembuatan buku dengan pengarang baru yang diketik manual via keyboard.
+     */
+    public function test_book_crud_supports_manual_author_creation_with_mncu_id(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
+        $jenis = JenisBuku::first();
+        $kategori = KategoriBuku::first();
+
+        $response = $this->actingAs($admin)->post(route('admin.books.store'), [
+            'judul_buku' => 'Machine Learning & Deep Neural Network 2026',
+            'id_jenis_buku' => $jenis->id_jenis_buku,
+            'id_kategori_buku' => $kategori->id_kategori_buku,
+            'nama_penulis_manual' => 'Prof. Dr. Ir. Budi Rahardjo, M.Sc.',
+            'sampul_buku' => 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4',
+        ]);
+
+        $response->assertRedirect(route('admin.books.index'));
+
+        // Pastikan penulis baru tersimpan dengan ID MNCUXXXXX
+        $this->assertDatabaseHas('penulis', [
+            'nama_penulis' => 'Prof. Dr. Ir. Budi Rahardjo, M.Sc.',
+        ]);
+
+        $newBook = Buku::where('judul_buku', 'Machine Learning & Deep Neural Network 2026')->first();
+        $this->assertNotNull($newBook);
+        $this->assertMatchesRegularExpression('/^MNCU\d{5}$/', $newBook->id_buku);
+        $this->assertCount(1, $newBook->penulis);
+        $this->assertSame('Prof. Dr. Ir. Budi Rahardjo, M.Sc.', $newBook->penulis->first()->nama_penulis);
+        $this->assertMatchesRegularExpression('/^MNCU\d{5}$/', $newBook->penulis->first()->id_penulis);
+    }
+
+    /**
+     * Pengujian visualisasi katalog buku mendukung mode tampilan Grid dan Tabel (Row).
+     */
+    public function test_book_index_supports_grid_and_table_view_modes(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
+
+        // 1. Tampilan default (table)
+        $responseTable = $this->actingAs($admin)->get(route('admin.books.index'));
+        $responseTable->assertStatus(200);
+        $responseTable->assertSee('id="books-table-view"', false);
+        $responseTable->assertSee('id="books-grid-view"', false);
+
+        // 2. Tampilan eksplisit grid
+        $responseGrid = $this->actingAs($admin)->get(route('admin.books.index', ['view' => 'grid']));
+        $responseGrid->assertStatus(200);
+        $responseGrid->assertSee('id="books-grid-view"', false);
+    }
 }

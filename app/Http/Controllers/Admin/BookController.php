@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
+use App\Models\BukuPenulis;
 use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
 use App\Models\Penerbit;
@@ -41,11 +42,12 @@ class BookController extends Controller
             $query->where('id_jenis_buku', $jenisId);
         }
 
-        $books = $query->paginate(10)->withQueryString();
+        $books = $query->paginate(12)->withQueryString();
         $categories = KategoriBuku::orderBy('nama_kategori')->get();
-        $types = JenisBuku::orderBy('nama_jenis')->get();
+        $types = JenisBuku::orderBy('nama_jenis_buku')->get();
+        $viewMode = in_array($request->query('view'), ['grid', 'table'], true) ? $request->query('view') : 'table';
 
-        return view('admin.books.index', compact('books', 'categories', 'types', 'q', 'kategoriId', 'jenisId'));
+        return view('admin.books.index', compact('books', 'categories', 'types', 'q', 'kategoriId', 'jenisId', 'viewMode'));
     }
 
     /**
@@ -54,7 +56,7 @@ class BookController extends Controller
     public function create(): View
     {
         $categories = KategoriBuku::orderBy('nama_kategori')->get();
-        $types = JenisBuku::orderBy('nama_jenis')->get();
+        $types = JenisBuku::orderBy('nama_jenis_buku')->get();
         $publishers = Penerbit::orderBy('nama_penerbit')->get();
         $authors = Penulis::orderBy('nama_penulis')->get();
 
@@ -77,6 +79,7 @@ class BookController extends Controller
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
         ], [
             'judul_buku.required' => 'Judul buku wajib diisi.',
             'id_jenis_buku.required' => 'Jenis buku wajib dipilih.',
@@ -85,9 +88,7 @@ class BookController extends Controller
 
         $book = Buku::create($validated);
 
-        if ($request->filled('id_penulis')) {
-            $book->penulis()->sync([$request->input('id_penulis')]);
-        }
+        $this->syncBookAuthor($book, $request);
 
         return redirect()->route('admin.books.index')
             ->with('success', "Buku \"{$book->judul_buku}\" ({$book->id_buku}) berhasil ditambahkan ke katalog!");
@@ -100,7 +101,7 @@ class BookController extends Controller
     {
         $book = Buku::with(['penulis', 'penerbit'])->findOrFail($id);
         $categories = KategoriBuku::orderBy('nama_kategori')->get();
-        $types = JenisBuku::orderBy('nama_jenis')->get();
+        $types = JenisBuku::orderBy('nama_jenis_buku')->get();
         $publishers = Penerbit::orderBy('nama_penerbit')->get();
         $authors = Penulis::orderBy('nama_penulis')->get();
 
@@ -125,6 +126,7 @@ class BookController extends Controller
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
         ], [
             'judul_buku.required' => 'Judul buku wajib diisi.',
             'id_jenis_buku.required' => 'Jenis buku wajib dipilih.',
@@ -133,13 +135,41 @@ class BookController extends Controller
 
         $book->update($validated);
 
-        if ($request->has('id_penulis')) {
-            $authorId = $request->input('id_penulis');
-            $book->penulis()->sync($authorId ? [$authorId] : []);
-        }
+        $this->syncBookAuthor($book, $request);
 
         return redirect()->route('admin.books.index')
             ->with('success', "Katalog buku \"{$book->judul_buku}\" berhasil diperbarui!");
+    }
+
+    /**
+     * Sinkronisasi pengarang utama buku (baik dipilih dari daftar maupun diketik manual).
+     */
+    protected function syncBookAuthor(Buku $book, Request $request): void
+    {
+        $manualAuthor = trim((string) $request->input('nama_penulis_manual', ''));
+        $authorId = $request->input('id_penulis');
+        $targetAuthorId = null;
+
+        if ($manualAuthor !== '') {
+            $author = Penulis::whereRaw('LOWER(nama_penulis) = ?', [strtolower($manualAuthor)])->first();
+            if (! $author) {
+                $author = Penulis::create([
+                    'nama_penulis' => $manualAuthor,
+                    'deskripsi_penulis' => 'Penulis ditambahkan melalui entri katalog buku',
+                ]);
+            }
+            $targetAuthorId = $author->id_penulis;
+        } elseif (! empty($authorId)) {
+            $targetAuthorId = $authorId;
+        }
+
+        if ($targetAuthorId) {
+            BukuPenulis::where('id_buku', $book->id_buku)->delete();
+            BukuPenulis::create([
+                'id_buku' => $book->id_buku,
+                'id_penulis' => $targetAuthorId,
+            ]);
+        }
     }
 
     /**
@@ -151,7 +181,7 @@ class BookController extends Controller
         $judul = $book->judul_buku;
 
         // Lepas relasi pivot penulis dan subjek jika ada
-        $book->penulis()->detach();
+        BukuPenulis::where('id_buku', $book->id_buku)->delete();
         $book->subjek()->detach();
         $book->eksemplar()->delete();
 

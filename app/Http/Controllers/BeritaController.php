@@ -34,7 +34,7 @@ class BeritaController extends Controller
         }
 
         $beritas = $query->paginate(9)->withQueryString();
-        $categories = Berita::published()->distinct()->pluck('kategori_berita');
+        $categories = Berita::published()->reorder()->distinct()->pluck('kategori_berita');
 
         return view('berita.index', compact('beritas', 'categories', 'q', 'kategori'));
     }
@@ -50,7 +50,7 @@ class BeritaController extends Controller
         $berita->increment('views_count');
 
         $relatedNews = Berita::published()
-            ->where('id', '!=', $berita->id)
+            ->where('id_berita', '!=', $berita->id_berita)
             ->take(3)
             ->get();
 
