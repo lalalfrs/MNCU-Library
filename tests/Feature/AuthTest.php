@@ -1,0 +1,129 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Mail\ResetPasswordMail;
+use App\Models\Pengguna;
+use Database\Seeders\PerpustakaanSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
+
+class AuthTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(PerpustakaanSeeder::class);
+    }
+
+    /**
+     * Pastikan halaman login dapat diakses dan menampilkan komponen UI sesuai spesifikasi.
+     */
+    public function test_login_page_renders_successfully(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('Masuk ke Akun');
+        $response->assertSee('Isi Otomatis Super Admin');
+        $response->assertSee('Lupa kata sandi?');
+        $response->assertSee('Dr. H. Muhammad Arifin, M.Hum.');
+    }
+
+    /**
+     * Pastikan Super Admin (Kepala Perpustakaan) dapat login dengan kata sandi ter-hash.
+     */
+    public function test_super_admin_can_authenticate_with_hashed_password(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
+        $this->assertNotNull($admin, 'Akun Super Admin harus tersedia di database');
+
+        $response = $this->post('/login', [
+            'email' => 'arifin@mncu.ac.id',
+            'kata_sandi' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('beranda'));
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    /**
+     * Pastikan otentikasi ditolak jika kata sandi salah.
+     */
+    public function test_login_fails_with_invalid_credentials(): void
+    {
+        $response = $this->from('/login')->post('/login', [
+            'email' => 'arifin@mncu.ac.id',
+            'kata_sandi' => 'password_salah_123',
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    /**
+     * Pastikan halaman lupa kata sandi dapat diakses.
+     */
+    public function test_forgot_password_page_renders_successfully(): void
+    {
+        $response = $this->get('/lupa-password');
+
+        $response->assertStatus(200);
+        $response->assertSee('Lupa Kata Sandi?');
+        $response->assertSee('Kirim Kata Sandi Baru ke Email');
+    }
+
+    /**
+     * Pastikan alur lupa kata sandi membuat password baru, meng-hash ke database, dan mengirimkan email.
+     */
+    public function test_forgot_password_sends_email_and_updates_password(): void
+    {
+        Mail::fake();
+
+        $user = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->first();
+        $this->assertNotNull($user);
+
+        $response = $this->post('/lupa-password', [
+            'email' => 'fauzi.mhs@mncu.ac.id',
+        ]);
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('status');
+        $response->assertSessionHas('demo_new_password');
+
+        $newPassword = session('demo_new_password');
+        $this->assertNotEmpty($newPassword);
+
+        // Verifikasi email dikirimkan
+        Mail::assertSent(ResetPasswordMail::class, function (ResetPasswordMail $mail) use ($user, $newPassword): bool {
+            return $mail->hasTo($user->email) && $mail->newPassword === $newPassword;
+        });
+
+        // Verifikasi kata sandi di database telah diperbarui dengan hash baru
+        $user->refresh();
+        $this->assertTrue(Hash::check($newPassword, $user->kata_sandi));
+
+        // Kembalikan ke password awal untuk konsistensi pengujian berulang
+        $user->kata_sandi = Hash::make('password123');
+        $user->save();
+    }
+
+    /**
+     * Pastikan pengguna yang sedang login dapat keluar (logout) dengan aman.
+     */
+    public function test_authenticated_user_can_logout(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
+        $this->actingAs($admin);
+
+        $response = $this->post('/logout');
+
+        $response->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+}

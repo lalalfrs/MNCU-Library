@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Buku;
+use App\Models\ProfilPustakawan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -43,104 +45,128 @@ class LibraryController extends Controller
         $category = (string) $request->query('kategori', 'Semua');
         $prodi = (string) $request->query('prodi', 'Semua');
 
-        $catalogItems = [
-            [
-                'id' => 1,
-                'title' => 'Algoritma & Struktur Data dengan Python',
-                'author' => 'Dr. Rian Hidayat, M.Kom.',
-                'year' => 2024,
-                'category' => 'Buku Teks',
-                'prodi' => 'Informatika',
-                'call_number' => '005.1 HID a',
-                'location' => 'Lantai 2, Rak Komputer 03',
-                'copies' => '4 eksemplar',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Manajemen Pemasaran Strategis di Era Digital',
-                'author' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
-                'year' => 2023,
-                'category' => 'Buku Teks',
-                'prodi' => 'Manajemen',
-                'call_number' => '658.8 GUN m',
-                'location' => 'Lantai 2, Rak Ekonomi 01',
-                'copies' => '3 eksemplar',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 3,
-                'title' => 'Prinsip Desain Komunikasi Visual & Tipografi',
-                'author' => 'Siti Nurhaliza, M.Ds.',
-                'year' => 2024,
-                'category' => 'Buku Teks',
-                'prodi' => 'Desain Komunikasi Visual',
-                'call_number' => '741.6 NUR p',
-                'location' => 'Lantai 2, Rak Desain 02',
-                'copies' => '2 eksemplar',
-                'status' => 'Dipinjam (Kembali 20 Okt)',
-            ],
-            [
-                'id' => 4,
-                'title' => 'Analisis Perancangan Sistem Informasi Enterprise',
-                'author' => 'Ahmad Fauzi, M.T.',
-                'year' => 2023,
-                'category' => 'Buku Teks',
-                'prodi' => 'Sistem Informasi',
-                'call_number' => '004.2 FAU a',
-                'location' => 'Lantai 2, Rak Komputer 04',
-                'copies' => '5 eksemplar',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 5,
-                'title' => 'Akuntansi Keuangan Menengah Berbasis IFRS',
-                'author' => 'Dewi Lestari, S.E., M.Ak., Ak.',
-                'year' => 2022,
-                'category' => 'Referensi',
-                'prodi' => 'Akuntansi',
-                'call_number' => '657.48 LES a',
-                'location' => 'Lantai 2, Rak Akuntansi 01',
-                'copies' => '3 eksemplar',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 6,
-                'title' => 'Komunikasi Massa & Dinamika Media Penyiaran',
-                'author' => 'Bambang Sudibyo, M.Si.',
-                'year' => 2023,
-                'category' => 'Buku Teks',
-                'prodi' => 'Sains Komunikasi',
-                'call_number' => '302.23 SUD k',
-                'location' => 'Lantai 2, Rak Komunikasi 02',
-                'copies' => '4 eksemplar',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 7,
-                'title' => 'Penerapan Machine Learning untuk Deteksi Pola Data Medis',
-                'author' => 'Muhammad Farhan (NIM: 20210801045)',
-                'year' => 2025,
-                'category' => 'Skripsi',
-                'prodi' => 'Informatika',
-                'call_number' => 'SKR-INF-2025-012',
-                'location' => 'Koleksi Khusus Karya Ilmiah',
-                'copies' => '1 eksemplar (Baca di Tempat)',
-                'status' => 'Tersedia',
-            ],
-            [
-                'id' => 8,
-                'title' => 'Ensiklopedia Teknologi Informasi & Komunikasi',
-                'author' => 'Tim Redaksi MNC Press',
-                'year' => 2024,
-                'category' => 'Referensi',
-                'prodi' => 'Informatika',
-                'call_number' => 'R 004.03 ENS t',
-                'location' => 'Lantai 1, Ruang Referensi',
-                'copies' => '2 eksemplar (Hanya Baca)',
-                'status' => 'Tersedia',
-            ],
-        ];
+        $dbBooks = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'eksemplar'])->get();
+
+        if ($dbBooks->isNotEmpty()) {
+            $catalogItems = $dbBooks->map(function (Buku $buku): array {
+                $authorName = $buku->penulis->pluck('nama_penulis')->join(', ') ?: 'Pustakawan MNC University';
+                $copiesCount = $buku->eksemplar->count();
+                $firstCopy = $buku->eksemplar->first();
+                $hasAvailable = $buku->eksemplar->contains('status', 'Tersedia');
+
+                return [
+                    'id' => $buku->id_buku,
+                    'title' => $buku->judul_buku,
+                    'author' => $authorName,
+                    'year' => $buku->tahun_terbit ?? 2024,
+                    'category' => $buku->jenisBuku?->nama_jenis_buku ?? 'Buku Teks',
+                    'prodi' => 'Informatika',
+                    'call_number' => $firstCopy?->nomor_panggil ?? '005.1 MNC b',
+                    'location' => $firstCopy?->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
+                    'copies' => $copiesCount > 0 ? "{$copiesCount} eksemplar" : '1 eksemplar',
+                    'status' => $hasAvailable ? 'Tersedia' : 'Dipinjam',
+                ];
+            })->all();
+        } else {
+            $catalogItems = [
+                [
+                    'id' => 1,
+                    'title' => 'Algoritma & Struktur Data dengan Python',
+                    'author' => 'Dr. Rian Hidayat, M.Kom.',
+                    'year' => 2024,
+                    'category' => 'Buku Teks',
+                    'prodi' => 'Informatika',
+                    'call_number' => '005.1 HID a',
+                    'location' => 'Lantai 2, Rak Komputer 03',
+                    'copies' => '4 eksemplar',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Manajemen Pemasaran Strategis di Era Digital',
+                    'author' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+                    'year' => 2023,
+                    'category' => 'Buku Teks',
+                    'prodi' => 'Manajemen',
+                    'call_number' => '658.8 GUN m',
+                    'location' => 'Lantai 2, Rak Ekonomi 01',
+                    'copies' => '3 eksemplar',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Prinsip Desain Komunikasi Visual & Tipografi',
+                    'author' => 'Siti Nurhaliza, M.Ds.',
+                    'year' => 2024,
+                    'category' => 'Buku Teks',
+                    'prodi' => 'Desain Komunikasi Visual',
+                    'call_number' => '741.6 NUR p',
+                    'location' => 'Lantai 2, Rak Desain 02',
+                    'copies' => '2 eksemplar',
+                    'status' => 'Dipinjam (Kembali 20 Okt)',
+                ],
+                [
+                    'id' => 4,
+                    'title' => 'Analisis Perancangan Sistem Informasi Enterprise',
+                    'author' => 'Ahmad Fauzi, M.T.',
+                    'year' => 2023,
+                    'category' => 'Buku Teks',
+                    'prodi' => 'Sistem Informasi',
+                    'call_number' => '004.2 FAU a',
+                    'location' => 'Lantai 2, Rak Komputer 04',
+                    'copies' => '5 eksemplar',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 5,
+                    'title' => 'Akuntansi Keuangan Menengah Berbasis IFRS',
+                    'author' => 'Dewi Lestari, S.E., M.Ak., Ak.',
+                    'year' => 2022,
+                    'category' => 'Referensi',
+                    'prodi' => 'Akuntansi',
+                    'call_number' => '657.48 LES a',
+                    'location' => 'Lantai 2, Rak Akuntansi 01',
+                    'copies' => '3 eksemplar',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 6,
+                    'title' => 'Komunikasi Massa & Dinamika Media Penyiaran',
+                    'author' => 'Bambang Sudibyo, M.Si.',
+                    'year' => 2023,
+                    'category' => 'Buku Teks',
+                    'prodi' => 'Sains Komunikasi',
+                    'call_number' => '302.23 SUD k',
+                    'location' => 'Lantai 2, Rak Komunikasi 02',
+                    'copies' => '4 eksemplar',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 7,
+                    'title' => 'Penerapan Machine Learning untuk Deteksi Pola Data Medis',
+                    'author' => 'Muhammad Farhan (NIM: 20210801045)',
+                    'year' => 2025,
+                    'category' => 'Skripsi',
+                    'prodi' => 'Informatika',
+                    'call_number' => 'SKR-INF-2025-012',
+                    'location' => 'Koleksi Khusus Karya Ilmiah',
+                    'copies' => '1 eksemplar (Baca di Tempat)',
+                    'status' => 'Tersedia',
+                ],
+                [
+                    'id' => 8,
+                    'title' => 'Ensiklopedia Teknologi Informasi & Komunikasi',
+                    'author' => 'Tim Redaksi MNC Press',
+                    'year' => 2024,
+                    'category' => 'Referensi',
+                    'prodi' => 'Informatika',
+                    'call_number' => 'R 004.03 ENS t',
+                    'location' => 'Lantai 1, Ruang Referensi',
+                    'copies' => '2 eksemplar (Hanya Baca)',
+                    'status' => 'Tersedia',
+                ],
+            ];
+        }
 
         $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $category, $prodi): bool {
             $matchesQuery = empty($query) || (
@@ -482,5 +508,23 @@ class LibraryController extends Controller
         }
 
         return 'Terima kasih atas pertanyaanmu! Kamu bisa menanyakan hal seputar peminjaman buku, katalog OPAC, akses jurnal, jam operasional, atau persyaratan bebas pustaka. Jika memerlukan bantuan khusus, pustakawan kami siap membantu di meja sirkulasi.';
+    }
+
+    /**
+     * Tampilkan profil pustakawan dari database.
+     */
+    public function pustakawan(): View
+    {
+        $kepala = ProfilPustakawan::with('pengguna')
+            ->whereHas('pengguna.peran', function ($q) {
+                $q->where('nama_peran', 'like', '%Kepala%');
+            })
+            ->first();
+
+        $staf = ProfilPustakawan::with('pengguna')
+            ->when($kepala, fn ($q) => $q->where('id_profil_pustakawan', '!=', $kepala->id_profil_pustakawan))
+            ->get();
+
+        return view('pustakawan', compact('kepala', 'staf'));
     }
 }

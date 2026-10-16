@@ -33,6 +33,34 @@
         @include('partials.sidebar')
 
         <main id="konten" class="flex flex-1 flex-col">
+            @if (session('success'))
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                    <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('info'))
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                    <div class="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-800 shadow-sm sm:text-sm">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-info text-blue-600"></i>
+                            <span>{{ session('info') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-blue-700 hover:text-blue-900">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             @yield('content')
         </main>
 

@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('visitor_logs', function (Blueprint $table) {
-            $table->id();
-            $table->string('session_id')->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->date('visited_date')->index();
+        Schema::create('penulis', function (Blueprint $table) {
+            $table->string('id_penulis', 10)->primary()->comment('Format: PGN-001');
+            $table->string('uuid', 36)->unique();
+            $table->string('nama_penulis', 100);
+            $table->text('deskripsi_penulis')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('visitor_logs');
+        Schema::dropIfExists('penulis');
     }
 };

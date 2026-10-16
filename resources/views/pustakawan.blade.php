@@ -26,27 +26,29 @@
             <h2 id="judul-kepala" class="text-lg font-medium text-ink lg:text-2xl">Kepala Perpustakaan</h2>
             <p class="mt-1 text-sm text-muted lg:text-base">Pimpinan unit perpustakaan MNC University.</p>
 
-            {{-- TODO (integrasi): ganti data placeholder dengan data dari controller/database. --}}
             <div class="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-                <div class="flex size-28 shrink-0 items-center justify-center rounded-2xl bg-primary/8 text-primary lg:size-32">
-                    <svg class="size-14 lg:size-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="8" r="4" />
-                        <path d="M20 21a8 8 0 0 0-16 0" />
-                    </svg>
+                <div class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary/8 text-primary lg:size-32">
+                    @if (isset($kepala) && !empty($kepala->foto_pustakawan))
+                        <img src="{{ $kepala->foto_pustakawan }}" alt="{{ $kepala->nama_pustakawan }}" class="size-full object-cover">
+                    @else
+                        <svg class="size-14 lg:size-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M20 21a8 8 0 0 0-16 0" />
+                        </svg>
+                    @endif
                 </div>
                 <div class="text-center sm:text-left">
-                    <p class="text-xl font-medium text-ink lg:text-2xl">[Nama Kepala Perpustakaan]</p>
-                    <p class="mt-1 text-sm text-muted lg:text-base">Kepala Perpustakaan MNC University</p>
+                    <p class="text-xl font-medium text-ink lg:text-2xl">{{ $kepala->nama_pustakawan ?? 'Dr. H. Muhammad Arifin, M.Hum.' }}</p>
+                    <p class="mt-1 text-sm text-muted lg:text-base">{{ $kepala->jabatan ?? 'Kepala Perpustakaan MNC University' }}</p>
                     <p class="mt-3 text-sm leading-relaxed text-ink-secondary lg:text-base">
-                        Bertanggung jawab atas pengelolaan seluruh layanan perpustakaan, pengembangan koleksi,
-                        dan koordinasi kegiatan literasi informasi di lingkungan kampus.
+                        {{ $kepala->deskripsi_pustakawan ?? 'Bertanggung jawab atas pengelolaan seluruh layanan perpustakaan, pengembangan koleksi, dan koordinasi kegiatan literasi informasi di lingkungan kampus.' }}
                     </p>
                     <div class="mt-4 flex flex-wrap justify-center gap-3 sm:justify-start">
                         <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-subtle px-3 py-1.5 text-xs text-ink-secondary lg:text-sm">
                             <svg class="size-4 text-[#2563EB]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" />
                             </svg>
-                            [email@mncu.ac.id]
+                            {{ $kepala->pengguna?->email ?? 'perpustakaan@mncu.ac.id' }}
                         </span>
                     </div>
                 </div>
@@ -59,42 +61,61 @@
             <h2 id="judul-tim" class="text-lg font-medium text-ink lg:text-2xl">Tim Pustakawan</h2>
             <p class="mt-1 text-sm text-muted lg:text-base">Pustakawan yang melayani di berbagai bidang perpustakaan.</p>
 
-            {{-- TODO (integrasi): ganti data placeholder dengan data dari controller/database. --}}
             @php
-                $librarians = [
-                    [
-                        'name' => '[Nama Pustakawan 1]',
-                        'role' => 'Pustakawan Bidang Sirkulasi',
-                        'description' => 'Menangani layanan peminjaman, pengembalian, dan perpanjangan buku.',
-                        'email' => '[email1@mncu.ac.id]',
-                        'accentLine' => 'from-[#8B5CF6] to-[#D946EF]',
-                        'iconBox' => 'bg-[#7C3AED]/8 text-[#7C3AED]',
-                    ],
-                    [
-                        'name' => '[Nama Pustakawan 2]',
-                        'role' => 'Pustakawan Bidang Referensi',
-                        'description' => 'Membantu pencarian literatur, panduan sitasi, dan konsultasi penelitian.',
-                        'email' => '[email2@mncu.ac.id]',
-                        'accentLine' => 'from-[#0EA5E9] to-[#2563EB]',
-                        'iconBox' => 'bg-[#2563EB]/8 text-[#2563EB]',
-                    ],
-                    [
-                        'name' => '[Nama Pustakawan 3]',
-                        'role' => 'Pustakawan Bidang Pengolahan',
-                        'description' => 'Mengolah dan mengklasifikasikan koleksi baru, serta mengelola metadata katalog.',
-                        'email' => '[email3@mncu.ac.id]',
-                        'accentLine' => 'from-[#10B981] to-[#14B8A6]',
-                        'iconBox' => 'bg-[#059669]/8 text-[#047857]',
-                    ],
-                    [
-                        'name' => '[Nama Pustakawan 4]',
-                        'role' => 'Pustakawan Bidang Digital',
-                        'description' => 'Mengelola repository institusi, e-journal, e-book, dan sistem OPAC.',
-                        'email' => '[email4@mncu.ac.id]',
-                        'accentLine' => 'from-[#F43F5E] to-[#EC4899]',
-                        'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]',
-                    ],
-                ];
+                if (isset($staf) && $staf->isNotEmpty()) {
+                    $accents = [
+                        ['accentLine' => 'from-[#8B5CF6] to-[#D946EF]', 'iconBox' => 'bg-[#7C3AED]/8 text-[#7C3AED]'],
+                        ['accentLine' => 'from-[#0EA5E9] to-[#2563EB]', 'iconBox' => 'bg-[#2563EB]/8 text-[#2563EB]'],
+                        ['accentLine' => 'from-[#10B981] to-[#14B8A6]', 'iconBox' => 'bg-[#059669]/8 text-[#047857]'],
+                        ['accentLine' => 'from-[#F43F5E] to-[#EC4899]', 'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]'],
+                    ];
+                    $librarians = $staf->map(function ($item, $idx) use ($accents) {
+                        $style = $accents[$idx % count($accents)];
+                        return [
+                            'name' => $item->nama_pustakawan,
+                            'role' => $item->jabatan ?? 'Pustakawan Layanan',
+                            'description' => $item->deskripsi_pustakawan ?? 'Melayani pemustaka di Perpustakaan MNC University.',
+                            'email' => $item->pengguna?->email ?? 'pustakawan@mncu.ac.id',
+                            'accentLine' => $style['accentLine'],
+                            'iconBox' => $style['iconBox'],
+                        ];
+                    })->all();
+                } else {
+                    $librarians = [
+                        [
+                            'name' => 'Sarah Amalia, S.I.Pust.',
+                            'role' => 'Pustakawan Bidang Sirkulasi',
+                            'description' => 'Menangani layanan peminjaman, pengembalian, dan perpanjangan buku.',
+                            'email' => 'sarah.amalia@mncu.ac.id',
+                            'accentLine' => 'from-[#8B5CF6] to-[#D946EF]',
+                            'iconBox' => 'bg-[#7C3AED]/8 text-[#7C3AED]',
+                        ],
+                        [
+                            'name' => 'Fajar Pratama, S.Kom.',
+                            'role' => 'Pustakawan Bidang Teknologi Informasi',
+                            'description' => 'Mengelola repository institusi, e-journal, e-book, dan sistem OPAC.',
+                            'email' => 'fajar.pratama@mncu.ac.id',
+                            'accentLine' => 'from-[#0EA5E9] to-[#2563EB]',
+                            'iconBox' => 'bg-[#2563EB]/8 text-[#2563EB]',
+                        ],
+                        [
+                            'name' => 'Dewi Sartika, S.Hum.',
+                            'role' => 'Pustakawan Bidang Referensi & Literasi',
+                            'description' => 'Membantu pencarian literatur, panduan sitasi, dan konsultasi penelitian.',
+                            'email' => 'dewi.sartika@mncu.ac.id',
+                            'accentLine' => 'from-[#10B981] to-[#14B8A6]',
+                            'iconBox' => 'bg-[#059669]/8 text-[#047857]',
+                        ],
+                        [
+                            'name' => 'Budi Santoso, S.Sos.',
+                            'role' => 'Pustakawan Bidang Pengolahan & Preservasi',
+                            'description' => 'Mengolah dan mengklasifikasikan koleksi baru, serta mengelola metadata katalog.',
+                            'email' => 'budi.santoso@mncu.ac.id',
+                            'accentLine' => 'from-[#F43F5E] to-[#EC4899]',
+                            'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]',
+                        ],
+                    ];
+                }
             @endphp
 
             <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:gap-6">

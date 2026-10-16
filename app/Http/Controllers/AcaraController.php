@@ -23,28 +23,29 @@ class AcaraController extends Controller
         $query = Acara::where('is_active', true);
 
         if ($waktu === 'mendatang') {
-            $query->where('event_date', '>=', now()->toDateString())->orderBy('event_date', 'asc');
+            $query->where('tanggal_mulai', '>=', now()->startOfDay())->orderBy('tanggal_mulai', 'asc');
         } elseif ($waktu === 'selesai') {
-            $query->where('event_date', '<', now()->toDateString())->orderBy('event_date', 'desc');
+            $query->where('tanggal_mulai', '<', now()->startOfDay())->orderBy('tanggal_mulai', 'desc');
         } else {
-            $query->orderBy('event_date', 'desc');
+            $query->orderBy('tanggal_mulai', 'desc');
         }
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q): void {
-                $sub->where('title', 'like', "%{$q}%")
-                    ->orWhere('excerpt', 'like', "%{$q}%")
-                    ->orWhere('speaker', 'like', "%{$q}%")
-                    ->orWhere('location', 'like', "%{$q}%");
+                $sub->where('nama_acara', 'like', "%{$q}%")
+                    ->orWhere('ringkasan_acara', 'like', "%{$q}%")
+                    ->orWhere('deskripsi_acara', 'like', "%{$q}%")
+                    ->orWhere('narasumber', 'like', "%{$q}%")
+                    ->orWhere('lokasi_acara', 'like', "%{$q}%");
             });
         }
 
         if ($kategori !== '') {
-            $query->where('category', $kategori);
+            $query->where('kategori_acara', $kategori);
         }
 
         $acaras = $query->paginate(8)->withQueryString();
-        $categories = Acara::where('is_active', true)->distinct()->pluck('category');
+        $categories = Acara::where('is_active', true)->distinct()->pluck('kategori_acara');
 
         return view('acara.index', compact('acaras', 'categories', 'q', 'kategori', 'waktu'));
     }

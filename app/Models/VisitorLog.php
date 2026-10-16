@@ -2,32 +2,50 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLibraryId;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VisitorLog extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use HasFactory, HasLibraryId;
+
+    protected $table = 'log_kunjungan';
+
+    protected $primaryKey = 'id_log_kunjungan';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $fillable = [
+        'id_log_kunjungan',
+        'uuid',
+        'id_pengguna',
+        'waktu_kunjungan',
         'session_id',
         'ip_address',
         'user_agent',
+        // Backward compatibility
         'visited_date',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'visited_date' => 'date',
+            'waktu_kunjungan' => 'datetime',
         ];
+    }
+
+    public function getIdPrefix(): string
+    {
+        return 'MNCU';
+    }
+
+    public function pengguna(): BelongsTo
+    {
+        return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
     }
 
     /**
@@ -36,22 +54,28 @@ class VisitorLog extends Model
     public static function recordVisit(): void
     {
         $sessionId = session()->getId();
-        $today = now()->toDateString();
 
         if (empty($sessionId)) {
             return;
         }
 
-        static::firstOrCreate(
-            [
+        $todayStart = now()->startOfDay();
+        $todayEnd = now()->endOfDay();
+
+        $alreadyLogged = static::query()
+            ->where('session_id', $sessionId)
+            ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
+            ->exists();
+
+        if (! $alreadyLogged) {
+            static::create([
+                'id_pengguna' => auth()->id(),
+                'waktu_kunjungan' => now(),
                 'session_id' => $sessionId,
-                'visited_date' => $today,
-            ],
-            [
                 'ip_address' => request()->ip(),
                 'user_agent' => substr((string) request()->userAgent(), 0, 500),
-            ]
-        );
+            ]);
+        }
     }
 
     /**
@@ -61,23 +85,24 @@ class VisitorLog extends Model
      */
     public static function getStatistics(): array
     {
-        $today = now()->toDateString();
-        $startOfMonth = now()->startOfMonth()->toDateString();
-        $endOfMonth = now()->endOfMonth()->toDateString();
+        $todayStart = now()->startOfDay();
+        $todayEnd = now()->endOfDay();
+        $monthStart = now()->startOfMonth();
 
-        // Baseline realistic library visitor numbers
-        $baselineToday = 142;
-        $baselineMonth = 3850;
-        $baselineTotal = 28490;
+        $today = static::query()
+            ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
+            ->count();
 
-        $todayCount = static::where('visited_date', $today)->count();
-        $monthCount = static::whereBetween('visited_date', [$startOfMonth, $endOfMonth])->count();
-        $totalCount = static::count();
+        $month = static::query()
+            ->where('waktu_kunjungan', '>=', $monthStart)
+            ->count();
+
+        $total = static::query()->count();
 
         return [
-            'today' => $baselineToday + $todayCount,
-            'month' => $baselineMonth + $monthCount,
-            'total' => $baselineTotal + $totalCount,
+            'today' => max($today, 0),
+            'month' => max($month, 0),
+            'total' => max($total, 0),
         ];
     }
 }

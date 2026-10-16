@@ -23,18 +23,18 @@ class BeritaController extends Controller
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q): void {
-                $sub->where('title', 'like', "%{$q}%")
-                    ->orWhere('excerpt', 'like', "%{$q}%")
-                    ->orWhere('content', 'like', "%{$q}%");
+                $sub->where('judul_berita', 'like', "%{$q}%")
+                    ->orWhere('deskripsi_berita', 'like', "%{$q}%")
+                    ->orWhere('isi_berita', 'like', "%{$q}%");
             });
         }
 
         if ($kategori !== '') {
-            $query->where('category', $kategori);
+            $query->where('kategori_berita', $kategori);
         }
 
         $beritas = $query->paginate(9)->withQueryString();
-        $categories = Berita::published()->distinct()->pluck('category');
+        $categories = Berita::published()->distinct()->pluck('kategori_berita');
 
         return view('berita.index', compact('beritas', 'categories', 'q', 'kategori'));
     }

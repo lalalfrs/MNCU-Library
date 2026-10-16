@@ -197,6 +197,146 @@
             </div>
         </section>
 
+        {{-- Panel Pintasan Manajemen CRUD (Khusus Tampil Saat Login) --}}
+        @auth
+            <section aria-labelledby="judul-manajemen" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-blue-50/30 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-5">
+                    <div>
+                        <div class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Mode Manajemen Aktif
+                        </div>
+                        <h2 id="judul-manajemen" class="mt-2 text-xl font-bold tracking-tight text-primary sm:text-2xl">
+                            Panel Kontrol & Manajemen Perpustakaan
+                        </h2>
+                        <p class="text-xs text-ink-secondary sm:text-sm">
+                            Kelola seluruh modul perpustakaan dengan hak akses akun {{ Auth::user()->peran?->nama_peran }}.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onclick="document.getElementById('sidebar-open').click()"
+                        class="inline-flex items-center gap-2 rounded-xl bg-white border border-line px-4 py-2.5 text-xs font-semibold text-primary shadow-sm hover:border-primary transition-all"
+                    >
+                        <i class="fa-solid fa-bars-staggered"></i>
+                        <span>Buka Menu Sidebar</span>
+                    </button>
+                </div>
+
+                {{-- Grid 4 Kartu CRUD --}}
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {{-- 1. Manajemen User --}}
+                    <a
+                        href="{{ route('admin.users.index') }}"
+                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#7C3AED]/40 hover:shadow-raised"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex size-12 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED] transition-transform duration-200 group-hover:scale-110">
+                                <i class="fa-solid fa-users-gear text-xl"></i>
+                            </div>
+                            <span class="rounded-full bg-[#7C3AED]/10 px-2 py-0.5 text-[10px] font-bold text-[#7C3AED] uppercase">
+                                CRUD
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#7C3AED] transition-colors">
+                                Manajemen User
+                            </h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">
+                                Kelola pustakawan, mahasiswa, dosen, dan hak akses otentikasi.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#7C3AED]">
+                            <span>Buka Modul</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-1"></i>
+                        </div>
+                    </a>
+
+                    {{-- 2. Manajemen Buku --}}
+                    <a
+                        href="{{ route('admin.books.index') }}"
+                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#2563EB]/40 hover:shadow-raised"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex size-12 items-center justify-center rounded-xl bg-[#2563EB]/10 text-[#2563EB] transition-transform duration-200 group-hover:scale-110">
+                                <i class="fa-solid fa-book-bookmark text-xl"></i>
+                            </div>
+                            <span class="rounded-full bg-[#2563EB]/10 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] uppercase">
+                                CRUD
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#2563EB] transition-colors">
+                                Manajemen Buku
+                            </h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">
+                                Input dan perbarui katalog buku cetak, e-book, dan eksemplar rak.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#2563EB]">
+                            <span>Buka Modul</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-1"></i>
+                        </div>
+                    </a>
+
+                    {{-- 3. Manajemen Acara --}}
+                    <a
+                        href="{{ route('admin.acara.index') }}"
+                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#EA580C]/40 hover:shadow-raised"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex size-12 items-center justify-center rounded-xl bg-[#EA580C]/10 text-[#EA580C] transition-transform duration-200 group-hover:scale-110">
+                                <i class="fa-solid fa-calendar-days text-xl"></i>
+                            </div>
+                            <span class="rounded-full bg-[#EA580C]/10 px-2 py-0.5 text-[10px] font-bold text-[#EA580C] uppercase">
+                                CRUD
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#EA580C] transition-colors">
+                                Manajemen Acara
+                            </h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">
+                                Publikasikan webinar, workshop literasi, bedah buku, dan kuota.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#EA580C]">
+                            <span>Buka Modul</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-1"></i>
+                        </div>
+                    </a>
+
+                    {{-- 4. Manajemen Berita --}}
+                    <a
+                        href="{{ route('admin.berita.index') }}"
+                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#059669]/40 hover:shadow-raised"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex size-12 items-center justify-center rounded-xl bg-[#059669]/10 text-[#059669] transition-transform duration-200 group-hover:scale-110">
+                                <i class="fa-solid fa-newspaper text-xl"></i>
+                            </div>
+                            <span class="rounded-full bg-[#059669]/10 px-2 py-0.5 text-[10px] font-bold text-[#059669] uppercase">
+                                CRUD
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#059669] transition-colors">
+                                Manajemen Berita
+                            </h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">
+                                Rilis artikel, pengumuman jadwal operasional, dan info perpustakaan.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#059669]">
+                            <span>Buka Modul</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-1"></i>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        @endauth
+
         {{-- Komponen card: layanan --}}
         <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-line bg-white p-6 lg:p-8">
             <div class="flex flex-wrap items-end justify-between gap-2">

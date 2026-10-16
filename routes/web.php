@@ -1,10 +1,25 @@
 <?php
 
 use App\Http\Controllers\AcaraController;
+use App\Http\Controllers\Admin\AcaraAdminController;
+use App\Http\Controllers\Admin\BeritaAdminController;
+use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\LibraryController;
 use Illuminate\Support\Facades\Route;
+
+// Otentikasi Pemustaka & Pustakawan (Sanctum / Laravel Auth)
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/lupa-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/lupa-password', [AuthController::class, 'sendResetPassword'])->name('password.email');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Beranda Utama
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
@@ -12,7 +27,7 @@ Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 // Profil & Informasi Perpustakaan
 Route::view('/tentang-kami', 'tentang-kami')->name('tentang-kami');
 Route::view('/kontak', 'kontak')->name('kontak');
-Route::view('/pustakawan', 'pustakawan')->name('pustakawan');
+Route::get('/pustakawan', [LibraryController::class, 'pustakawan'])->name('pustakawan');
 
 // Berita Perpustakaan
 Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
@@ -31,3 +46,18 @@ Route::get('/repository', [LibraryController::class, 'repository'])->name('repos
 Route::get('/e-journal', [LibraryController::class, 'ejournal'])->name('ejournal');
 Route::get('/ojs-prodi', [LibraryController::class, 'ojs'])->name('ojs');
 Route::get('/e-book', [LibraryController::class, 'ebook'])->name('ebook');
+
+// Menu Manajemen Perpustakaan (CRUD - Khusus Pengguna Terotentikasi)
+Route::middleware('auth')->prefix('admin')->as('admin.')->group(function (): void {
+    // 1. Manajemen User
+    Route::resource('users', UserController::class);
+
+    // 2. Manajemen Buku
+    Route::resource('buku', BookController::class)->names('books');
+
+    // 3. Manajemen Acara
+    Route::resource('acara', AcaraAdminController::class)->names('acara');
+
+    // 4. Manajemen Berita
+    Route::resource('berita', BeritaAdminController::class)->names('berita');
+});
