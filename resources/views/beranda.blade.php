@@ -197,14 +197,14 @@
             </div>
         </section>
 
-        {{-- Panel Pintasan Manajemen CRUD (Khusus Tampil Saat Login) --}}
-        @auth
+        {{-- Panel Pintasan Manajemen CRUD (Khusus Super Admin) / Status Pemustaka (Mahasiswa) --}}
+        @if (Auth::check() && Auth::user()->isSuperAdmin())
             <section aria-labelledby="judul-manajemen" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-blue-50/30 p-6 lg:p-8 shadow-card">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-5">
                     <div>
                         <div class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                             <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Mode Manajemen Aktif
+                            Mode Administrator Aktif
                         </div>
                         <h2 id="judul-manajemen" class="mt-2 text-xl font-bold tracking-tight text-primary sm:text-2xl">
                             Panel Kontrol & Manajemen Perpustakaan
@@ -335,7 +335,54 @@
                     </a>
                 </div>
             </section>
-        @endauth
+        @elseif (Auth::check())
+            {{-- Kartu Status Pemustaka Mahasiswa / Sivitas --}}
+            <section aria-labelledby="judul-pemustaka" class="rounded-2xl border border-line bg-gradient-to-br from-primary/5 via-white to-amber-50/20 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-white shadow-md">
+                            {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                                    <i class="fa-solid fa-graduation-cap text-[11px]"></i>
+                                    {{ Auth::user()->peran?->nama_peran }}
+                                </span>
+                                @if (Auth::user()->id_pengguna)
+                                    <span class="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+                                        ID: {{ Auth::user()->id_pengguna }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h2 id="judul-pemustaka" class="mt-1 text-lg font-bold text-ink sm:text-xl">
+                                Halo, {{ Auth::user()->nama_lengkap }}!
+                            </h2>
+                            <p class="text-xs text-ink-secondary sm:text-sm">
+                                Status keanggotaan aktif. Akses penuh pencarian katalog OPAC, peminjaman buku, repository skripsi, dan koleksi e-journal digital MNC University.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex shrink-0 items-center gap-2">
+                        <a
+                            href="{{ route('opac') }}"
+                            class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-all"
+                        >
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>Cari Buku OPAC</span>
+                        </a>
+                        <a
+                            href="{{ route('ejournal') }}"
+                            class="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-xs font-semibold text-ink shadow-sm hover:bg-subtle transition-all"
+                        >
+                            <i class="fa-solid fa-newspaper text-xs text-primary"></i>
+                            <span>E-Journal</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        @endif
 
         {{-- Komponen card: layanan --}}
         <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-line bg-white p-6 lg:p-8">
@@ -422,12 +469,20 @@
                         <li>
                             {{-- TODO (integrasi): arahkan ke detail berita. --}}
                             <a href="{{ !empty($newsItem['slug']) && $newsItem['slug'] !== '#' ? route('berita.show', $newsItem['slug']) : route('berita.index') }}" class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                                <span class="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 via-track to-primary/5 p-4 text-[13px] text-muted">
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-primary shadow-xs">
+                                <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5">
+                                    @if (!empty($newsItem['image']))
+                                        <img
+                                            src="{{ filter_var($newsItem['image'], FILTER_VALIDATE_URL) ? $newsItem['image'] : asset($newsItem['image']) }}"
+                                            alt="{{ $newsItem['title'] }}"
+                                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            loading="lazy"
+                                        >
+                                    @endif
+                                    <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-primary shadow-xs backdrop-blur-xs">
                                         <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
                                         {{ $newsItem['category'] ?? 'Berita Kampus' }}
                                     </span>
-                                </span>
+                                </div>
                                 <span class="flex flex-1 flex-col p-5">
                                     <span class="text-[13px] text-muted">{{ $newsItem['date'] }}</span>
                                     <span class="mt-2 line-clamp-2 text-base font-medium text-ink group-hover:text-primary lg:text-lg">{{ $newsItem['title'] }}</span>

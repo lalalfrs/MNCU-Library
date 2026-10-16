@@ -59,8 +59,8 @@
                 </a>
             </li>
 
-            {{-- 2. Menu Manajemen CRUD (Khusus Pengguna Login) --}}
-            @auth
+            {{-- 2. Menu Manajemen CRUD (Khusus Super Admin) --}}
+            @if (Auth::check() && Auth::user()->isSuperAdmin())
                 <li class="pt-3 pb-1 px-6">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-muted">
                         Panel Manajemen (CRUD)
@@ -114,7 +114,7 @@
                         <span class="rounded bg-[#059669]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#059669]">CRUD</span>
                     </a>
                 </li>
-            @endauth
+            @endif
 
             {{-- 3. Layanan Perpustakaan --}}
             <li class="pt-3 pb-1 px-6">
@@ -175,10 +175,16 @@
     {{-- Footer Bawah: Tombol Login / Logout --}}
     <div class="border-t border-line p-4">
         @guest
-            <a href="{{ route('login') }}" class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark">
-                <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-                <span>Masuk ke Akun</span>
-            </a>
+            <div class="flex flex-col gap-2">
+                <a href="{{ route('register') }}" class="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-subtle">
+                    <i class="fa-solid fa-user-plus text-xs text-primary"></i>
+                    <span>Daftar Akun Baru</span>
+                </a>
+                <a href="{{ route('login') }}" class="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark">
+                    <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+                    <span>Masuk ke Akun</span>
+                </a>
+            </div>
         @else
             <form action="{{ route('logout') }}" method="POST">
                 @csrf

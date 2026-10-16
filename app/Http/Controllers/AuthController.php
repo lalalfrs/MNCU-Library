@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordMail;
 use App\Models\Pengguna;
+use App\Models\Peran;
+use App\Models\Prodi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +26,64 @@ class AuthController extends Controller
         }
 
         return view('auth.login');
+    }
+
+    /**
+     * Tampilkan halaman formulir pendaftaran akun pemustaka baru.
+     */
+    public function showRegisterForm(): View|RedirectResponse
+    {
+        if (Auth::check()) {
+            return redirect()->route('beranda');
+        }
+
+        $prodis = Prodi::orderBy('nama_prodi')->get();
+
+        return view('auth.register', compact('prodis'));
+    }
+
+    /**
+     * Proses pendaftaran akun pemustaka baru ke dalam sistem perpustakaan.
+     */
+    public function register(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama_lengkap' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'email', 'max:100', 'unique:pengguna,email'],
+            'nomor_identitas' => ['nullable', 'string', 'max:30', 'unique:pengguna,nomor_identitas'],
+            'id_prodi' => ['nullable', 'exists:prodi,id_prodi'],
+            'kata_sandi' => ['required', 'string', 'min:6', 'confirmed'],
+            'terms' => ['accepted'],
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email sudah terdaftar di sistem perpustakaan.',
+            'nomor_identitas.unique' => 'Nomor identitas (NIM/NIDN) sudah digunakan oleh pemustaka lain.',
+            'kata_sandi.required' => 'Kata sandi wajib diisi.',
+            'kata_sandi.min' => 'Kata sandi minimal 6 karakter.',
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'terms.accepted' => 'Anda harus menyetujui syarat & tata tertib keanggotaan perpustakaan.',
+        ]);
+
+        $peranMahasiswa = Peran::where('nama_peran', 'Mahasiswa')->first() ?? Peran::first();
+
+        $user = Pengguna::create([
+            'nama_lengkap' => $validated['nama_lengkap'],
+            'email' => $validated['email'],
+            'nomor_identitas' => $validated['nomor_identitas'] ?? null,
+            'id_prodi' => $validated['id_prodi'] ?? null,
+            'id_peran' => $peranMahasiswa?->id_peran ?? 'MNCU00003',
+            'kata_sandi' => Hash::make($validated['kata_sandi']),
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('beranda')->with(
+            'success',
+            "Selamat bergabung di Perpustakaan MNC University, {$user->nama_lengkap}! Akun pemustaka Anda ({$user->id_pengguna}) berhasil didaftarkan."
+        );
     }
 
     /**

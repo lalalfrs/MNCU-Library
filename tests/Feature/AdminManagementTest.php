@@ -223,4 +223,54 @@ class AdminManagementTest extends TestCase
         $responseGrid->assertStatus(200);
         $responseGrid->assertSee('id="books-grid-view"', false);
     }
+
+    /**
+     * Pastikan mahasiswa dilarang mengakses modul manajemen CRUD (HTTP 403 Forbidden).
+     */
+    public function test_mahasiswa_cannot_access_any_admin_crud_routes(): void
+    {
+        $mahasiswa = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->first();
+        $this->assertNotNull($mahasiswa);
+        $this->assertTrue($mahasiswa->isMahasiswa());
+        $this->assertFalse($mahasiswa->isSuperAdmin());
+
+        $this->actingAs($mahasiswa)->get('/admin/users')->assertStatus(403);
+        $this->actingAs($mahasiswa)->get('/admin/buku')->assertStatus(403);
+        $this->actingAs($mahasiswa)->get('/admin/acara')->assertStatus(403);
+        $this->actingAs($mahasiswa)->get('/admin/berita')->assertStatus(403);
+
+        // Uji pula penolakan request modifikasi data POST/PUT/DELETE
+        $this->actingAs($mahasiswa)->post('/admin/users', [])->assertStatus(403);
+        $this->actingAs($mahasiswa)->post('/admin/buku', [])->assertStatus(403);
+    }
+
+    /**
+     * Pastikan mahasiswa tidak melihat panel CRUD di beranda maupun sidebar/navbar.
+     */
+    public function test_mahasiswa_does_not_see_crud_panel_on_beranda_and_navigation(): void
+    {
+        $mahasiswa = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->first();
+
+        $response = $this->actingAs($mahasiswa)->get(route('beranda'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Panel Kontrol & Manajemen Perpustakaan');
+        $response->assertDontSee('Mode Administrator Aktif');
+        $response->assertSee('Halo, Ahmad Fauzi Rahman!');
+        $response->assertSee('Status keanggotaan aktif');
+        $response->assertSee('Cari Buku OPAC');
+    }
+
+    /**
+     * Pastikan beranda menampilkan foto cover berita yang telah di-generate.
+     */
+    public function test_beranda_displays_news_cover_images(): void
+    {
+        $response = $this->get(route('beranda'));
+
+        $response->assertStatus(200);
+        $response->assertSee('images/berita/berita-digital-library.jpg');
+        $response->assertSee('images/berita/berita-workshop-sitasi.jpg');
+        $response->assertSee('images/berita/berita-ebook-ai.jpg');
+    }
 }

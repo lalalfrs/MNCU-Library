@@ -55,17 +55,27 @@
                 </header>
 
                 {{-- Featured Visual Banner --}}
-                <div class="my-8 flex aspect-video sm:aspect-21/9 w-full items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 via-track to-primary/5 p-8 text-primary">
-                    <div class="flex flex-col items-center gap-2 text-center">
-                        <svg class="size-16 text-primary/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                            <path d="M6 6h10"/>
-                            <path d="M6 10h10"/>
-                            <path d="M6 14h6"/>
-                        </svg>
-                        <span class="text-sm font-medium text-muted">Publikasi Resmi Perpustakaan MNC University</span>
+                @if ($berita->image)
+                    <div class="my-8 aspect-video sm:aspect-21/9 w-full overflow-hidden rounded-2xl border border-line shadow-sm">
+                        <img
+                            src="{{ filter_var($berita->image, FILTER_VALIDATE_URL) ? $berita->image : asset($berita->image) }}"
+                            alt="{{ $berita->title }}"
+                            class="h-full w-full object-cover"
+                        >
                     </div>
-                </div>
+                @else
+                    <div class="my-8 flex aspect-video sm:aspect-21/9 w-full items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 via-track to-primary/5 p-8 text-primary">
+                        <div class="flex flex-col items-center gap-2 text-center">
+                            <svg class="size-16 text-primary/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                                <path d="M6 6h10"/>
+                                <path d="M6 10h10"/>
+                                <path d="M6 14h6"/>
+                            </svg>
+                            <span class="text-sm font-medium text-muted">Publikasi Resmi Perpustakaan MNC University</span>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Excerpt Callout --}}
                 <div class="mb-8 rounded-xl border-l-4 border-primary bg-subtle p-4 text-base italic text-ink-secondary sm:text-lg">

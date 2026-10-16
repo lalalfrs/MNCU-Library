@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/daftar', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/daftar', [AuthController::class, 'register'])->name('register.post');
     Route::get('/lupa-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/lupa-password', [AuthController::class, 'sendResetPassword'])->name('password.email');
 });
@@ -47,8 +49,8 @@ Route::get('/e-journal', [LibraryController::class, 'ejournal'])->name('ejournal
 Route::get('/ojs-prodi', [LibraryController::class, 'ojs'])->name('ojs');
 Route::get('/e-book', [LibraryController::class, 'ebook'])->name('ebook');
 
-// Menu Manajemen Perpustakaan (CRUD - Khusus Pengguna Terotentikasi)
-Route::middleware('auth')->prefix('admin')->as('admin.')->group(function (): void {
+// Menu Manajemen Perpustakaan (CRUD - Khusus Super Admin / Kepala Perpustakaan)
+Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(function (): void {
     // 1. Manajemen User
     Route::resource('users', UserController::class);
 

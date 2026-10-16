@@ -40,10 +40,14 @@
             </div>
         @endguest
 
-        {{-- Kanan: Tombol Login saat Guest / Profil & Dropdown saat Auth --}}
-        <div class="flex items-center gap-2 lg:gap-4">
+        {{-- Kanan: Tombol Login & Daftar saat Guest / Profil & Dropdown saat Auth --}}
+        <div class="flex items-center gap-2 lg:gap-3">
             @guest
-                <a href="{{ route('login') }}" class="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark lg:h-12 lg:px-5 lg:text-base">
+                <a href="{{ route('register') }}" class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-sm transition-all duration-150 hover:bg-subtle hover:border-gray-300 lg:h-11 lg:px-4 lg:text-sm">
+                    <i class="fa-solid fa-user-plus text-xs text-primary"></i>
+                    <span>Daftar</span>
+                </a>
+                <a href="{{ route('login') }}" class="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark lg:h-11 lg:px-4 lg:text-sm">
                     <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
                     <span>Login</span>
                 </a>
@@ -82,26 +86,28 @@
                             </span>
                         </div>
 
-                        {{-- Akses Cepat CRUD Manajemen --}}
-                        <div class="py-1 border-b border-line">
-                            <span class="block px-3 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Panel CRUD</span>
-                            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#7C3AED]">
-                                <i class="fa-solid fa-users-gear text-[#7C3AED] w-4"></i>
-                                <span>Manajemen User</span>
-                            </a>
-                            <a href="{{ route('admin.books.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#2563EB]">
-                                <i class="fa-solid fa-book-bookmark text-[#2563EB] w-4"></i>
-                                <span>Manajemen Buku</span>
-                            </a>
-                            <a href="{{ route('admin.acara.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#EA580C]">
-                                <i class="fa-solid fa-calendar-days text-[#EA580C] w-4"></i>
-                                <span>Manajemen Acara</span>
-                            </a>
-                            <a href="{{ route('admin.berita.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#059669]">
-                                <i class="fa-solid fa-newspaper text-[#059669] w-4"></i>
-                                <span>Manajemen Berita</span>
-                            </a>
-                        </div>
+                        {{-- Akses Cepat CRUD Manajemen (Khusus Super Admin) --}}
+                        @if (Auth::user()->isSuperAdmin())
+                            <div class="py-1 border-b border-line">
+                                <span class="block px-3 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Panel CRUD</span>
+                                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#7C3AED]">
+                                    <i class="fa-solid fa-users-gear text-[#7C3AED] w-4"></i>
+                                    <span>Manajemen User</span>
+                                </a>
+                                <a href="{{ route('admin.books.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#2563EB]">
+                                    <i class="fa-solid fa-book-bookmark text-[#2563EB] w-4"></i>
+                                    <span>Manajemen Buku</span>
+                                </a>
+                                <a href="{{ route('admin.acara.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#EA580C]">
+                                    <i class="fa-solid fa-calendar-days text-[#EA580C] w-4"></i>
+                                    <span>Manajemen Acara</span>
+                                </a>
+                                <a href="{{ route('admin.berita.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#059669]">
+                                    <i class="fa-solid fa-newspaper text-[#059669] w-4"></i>
+                                    <span>Manajemen Berita</span>
+                                </a>
+                            </div>
+                        @endif
 
                         <div class="py-1">
                             <a href="{{ route('pustakawan') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">

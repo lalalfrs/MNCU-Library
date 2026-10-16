@@ -134,7 +134,7 @@
                     </div>
                 </div>
 
-                {{-- Tombol Masuk dengan Akun Kampus / Google SSO (Sesuai Referensi Gambar) --}}
+                {{-- Tombol Masuk dengan Akun Google MNCU --}}
                 <div class="mt-5 flex flex-col gap-2.5">
                     <button
                         type="button"
@@ -148,15 +148,6 @@
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                         </svg>
                         <span>Masuk dengan Google MNCU</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        id="btn-campus-sso"
-                        class="flex h-11 w-full items-center justify-center gap-3 rounded-full border border-line bg-white px-4 text-xs font-semibold text-ink shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50"
-                    >
-                        <i class="fa-solid fa-graduation-cap text-sm text-primary"></i>
-                        <span>Masuk dengan SSO Mahasiswa</span>
                     </button>
                 </div>
 
@@ -256,12 +247,20 @@
                     </div>
                 </form>
 
-                {{-- Tautan Bawah --}}
-                <div class="mt-6 text-center text-xs text-ink-secondary">
-                    <span>Belum memiliki akun terdaftar?</span>
-                    <a href="{{ route('chat') }}" class="font-semibold text-primary hover:underline">
-                        Bantuan Pustakawan
-                    </a>
+                {{-- Tautan Bawah ke Registrasi & Bantuan --}}
+                <div class="mt-6 flex flex-col items-center justify-center gap-2 text-center text-xs text-ink-secondary">
+                    <div>
+                        <span>Belum memiliki akun terdaftar?</span>
+                        <a href="{{ route('register') }}" class="font-semibold text-primary hover:underline">
+                            Daftar Akun Baru
+                        </a>
+                    </div>
+                    <div>
+                        <span>Butuh bantuan akses?</span>
+                        <a href="{{ route('chat') }}" class="text-muted hover:text-ink hover:underline">
+                            Tanya Pustakawan
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -475,7 +474,6 @@
             const roleUserRadio = document.getElementById('role-user');
             const demoFillButtons = document.querySelectorAll('.btn-demo-fill');
             const googleSsoBtn = document.getElementById('btn-google-sso');
-            const campusSsoBtn = document.getElementById('btn-campus-sso');
             const useResetPassBtn = document.getElementById('btn-use-reset-pass');
             const newPasswordDisplay = document.getElementById('new-password-display');
 
@@ -535,16 +533,10 @@
                 });
             });
 
-            // 5. Tombol Google SSO / Campus SSO Demo
+            // 5. Tombol Google SSO Demo
             if (googleSsoBtn) {
                 googleSsoBtn.addEventListener('click', () => {
                     applyCredentials('fauzi.mhs@mncu.ac.id', 'password123');
-                    if (roleUserRadio) roleUserRadio.checked = true;
-                });
-            }
-            if (campusSsoBtn) {
-                campusSsoBtn.addEventListener('click', () => {
-                    applyCredentials('hendra.dosen@mncu.ac.id', 'password123');
                     if (roleUserRadio) roleUserRadio.checked = true;
                 });
             }

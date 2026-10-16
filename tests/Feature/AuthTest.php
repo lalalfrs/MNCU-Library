@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\ResetPasswordMail;
 use App\Models\Pengguna;
+use App\Models\Prodi;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +33,8 @@ class AuthTest extends TestCase
         $response->assertSee('Isi Otomatis Super Admin');
         $response->assertSee('Lupa kata sandi?');
         $response->assertSee('Dr. H. Muhammad Arifin, M.Hum.');
+        $response->assertSee('Daftar Akun Baru');
+        $response->assertDontSee('Masuk dengan SSO Mahasiswa');
     }
 
     /**
@@ -131,5 +134,66 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('login'));
         $this->assertGuest();
         $this->assertSame(0, $admin->tokens()->count());
+    }
+
+    /**
+     * Pastikan halaman registrasi pemustaka dapat diakses dan menampilkan formulir lengkap.
+     */
+    public function test_register_page_renders_successfully(): void
+    {
+        $response = $this->get('/daftar');
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Akun Baru');
+        $response->assertSee('Keanggotaan Pemustaka');
+        $response->assertSee('Program Studi');
+        $response->assertSee('Masuk Sekarang');
+    }
+
+    /**
+     * Pastikan calon mahasiswa dapat mendaftar akun baru dan otomatis login dengan ID MNCUXXXXX.
+     */
+    public function test_user_can_register_new_account(): void
+    {
+        $prodi = Prodi::first();
+
+        $response = $this->post('/daftar', [
+            'nama_lengkap' => 'Budi Santoso',
+            'email' => 'budi.santoso@mncu.ac.id',
+            'nomor_identitas' => '202409999',
+            'id_prodi' => $prodi?->id_prodi,
+            'kata_sandi' => 'secret123',
+            'kata_sandi_confirmation' => 'secret123',
+            'terms' => '1',
+        ]);
+
+        $response->assertRedirect(route('beranda'));
+        $response->assertSessionHas('success');
+
+        $user = Pengguna::where('email', 'budi.santoso@mncu.ac.id')->first();
+        $this->assertNotNull($user);
+        $this->assertSame('Budi Santoso', $user->nama_lengkap);
+        $this->assertMatchesRegularExpression('/^MNCU\d{5}$/', $user->id_pengguna);
+        $this->assertSame('MNCU00003', $user->id_peran);
+        $this->assertTrue(Hash::check('secret123', $user->kata_sandi));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    /**
+     * Pastikan validasi pendaftaran menolak email duplikat atau password tidak cocok.
+     */
+    public function test_register_validation_fails_for_duplicate_email(): void
+    {
+        $response = $this->from('/daftar')->post('/daftar', [
+            'nama_lengkap' => 'Duplikat User',
+            'email' => 'arifin@mncu.ac.id', // Sudah ada
+            'kata_sandi' => 'secret123',
+            'kata_sandi_confirmation' => 'berbeda123',
+            'terms' => '1',
+        ]);
+
+        $response->assertRedirect('/daftar');
+        $response->assertSessionHasErrors(['email', 'kata_sandi']);
+        $this->assertGuest();
     }
 }

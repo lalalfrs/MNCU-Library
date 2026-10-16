@@ -78,18 +78,28 @@
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                     @foreach ($beritas as $item)
                         <article class="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised">
-                            <div class="relative flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 via-track to-primary/5 p-6 text-muted">
+                            <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5">
+                                @if ($item->image)
+                                    <img
+                                        src="{{ filter_var($item->image, FILTER_VALIDATE_URL) ? $item->image : asset($item->image) }}"
+                                        alt="{{ $item->title }}"
+                                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        loading="lazy"
+                                    >
+                                @else
+                                    <div class="flex h-full w-full items-center justify-center p-6 text-muted">
+                                        <svg class="size-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                                            <path d="M6 6h10"/>
+                                            <path d="M6 10h10"/>
+                                            <path d="M6 14h6"/>
+                                        </svg>
+                                    </div>
+                                @endif
                                 <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
                                     <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
                                     {{ $item->category }}
                                 </span>
-                                
-                                <svg class="size-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                                    <path d="M6 6h10"/>
-                                    <path d="M6 10h10"/>
-                                    <path d="M6 14h6"/>
-                                </svg>
                             </div>
 
                             <div class="flex flex-1 flex-col p-6">

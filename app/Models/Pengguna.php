@@ -61,6 +61,22 @@ class Pengguna extends Authenticatable
         return $this->belongsTo(Peran::class, 'id_peran', 'id_peran');
     }
 
+    /**
+     * Cek apakah pengguna memiliki hak akses sebagai Super Admin / Kepala Perpustakaan.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return in_array($this->peran?->nama_peran, ['Kepala Perpustakaan', 'Super Admin'], true);
+    }
+
+    /**
+     * Cek apakah pengguna berstatus sebagai Mahasiswa / Pemustaka umum.
+     */
+    public function isMahasiswa(): bool
+    {
+        return $this->peran?->nama_peran === 'Mahasiswa';
+    }
+
     public function prodi(): BelongsTo
     {
         return $this->belongsTo(Prodi::class, 'id_prodi', 'id_prodi');
