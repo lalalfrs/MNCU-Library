@@ -99,8 +99,19 @@
                         @forelse ($events as $event)
                             <tr class="transition-colors hover:bg-[#F9FAFB]">
                                 <td class="px-5 py-4">
-                                    <div class="font-semibold text-ink leading-snug">{{ $event->nama_acara }}</div>
-                                    <span class="font-mono text-[10px] text-muted">{{ $event->id_acara }}</span>
+                                    <div class="flex items-center gap-3">
+                                        @if ($event->image)
+                                            <img src="{{ $event->image }}" alt="{{ $event->nama_acara }}" class="size-12 rounded-lg object-cover border border-line shrink-0">
+                                        @else
+                                            <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-subtle border border-line text-muted">
+                                                <i class="fa-regular fa-calendar-check text-base"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="font-semibold text-ink leading-snug">{{ $event->nama_acara }}</div>
+                                            <span class="font-mono text-[10px] text-muted">{{ $event->id_acara }}</span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-800">

@@ -21,9 +21,9 @@
                         Asisten virtual Perpustakaan MNC University siap menjawab pertanyaan seputar layanan dan fasilitas 24/7.
                     </p>
                 </div>
-                <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-medium text-emerald-800">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Sistem Otomatis Aktif
+                <div class="inline-flex items-center gap-1.5 text-xs text-muted">
+                    <i class="fa-solid fa-headset text-primary text-xs"></i>
+                    <span>Layanan Bantuan Pemustaka</span>
                 </div>
             </div>
         </div>

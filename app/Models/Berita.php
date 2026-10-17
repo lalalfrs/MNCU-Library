@@ -110,7 +110,16 @@ class Berita extends Model
     protected function image(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->gambar_berita,
+            get: function () {
+                if (empty($this->gambar_berita)) {
+                    return null;
+                }
+                if (str_starts_with($this->gambar_berita, 'http://') || str_starts_with($this->gambar_berita, 'https://')) {
+                    return $this->gambar_berita;
+                }
+
+                return asset('storage/'.$this->gambar_berita);
+            },
             set: fn ($value) => ['gambar_berita' => $value],
         );
     }

@@ -52,6 +52,18 @@
                         </p>
                     </header>
 
+                    {{-- Poster / Foto Acara --}}
+                    @if ($acara->image)
+                        <div class="my-6 overflow-hidden rounded-2xl border border-line bg-subtle shadow-xs">
+                            <img
+                                src="{{ $acara->image }}"
+                                alt="Poster {{ $acara->title }}"
+                                class="w-full max-h-[520px] object-contain sm:object-cover mx-auto"
+                                loading="lazy"
+                            >
+                        </div>
+                    @endif
+
                     {{-- Speaker Highlight Card --}}
                     @if ($acara->speaker)
                         <div class="my-6 flex items-center gap-4 rounded-xl border border-line bg-subtle p-5">

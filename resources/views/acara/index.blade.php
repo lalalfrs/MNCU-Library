@@ -109,28 +109,57 @@
                         @php
                             $isPast = $item->event_date->isPast() && !$item->event_date->isToday();
                         @endphp
-                        <article class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised">
-                            <div>
-                                <div class="flex items-start justify-between gap-4">
-                                    {{-- Calendar Badge --}}
-                                    <div class="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-muted/20 text-muted' : 'bg-primary text-white shadow-xs' }}">
-                                        <span class="text-xl font-bold leading-none">{{ $item->event_date->format('d') }}</span>
-                                        <span class="mt-1 text-xs font-medium uppercase">{{ $item->event_date->translatedFormat('M Y') }}</span>
+                        <article class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised">
+                            @if ($item->image)
+                                <div class="relative h-48 w-full overflow-hidden bg-subtle border-b border-line">
+                                    <img
+                                        src="{{ $item->image }}"
+                                        alt="{{ $item->title }}"
+                                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        loading="lazy"
+                                    >
+                                    <div class="absolute top-3 left-3 flex size-14 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-slate-900/80 text-white backdrop-blur-xs' : 'bg-primary text-white shadow-md' }}">
+                                        <span class="text-lg font-bold leading-none">{{ $item->event_date->format('d') }}</span>
+                                        <span class="mt-0.5 text-[10px] font-medium uppercase">{{ $item->event_date->translatedFormat('M') }}</span>
                                     </div>
+                                    <div class="absolute top-3 right-3">
+                                        @if ($isPast)
+                                            <span class="rounded-full bg-slate-900/80 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-white">
+                                                Selesai
+                                            </span>
+                                        @else
+                                            <span class="rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs">
+                                                Terbuka
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="p-6">
+                                <div class="flex items-start justify-between gap-4">
+                                    @if (!$item->image)
+                                        {{-- Calendar Badge when no poster image --}}
+                                        <div class="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-muted/20 text-muted' : 'bg-primary text-white shadow-xs' }}">
+                                            <span class="text-xl font-bold leading-none">{{ $item->event_date->format('d') }}</span>
+                                            <span class="mt-1 text-xs font-medium uppercase">{{ $item->event_date->translatedFormat('M Y') }}</span>
+                                        </div>
+                                    @endif
 
                                     <div class="flex flex-1 flex-col">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <span class="rounded-full bg-subtle px-2.5 py-0.5 text-xs font-medium text-ink-secondary border border-line">
                                                 {{ $item->category }}
                                             </span>
-                                            @if ($isPast)
-                                                <span class="rounded-full bg-muted/15 px-2.5 py-0.5 text-xs font-medium text-muted">
-                                                    Selesai
-                                                </span>
-                                            @else
-                                                <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                                                    Terbuka
-                                                </span>
+                                            @if (!$item->image)
+                                                @if ($isPast)
+                                                    <span class="rounded-full bg-muted/15 px-2.5 py-0.5 text-xs font-medium text-muted">
+                                                        Selesai
+                                                    </span>
+                                                @else
+                                                    <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                                        Terbuka
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
 

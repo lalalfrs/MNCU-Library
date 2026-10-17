@@ -77,6 +77,22 @@ class Pengguna extends Authenticatable
         return $this->peran?->nama_peran === 'Mahasiswa';
     }
 
+    /**
+     * Cek apakah pengguna berstatus sebagai Dosen / Peneliti.
+     */
+    public function isDosen(): bool
+    {
+        return $this->peran?->nama_peran === 'Dosen';
+    }
+
+    /**
+     * Cek apakah pengguna berstatus sebagai Pustakawan.
+     */
+    public function isPustakawan(): bool
+    {
+        return $this->peran?->nama_peran === 'Pustakawan';
+    }
+
     public function prodi(): BelongsTo
     {
         return $this->belongsTo(Prodi::class, 'id_prodi', 'id_prodi');

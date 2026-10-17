@@ -22,7 +22,7 @@
             </a>
         </div>
 
-        {{-- Tengah: Hanya saat Guest tampilkan navigationItems. Saat Auth (Login), sembunyikan agar navbar tidak berantakan! --}}
+        {{-- Tengah: Navigasi Menu (Hanya tampil untuk pengunjung yang belum login) --}}
         @guest
             <div class="hidden items-center gap-1 lg:flex">
                 @foreach ($navigationItems as $navigationItem)
@@ -30,13 +30,6 @@
                         {{ $navigationItem['label'] }}
                     </a>
                 @endforeach
-            </div>
-        @else
-            <div class="hidden md:flex items-center gap-2">
-                <span class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Panel Manajemen Aktif</span>
-                </span>
             </div>
         @endguest
 

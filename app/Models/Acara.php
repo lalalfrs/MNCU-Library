@@ -126,6 +126,30 @@ class Acara extends Model
         );
     }
 
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (empty($this->gambar_acara)) {
+                    return null;
+                }
+                if (str_starts_with($this->gambar_acara, 'http://') || str_starts_with($this->gambar_acara, 'https://')) {
+                    return $this->gambar_acara;
+                }
+
+                return asset('storage/'.$this->gambar_acara);
+            },
+            set: fn ($value) => ['gambar_acara' => $value],
+        );
+    }
+
+    protected function posterUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->image,
+        );
+    }
+
     protected function eventDate(): Attribute
     {
         return Attribute::make(

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Acara;
 use App\Models\Berita;
+use App\Models\Buku;
+use App\Models\Pengguna;
 use App\Models\VisitorLog;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -41,6 +43,7 @@ class BerandaController extends Controller
                     'id' => $event->id,
                     'title' => $event->title,
                     'slug' => $event->slug,
+                    'image' => $event->image,
                     'day' => $event->event_date->format('d'),
                     'month' => $event->event_date->translatedFormat('M'),
                     'time' => "{$event->start_time} - {$event->end_time} WIB",
@@ -52,6 +55,13 @@ class BerandaController extends Controller
 
         $visitorStats = VisitorLog::getStatistics();
 
-        return view('beranda', compact('latestNews', 'upcomingEvents', 'visitorStats'));
+        $counts = [
+            'total_books' => Buku::count(),
+            'total_events' => Acara::where('is_active', true)->count(),
+            'total_users' => Pengguna::count(),
+            'total_news' => Berita::count(),
+        ];
+
+        return view('beranda', compact('latestNews', 'upcomingEvents', 'visitorStats', 'counts'));
     }
 }

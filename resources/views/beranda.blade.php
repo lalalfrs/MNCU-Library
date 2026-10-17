@@ -93,30 +93,105 @@
     <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
 
         {{-- Page header / Hero --}}
-        <section aria-labelledby="judul-beranda" class="flex flex-col justify-between px-1 lg:min-h-[calc(100vh-8.5rem)] lg:px-[26px]">
-            <div class="my-auto grid items-center gap-8 py-6 md:grid-cols-[1fr_auto] lg:gap-14 lg:py-12">
-                <div class="max-w-3xl">
+        <section aria-labelledby="judul-beranda" class="flex flex-col justify-between px-1 lg:px-[26px]">
+            <div class="grid items-start gap-8 pt-1 pb-6 md:grid-cols-[1fr_auto] lg:gap-14 lg:pt-2 lg:pb-8">
+                <div class="max-w-3xl pt-0.5">
                     {{-- Logo MNC University di atas Header dan subtext --}}
-                    <div class="mb-5 inline-flex items-center">
+                    <div class="mb-3 inline-flex items-center sm:mb-4">
                         <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-16 w-auto sm:h-20 lg:h-24">
                     </div>
 
-                    <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[48px]">
-                        Perpustakaan MNC University
-                    </h1>
-                    <p class="mt-4 text-[16px] leading-relaxed text-ink-secondary sm:text-lg lg:text-xl">
-                        Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
-                    </p>
-                    <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#layanan" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
-                            <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
-                            Pilih Layanan Perpustakaan
-                        </a>
-                        <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
-                            <i class="fa-solid fa-location-dot text-primary text-base" aria-hidden="true"></i>
-                            Lokasi Kampus
-                        </a>
-                    </div>
+                    @auth
+                        @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
+                            {{-- Role: Super Admin / Pustakawan --}}
+                            <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[46px]">
+                                Selamat Bertugas, {{ Auth::user()->nama_lengkap }}!
+                            </h1>
+                            <p class="mt-4 text-[16px] leading-relaxed text-ink-secondary sm:text-lg lg:text-xl">
+                                Kelola operasional dan sirkulasi Perpustakaan MNC University. Pantau statistik kunjungan harian pemustaka, perbarui katalog koleksi buku, publikasikan agenda acara, dan kelola rilis berita kampus.
+                            </p>
+                            <div class="mt-8 flex flex-wrap items-center gap-4">
+                                <a href="{{ route('admin.books.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                    <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
+                                    Kelola Buku (OPAC)
+                                </a>
+                                <a href="{{ route('admin.acara.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-calendar-plus text-primary text-base" aria-hidden="true"></i>
+                                    Kelola Acara & Poster
+                                </a>
+                                <a href="{{ route('admin.users.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-users-gear text-primary text-base" aria-hidden="true"></i>
+                                    Data Pemustaka
+                                </a>
+                            </div>
+                        @elseif (Auth::user()->isDosen())
+                            {{-- Role: Dosen / Peneliti --}}
+                            <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[46px]">
+                                Selamat Datang, {{ Auth::user()->nama_lengkap }}!
+                            </h1>
+                            <p class="mt-4 text-[16px] leading-relaxed text-ink-secondary sm:text-lg lg:text-xl">
+                                Akses seluruh fasilitas referensi riset, jurnal internasional terakreditasi Scopus & SINTA, portal publikasi ilmiah OJS MNC University, serta ajukan usulan pengadaan buku ajar silabus perkuliahan.
+                            </p>
+                            <div class="mt-8 flex flex-wrap items-center gap-4">
+                                <a href="{{ route('ejournal') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                    <i class="fa-solid fa-newspaper text-sm" aria-hidden="true"></i>
+                                    E-Journal Internasional
+                                </a>
+                                <a href="{{ route('ojs') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-layer-group text-primary text-base" aria-hidden="true"></i>
+                                    Portal OJS Prodi
+                                </a>
+                                <a href="{{ route('repository') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-book-atlas text-primary text-base" aria-hidden="true"></i>
+                                    Repository Riset
+                                </a>
+                            </div>
+                        @else
+                            {{-- Role: Mahasiswa (e.g. Jovin) --}}
+                            <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[46px]">
+                                Selamat Datang, {{ Auth::user()->nama_lengkap }}!
+                            </h1>
+                            <p class="mt-4 text-[16px] leading-relaxed text-ink-secondary sm:text-lg lg:text-xl">
+                                Temukan referensi tugas akhir, buku teks perkuliahan, dan e-book pembelajaran untuk mendukung studimu di MNC University. Jelajahi katalog buku fisik OPAC dan baca koleksi digital kapan saja.
+                            </p>
+                            <div class="mt-8 flex flex-wrap items-center gap-4">
+                                <a href="{{ route('opac') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                    <i class="fa-solid fa-magnifying-glass text-sm" aria-hidden="true"></i>
+                                    Cari Buku di OPAC
+                                </a>
+                                <a href="{{ route('repository') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-graduation-cap text-primary text-base" aria-hidden="true"></i>
+                                    Repository Skripsi
+                                </a>
+                                <a href="{{ route('ebook') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                    <i class="fa-solid fa-book-open-reader text-primary text-base" aria-hidden="true"></i>
+                                    E-Book Reader
+                                </a>
+                            </div>
+                        @endif
+                    @else
+                        {{-- Guest / Belum Login --}}
+                        <h1 id="judul-beranda" class="text-[32px] leading-tight font-semibold text-primary sm:text-4xl lg:text-[48px]">
+                            Perpustakaan MNC University
+                        </h1>
+                        <p class="mt-4 text-[16px] leading-relaxed text-ink-secondary sm:text-lg lg:text-xl">
+                            Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
+                        </p>
+                        <div class="mt-8 flex flex-wrap items-center gap-4">
+                            <a href="#layanan" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
+                                Pilih Layanan Perpustakaan
+                            </a>
+                            <a href="{{ route('register') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-primary text-primary bg-white px-5 text-base font-semibold transition-colors duration-150 hover:bg-primary/5">
+                                <i class="fa-solid fa-user-plus text-sm"></i>
+                                Daftar Anggota
+                            </a>
+                            <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <i class="fa-solid fa-location-dot text-primary text-base" aria-hidden="true"></i>
+                                Lokasi Kampus
+                            </a>
+                        </div>
+                    @endauth
                 </div>
 
                 {{-- Statistik Pengunjung menggantikan posisi logo di Hero --}}
@@ -127,13 +202,13 @@
                                 <i class="fa-solid fa-chart-simple text-base" aria-hidden="true"></i>
                             </span>
                             <div>
-                                <span class="text-xs font-semibold uppercase tracking-wider text-primary">Live Monitoring</span>
-                                <h2 class="text-lg font-semibold text-ink sm:text-xl">Statistik Pengunjung</h2>
+                                <span class="text-xs font-semibold uppercase tracking-wider text-muted">Aktivitas Pemustaka</span>
+                                <h2 class="text-lg font-semibold text-ink sm:text-xl">Statistik Kunjungan</h2>
                             </div>
                         </div>
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                            <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-pulse" aria-hidden="true"></i>
-                            Aktif
+                        <span class="text-xs text-muted flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-[11px] text-primary"></i>
+                            Terkini
                         </span>
                     </div>
 
@@ -197,55 +272,93 @@
             </div>
         </section>
 
-        {{-- Panel Pintasan Manajemen CRUD (Khusus Super Admin) / Status Pemustaka (Mahasiswa) --}}
-        @if (Auth::check() && Auth::user()->isSuperAdmin())
-            <section aria-labelledby="judul-manajemen" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-blue-50/30 p-6 lg:p-8 shadow-card">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-5">
+        {{-- ========================================================================= --}}
+        {{-- KONTEN LANDING PAGE BERDASARKAN STATUS & ROLE PENGGUNA                     --}}
+        {{-- ========================================================================= --}}
+
+        {{-- 1. TAMPILAN SUPER ADMIN & PUSTAKAWAN (Tata Kelola & Administrasi) --}}
+        @if (Auth::check() && (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan()))
+            <section aria-labelledby="judul-admin-workspace" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-blue-50/20 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-5">
                     <div>
-                        <div class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Mode Administrator Aktif
-                        </div>
-                        <h2 id="judul-manajemen" class="mt-2 text-xl font-bold tracking-tight text-primary sm:text-2xl">
-                            Panel Kontrol & Manajemen Perpustakaan
+                        <h2 id="judul-admin-workspace" class="text-xl font-bold tracking-tight text-primary sm:text-2xl">
+                            Pusat Tata Kelola & Layanan Perpustakaan
                         </h2>
                         <p class="text-xs text-ink-secondary sm:text-sm">
-                            Kelola seluruh modul perpustakaan dengan hak akses akun {{ Auth::user()->peran?->nama_peran }}.
+                            Selamat bertugas, <span class="font-semibold text-ink">{{ Auth::user()->nama_lengkap }}</span> ({{ Auth::user()->peran?->nama_peran }}). Kelola katalog, agenda, dan pantau operasional pemustaka.
                         </p>
                     </div>
 
-                    <button
-                        type="button"
-                        onclick="document.getElementById('sidebar-open').click()"
-                        class="inline-flex items-center gap-2 rounded-xl bg-white border border-line px-4 py-2.5 text-xs font-semibold text-primary shadow-sm hover:border-primary transition-all"
-                    >
-                        <i class="fa-solid fa-bars-staggered"></i>
-                        <span>Buka Menu Sidebar</span>
-                    </button>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <button
+                            type="button"
+                            onclick="document.getElementById('sidebar-open').click()"
+                            class="inline-flex items-center gap-2 rounded-xl bg-white border border-line px-4 py-2.5 text-xs font-semibold text-primary shadow-sm hover:border-primary transition-all"
+                        >
+                            <i class="fa-solid fa-bars-staggered"></i>
+                            <span>Menu Sidebar</span>
+                        </button>
+                    </div>
                 </div>
 
-                {{-- Grid 4 Kartu CRUD --}}
+                {{-- Ringkasan Metrik Koleksi & Pemustaka --}}
+                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div class="rounded-xl border border-line bg-white p-4 shadow-xs">
+                        <span class="text-[11px] font-medium text-muted uppercase">Koleksi Buku</span>
+                        <div class="mt-1 text-2xl font-bold text-primary">{{ number_format($counts['total_books'] ?? 0) }}</div>
+                        <span class="text-[11px] text-ink-secondary">Judul di katalog</span>
+                    </div>
+                    <div class="rounded-xl border border-line bg-white p-4 shadow-xs">
+                        <span class="text-[11px] font-medium text-muted uppercase">Acara & Agenda</span>
+                        <div class="mt-1 text-2xl font-bold text-primary">{{ number_format($counts['total_events'] ?? 0) }}</div>
+                        <span class="text-[11px] text-ink-secondary">Kegiatan aktif</span>
+                    </div>
+                    <div class="rounded-xl border border-line bg-white p-4 shadow-xs">
+                        <span class="text-[11px] font-medium text-muted uppercase">Pemustaka Terdaftar</span>
+                        <div class="mt-1 text-2xl font-bold text-primary">{{ number_format($counts['total_users'] ?? 0) }}</div>
+                        <span class="text-[11px] text-ink-secondary">Akun anggota</span>
+                    </div>
+                    <div class="rounded-xl border border-line bg-white p-4 shadow-xs">
+                        <span class="text-[11px] font-medium text-muted uppercase">Berita & Rilis</span>
+                        <div class="mt-1 text-2xl font-bold text-primary">{{ number_format($counts['total_news'] ?? 0) }}</div>
+                        <span class="text-[11px] text-ink-secondary">Artikel diterbitkan</span>
+                    </div>
+                </div>
+
+                {{-- Tombol Aksi Cepat (Quick Actions) --}}
+                <div class="mt-5 flex flex-wrap items-center gap-2 border-t border-line/60 pt-4">
+                    <span class="text-xs font-semibold text-muted mr-1">Aksi Cepat:</span>
+                    <a href="{{ route('admin.books.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span>Tambah Buku</span>
+                    </a>
+                    <a href="{{ route('admin.acara.create') }}" class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-xs hover:border-primary hover:text-primary transition-all">
+                        <i class="fa-solid fa-calendar-plus text-[10px] text-primary"></i>
+                        <span>Terbitkan Acara</span>
+                    </a>
+                    <a href="{{ route('admin.berita.create') }}" class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-xs hover:border-primary hover:text-primary transition-all">
+                        <i class="fa-solid fa-newspaper text-[10px] text-primary"></i>
+                        <span>Tulis Berita</span>
+                    </a>
+                    <a href="{{ route('admin.users.create') }}" class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-xs hover:border-primary hover:text-primary transition-all">
+                        <i class="fa-solid fa-user-plus text-[10px] text-primary"></i>
+                        <span>Tambah User</span>
+                    </a>
+                </div>
+
+                {{-- Grid 4 Modul CRUD --}}
                 <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {{-- 1. Manajemen User --}}
-                    <a
-                        href="{{ route('admin.users.index') }}"
-                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#7C3AED]/40 hover:shadow-raised"
-                    >
+                    <a href="{{ route('admin.users.index') }}" class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-[#7C3AED]/40 hover:shadow-raised">
                         <div class="flex items-start justify-between">
                             <div class="flex size-12 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED] transition-transform duration-200 group-hover:scale-110">
                                 <i class="fa-solid fa-users-gear text-xl"></i>
                             </div>
-                            <span class="rounded-full bg-[#7C3AED]/10 px-2 py-0.5 text-[10px] font-bold text-[#7C3AED] uppercase">
-                                CRUD
-                            </span>
+                            <span class="rounded-full bg-[#7C3AED]/10 px-2 py-0.5 text-[10px] font-bold text-[#7C3AED] uppercase">MODUL</span>
                         </div>
                         <div class="mt-4">
-                            <h3 class="text-base font-semibold text-ink group-hover:text-[#7C3AED] transition-colors">
-                                Manajemen User
-                            </h3>
-                            <p class="mt-1 text-xs text-muted leading-relaxed">
-                                Kelola pustakawan, mahasiswa, dosen, dan hak akses otentikasi.
-                            </p>
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#7C3AED] transition-colors">Manajemen User</h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">Kelola data pemustaka mahasiswa, dosen, pustakawan, dan status akun.</p>
                         </div>
                         <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#7C3AED]">
                             <span>Buka Modul</span>
@@ -254,25 +367,16 @@
                     </a>
 
                     {{-- 2. Manajemen Buku --}}
-                    <a
-                        href="{{ route('admin.books.index') }}"
-                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#2563EB]/40 hover:shadow-raised"
-                    >
+                    <a href="{{ route('admin.books.index') }}" class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-[#2563EB]/40 hover:shadow-raised">
                         <div class="flex items-start justify-between">
                             <div class="flex size-12 items-center justify-center rounded-xl bg-[#2563EB]/10 text-[#2563EB] transition-transform duration-200 group-hover:scale-110">
                                 <i class="fa-solid fa-book-bookmark text-xl"></i>
                             </div>
-                            <span class="rounded-full bg-[#2563EB]/10 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] uppercase">
-                                CRUD
-                            </span>
+                            <span class="rounded-full bg-[#2563EB]/10 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] uppercase">MODUL</span>
                         </div>
                         <div class="mt-4">
-                            <h3 class="text-base font-semibold text-ink group-hover:text-[#2563EB] transition-colors">
-                                Manajemen Buku
-                            </h3>
-                            <p class="mt-1 text-xs text-muted leading-relaxed">
-                                Input dan perbarui katalog buku cetak, e-book, dan eksemplar rak.
-                            </p>
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#2563EB] transition-colors">Manajemen Buku</h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">Input dan perbarui data katalog buku cetak, e-book, dan eksemplar rak.</p>
                         </div>
                         <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#2563EB]">
                             <span>Buka Modul</span>
@@ -281,25 +385,16 @@
                     </a>
 
                     {{-- 3. Manajemen Acara --}}
-                    <a
-                        href="{{ route('admin.acara.index') }}"
-                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#EA580C]/40 hover:shadow-raised"
-                    >
+                    <a href="{{ route('admin.acara.index') }}" class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-[#EA580C]/40 hover:shadow-raised">
                         <div class="flex items-start justify-between">
                             <div class="flex size-12 items-center justify-center rounded-xl bg-[#EA580C]/10 text-[#EA580C] transition-transform duration-200 group-hover:scale-110">
                                 <i class="fa-solid fa-calendar-days text-xl"></i>
                             </div>
-                            <span class="rounded-full bg-[#EA580C]/10 px-2 py-0.5 text-[10px] font-bold text-[#EA580C] uppercase">
-                                CRUD
-                            </span>
+                            <span class="rounded-full bg-[#EA580C]/10 px-2 py-0.5 text-[10px] font-bold text-[#EA580C] uppercase">MODUL</span>
                         </div>
                         <div class="mt-4">
-                            <h3 class="text-base font-semibold text-ink group-hover:text-[#EA580C] transition-colors">
-                                Manajemen Acara
-                            </h3>
-                            <p class="mt-1 text-xs text-muted leading-relaxed">
-                                Publikasikan webinar, workshop literasi, bedah buku, dan kuota.
-                            </p>
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#EA580C] transition-colors">Manajemen Acara</h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">Publikasikan webinar, poster acara (PNG/JPG/WEBP), dan kuota pendaftaran.</p>
                         </div>
                         <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#EA580C]">
                             <span>Buka Modul</span>
@@ -308,25 +403,16 @@
                     </a>
 
                     {{-- 4. Manajemen Berita --}}
-                    <a
-                        href="{{ route('admin.berita.index') }}"
-                        class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#059669]/40 hover:shadow-raised"
-                    >
+                    <a href="{{ route('admin.berita.index') }}" class="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-[#059669]/40 hover:shadow-raised">
                         <div class="flex items-start justify-between">
                             <div class="flex size-12 items-center justify-center rounded-xl bg-[#059669]/10 text-[#059669] transition-transform duration-200 group-hover:scale-110">
                                 <i class="fa-solid fa-newspaper text-xl"></i>
                             </div>
-                            <span class="rounded-full bg-[#059669]/10 px-2 py-0.5 text-[10px] font-bold text-[#059669] uppercase">
-                                CRUD
-                            </span>
+                            <span class="rounded-full bg-[#059669]/10 px-2 py-0.5 text-[10px] font-bold text-[#059669] uppercase">MODUL</span>
                         </div>
                         <div class="mt-4">
-                            <h3 class="text-base font-semibold text-ink group-hover:text-[#059669] transition-colors">
-                                Manajemen Berita
-                            </h3>
-                            <p class="mt-1 text-xs text-muted leading-relaxed">
-                                Rilis artikel, pengumuman jadwal operasional, dan info perpustakaan.
-                            </p>
+                            <h3 class="text-base font-semibold text-ink group-hover:text-[#059669] transition-colors">Manajemen Berita</h3>
+                            <p class="mt-1 text-xs text-muted leading-relaxed">Rilis pengumuman resmi, artikel literasi informasi, dan jadwal layanan.</p>
                         </div>
                         <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#059669]">
                             <span>Buka Modul</span>
@@ -335,50 +421,306 @@
                     </a>
                 </div>
             </section>
-        @elseif (Auth::check())
-            {{-- Kartu Status Pemustaka Mahasiswa / Sivitas --}}
-            <section aria-labelledby="judul-pemustaka" class="rounded-2xl border border-line bg-gradient-to-br from-primary/5 via-white to-amber-50/20 p-6 lg:p-8 shadow-card">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        {{-- 2. TAMPILAN MAHASISWA (Academic Learning & Resource Hub) --}}
+        @elseif (Auth::check() && Auth::user()->isMahasiswa())
+            <section aria-labelledby="judul-mahasiswa-hub" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-blue-50/40 via-white to-primary/5 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between border-b border-line pb-6">
                     <div class="flex items-center gap-4">
                         <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-white shadow-md">
                             {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
                         </div>
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                                     <i class="fa-solid fa-graduation-cap text-[11px]"></i>
-                                    {{ Auth::user()->peran?->nama_peran }}
+                                    Mahasiswa
                                 </span>
-                                @if (Auth::user()->id_pengguna)
+                                @if (Auth::user()->prodi)
+                                    <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                        {{ Auth::user()->prodi->nama_prodi }}
+                                    </span>
+                                @endif
+                                @if (Auth::user()->nomor_identitas)
                                     <span class="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
-                                        ID: {{ Auth::user()->id_pengguna }}
+                                        NIM: {{ Auth::user()->nomor_identitas }}
                                     </span>
                                 @endif
                             </div>
-                            <h2 id="judul-pemustaka" class="mt-1 text-lg font-bold text-ink sm:text-xl">
+                            <h2 id="judul-mahasiswa-hub" class="mt-1.5 text-xl font-bold text-ink sm:text-2xl">
                                 Halo, {{ Auth::user()->nama_lengkap }}!
                             </h2>
-                            <p class="text-xs text-ink-secondary sm:text-sm">
-                                Status keanggotaan aktif. Akses penuh pencarian katalog OPAC, peminjaman buku, repository skripsi, dan koleksi e-journal digital MNC University.
+                            <p class="mt-0.5 text-xs text-ink-secondary sm:text-sm">
+                                Portal belajar mandiri: temukan buku pegangan kuliah, referensi skripsi tugas akhir, dan akses e-book resmi.
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-2">
-                        <a
-                            href="{{ route('opac') }}"
-                            class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-all"
+                    {{-- Form Pencarian Cepat OPAC untuk Mahasiswa --}}
+                    <form action="{{ route('opac') }}" method="GET" class="relative w-full md:w-80 lg:w-96">
+                        <input
+                            type="search"
+                            name="q"
+                            placeholder="Cari buku kuliah, skripsi, modul..."
+                            class="h-11 w-full rounded-xl border border-line bg-white pl-10 pr-4 text-xs text-ink shadow-xs placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
                         >
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                            <span>Cari Buku OPAC</span>
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-muted"></i>
+                    </form>
+                </div>
+
+                {{-- 4 Pintasan Kebutuhan Mahasiswa --}}
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <a href="{{ route('opac') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-primary/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
+                                <i class="fa-solid fa-book-bookmark text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-primary transition-colors">Katalog Buku OPAC</h3>
+                                <p class="text-[11px] text-muted">Cek stok & letak rak buku fisik</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-primary">
+                            <span>Buka Katalog</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('repository') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#7C3AED]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED]">
+                                <i class="fa-solid fa-graduation-cap text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#7C3AED] transition-colors">Repository Skripsi</h3>
+                                <p class="text-[11px] text-muted">Referensi skripsi & tugas akhir alumni</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#7C3AED]">
+                            <span>Buka Skripsi</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('ebook') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#E11D48]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#E11D48]/10 text-[#E11D48]">
+                                <i class="fa-solid fa-tablet-screen-button text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#E11D48] transition-colors">E-Book Reader</h3>
+                                <p class="text-[11px] text-muted">Akses baca buku digital tanpa antre</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#E11D48]">
+                            <span>Buka E-Book</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('chat') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#059669]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#059669]/10 text-[#059669]">
+                                <i class="fa-solid fa-headset text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#059669] transition-colors">Tanya Pustakawan</h3>
+                                <p class="text-[11px] text-muted">Bantuan referensi & bebas pustaka</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#059669]">
+                            <span>Mulai Tanya</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="mt-4 flex items-center gap-2 rounded-xl bg-white/80 border border-line px-4 py-2.5 text-xs text-ink-secondary">
+                    <i class="fa-solid fa-circle-info text-primary text-sm shrink-0"></i>
+                    <span><strong class="font-semibold text-ink">Ketentuan Peminjaman Buku:</strong> Mahasiswa aktif MNC University dapat meminjam hingga 3 eksemplar buku cetak sekaligus dengan jangka waktu 14 hari kerja.</span>
+                </div>
+            </section>
+
+        {{-- 3. TAMPILAN DOSEN & PENELITI (Faculty, Research & Academic Publication) --}}
+        @elseif (Auth::check() && Auth::user()->isDosen())
+            <section aria-labelledby="judul-dosen-hub" class="rounded-2xl border border-primary/20 bg-gradient-to-br from-indigo-50/30 via-white to-primary/5 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between border-b border-line pb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#00205B] text-xl font-bold text-white shadow-md">
+                            {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
+                        </div>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                                    <i class="fa-solid fa-chalkboard-user text-[11px]"></i>
+                                    Dosen / Peneliti
+                                </span>
+                                @if (Auth::user()->prodi)
+                                    <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                        Homebase: {{ Auth::user()->prodi->nama_prodi }}
+                                    </span>
+                                @endif
+                                @if (Auth::user()->nomor_identitas)
+                                    <span class="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+                                        NIDN: {{ Auth::user()->nomor_identitas }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h2 id="judul-dosen-hub" class="mt-1.5 text-xl font-bold text-ink sm:text-2xl">
+                                Selamat Datang, {{ Auth::user()->nama_lengkap }}!
+                            </h2>
+                            <p class="mt-0.5 text-xs text-ink-secondary sm:text-sm">
+                                Portal riset dan publikasi ilmiah sivitas tenaga pendidik MNC University. Akses database jurnal bereputasi, OJS, dan repository riset institusi.
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Form Pencarian Riset Dosen --}}
+                    <form action="{{ route('ejournal') }}" method="GET" class="relative w-full md:w-80 lg:w-96">
+                        <input
+                            type="search"
+                            name="q"
+                            placeholder="Cari jurnal internasional, prosiding, riset..."
+                            class="h-11 w-full rounded-xl border border-line bg-white pl-10 pr-4 text-xs text-ink shadow-xs placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
+                        >
+                        <i class="fa-solid fa-microscope absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-muted"></i>
+                    </form>
+                </div>
+
+                {{-- 4 Pintasan Kebutuhan Dosen --}}
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <a href="{{ route('ejournal') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#2563EB]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB]/10 text-[#2563EB]">
+                                <i class="fa-solid fa-newspaper text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#2563EB] transition-colors">E-Journal Internasional</h3>
+                                <p class="text-[11px] text-muted">Database jurnal Scopus, ScienceDirect & SINTA</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#2563EB]">
+                            <span>Akses Jurnal</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('ojs') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#047857]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#047857]/10 text-[#047857]">
+                                <i class="fa-solid fa-layer-group text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#047857] transition-colors">Portal OJS Prodi</h3>
+                                <p class="text-[11px] text-muted">Submit naskah & kelola jurnal prodi</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#047857]">
+                            <span>Portal OJS</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('repository') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-[#7C3AED]/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED]">
+                                <i class="fa-solid fa-book-atlas text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-[#7C3AED] transition-colors">Repository Riset Dosen</h3>
+                                <p class="text-[11px] text-muted">Publikasi riset & pengabdian masyarakat (PKM)</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#7C3AED]">
+                            <span>Buka Repository</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+
+                    <a href="{{ route('kontak') }}" class="group flex flex-col justify-between rounded-xl border border-line bg-white p-4 shadow-xs transition-all hover:border-primary/40 hover:shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <i class="fa-solid fa-book-medical text-base"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-primary transition-colors">Usulan Buku Ajar</h3>
+                                <p class="text-[11px] text-muted">Ajukan referensi silabus mata kuliah</p>
+                            </div>
+                        </div>
+                        <span class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-primary">
+                            <span>Ajukan Usulan</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="mt-4 flex items-center gap-2 rounded-xl bg-white/80 border border-line px-4 py-2.5 text-xs text-ink-secondary">
+                    <i class="fa-solid fa-award text-primary text-sm shrink-0"></i>
+                    <span><strong class="font-semibold text-ink">Dukungan Riset Dosen:</strong> Perpustakaan MNC University memfasilitasi akses remote jurnal internasional, asistensi cek kemiripan karya ilmiah/Turnitin, serta pelatihan penulisan sitasi bereputasi.</span>
+                </div>
+            </section>
+
+        {{-- 4. TAMPILAN GUEST (Pengunjung Umum Belum Login) --}}
+        @else
+            <section aria-labelledby="judul-guest-welcome" class="rounded-2xl border border-line bg-gradient-to-br from-slate-50 via-white to-blue-50/20 p-6 lg:p-8 shadow-card">
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between border-b border-line pb-6">
+                    <div class="max-w-2xl">
+                        <h2 id="judul-guest-welcome" class="text-xl font-bold tracking-tight text-ink sm:text-2xl lg:text-3xl">
+                            Bergabung Bersama Komunitas Belajar MNC University
+                        </h2>
+                        <p class="mt-2 text-xs leading-relaxed text-ink-secondary sm:text-sm">
+                            Nikmati kemudahan peminjaman koleksi buku fisik, akses e-book interaktif, referensi karya ilmiah skripsi, dan jurnal internasional terakreditasi dengan mendaftarkan akun keanggotaan Anda.
+                        </p>
+                    </div>
+
+                    <div class="flex shrink-0 flex-wrap items-center gap-3">
+                        <a
+                            href="{{ route('register') }}"
+                            class="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-all sm:text-sm"
+                        >
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                            <span>Daftar Anggota</span>
                         </a>
                         <a
-                            href="{{ route('ejournal') }}"
-                            class="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-xs font-semibold text-ink shadow-sm hover:bg-subtle transition-all"
+                            href="{{ route('login') }}"
+                            class="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-white px-5 text-xs font-semibold text-ink shadow-sm hover:bg-subtle transition-all sm:text-sm"
                         >
-                            <i class="fa-solid fa-newspaper text-xs text-primary"></i>
-                            <span>E-Journal</span>
+                            <i class="fa-solid fa-arrow-right-to-bracket text-xs text-primary"></i>
+                            <span>Masuk Akun</span>
                         </a>
+                    </div>
+                </div>
+
+                {{-- 3 Kolom Info Pelayanan Perpustakaan --}}
+                <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div class="flex items-start gap-3 rounded-xl border border-line bg-white p-4">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
+                            <i class="fa-solid fa-clock text-base"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-xs font-bold text-ink sm:text-sm">Jam Pelayanan Perpustakaan</h3>
+                            <p class="mt-1 text-[11px] text-ink-secondary leading-snug">Senin &ndash; Jumat: 08:30 &ndash; 17:00 WIB<br><span class="text-muted">(Sabtu, Minggu & Libur Nasional Tutup)</span></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 rounded-xl border border-line bg-white p-4">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-[#7C3AED]">
+                            <i class="fa-solid fa-location-dot text-base"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-xs font-bold text-ink sm:text-sm">Lokasi Ruang Baca</h3>
+                            <p class="mt-1 text-[11px] text-ink-secondary leading-snug">Kampus MNC University Lt. 3<br><span class="text-muted">Ruang Baca Tenang & Koleksi Referensi</span></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 rounded-xl border border-line bg-white p-4">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <i class="fa-solid fa-wifi text-base"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-xs font-bold text-ink sm:text-sm">Fasilitas Pemustaka</h3>
+                            <p class="mt-1 text-[11px] text-ink-secondary leading-snug">Wi-Fi Cepat, Komputer OPAC, Ruang Diskusi, dan Koleksi Digital 24/7</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -523,17 +865,27 @@
                     <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @endif
                         <li>
-                            {{-- TODO (integrasi): arahkan ke detail event. --}}
-                            <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle">
-                                <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
-                                    <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
-                                    <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
-                                </span>
+                            <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-3.5 rounded-xl border border-line bg-white p-3.5 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle">
+                                @if (!empty($eventItem['image']))
+                                    <div class="relative size-14 shrink-0 overflow-hidden rounded-lg bg-subtle">
+                                        <img src="{{ filter_var($eventItem['image'], FILTER_VALIDATE_URL) ? $eventItem['image'] : asset($eventItem['image']) }}" alt="{{ $eventItem['title'] }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
+                                        <div class="absolute inset-0 bg-primary/20"></div>
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center text-white drop-shadow">
+                                            <span class="text-base font-bold leading-none">{{ $eventItem['day'] }}</span>
+                                            <span class="text-[10px] font-medium uppercase tracking-wider">{{ $eventItem['month'] }}</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
+                                        <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
+                                        <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
+                                    </span>
+                                @endif
                                 <span class="min-w-0 flex-1">
-                                    <span class="block truncate text-[15px] font-medium text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
-                                    <span class="mt-0.5 block truncate text-[13px] text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
+                                    <span class="block truncate text-sm font-semibold text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
+                                    <span class="mt-0.5 block truncate text-xs text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
                                 </span>
-                                <span class="hidden shrink-0 text-sm font-medium text-primary sm:inline">Lihat &rarr;</span>
+                                <span class="hidden shrink-0 text-xs font-semibold text-primary sm:inline">Lihat &rarr;</span>
                             </a>
                         </li>
                 @if ($loop->last)

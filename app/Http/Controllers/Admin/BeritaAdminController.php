@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Berita;
+use App\Services\MediaUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,10 @@ use Illuminate\View\View;
 
 class BeritaAdminController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Tampilkan daftar seluruh artikel dan berita perpustakaan.
      */
@@ -59,6 +64,7 @@ class BeritaAdminController extends Controller
             'deskripsi_berita' => ['required', 'string', 'max:255'],
             'isi_berita' => ['required', 'string'],
             'gambar_berita' => ['nullable', 'string', 'max:255'],
+            'gambar_berita_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
             'tanggal_publikasi' => ['required', 'date'],
         ], [
             'judul_berita.required' => 'Judul berita wajib diisi.',
@@ -66,7 +72,17 @@ class BeritaAdminController extends Controller
             'deskripsi_berita.required' => 'Ringkasan singkat berita wajib diisi.',
             'isi_berita.required' => 'Konten lengkap berita wajib diisi.',
             'tanggal_publikasi.required' => 'Tanggal publikasi wajib ditentukan.',
+            'gambar_berita_file.mimes' => 'Format file media berita harus berupa PNG, JPG, JPEG, atau WEBP.',
+            'gambar_berita_file.max' => 'Ukuran file media berita maksimal 5 MB.',
         ]);
+
+        if ($request->hasFile('gambar_berita_file')) {
+            $validated['gambar_berita'] = $this->mediaUploadService->uploadImage(
+                $request->file('gambar_berita_file'),
+                'berita'
+            );
+        }
+        unset($validated['gambar_berita_file']);
 
         $validated['id_pengguna'] = Auth::id() ?? 'MNCU00001';
         $validated['slug'] = Str::slug($validated['judul_berita']).'-'.strtolower(Str::random(5));
@@ -101,6 +117,8 @@ class BeritaAdminController extends Controller
             'deskripsi_berita' => ['required', 'string', 'max:255'],
             'isi_berita' => ['required', 'string'],
             'gambar_berita' => ['nullable', 'string', 'max:255'],
+            'gambar_berita_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'hapus_gambar' => ['nullable', 'boolean'],
             'tanggal_publikasi' => ['required', 'date'],
         ], [
             'judul_berita.required' => 'Judul berita wajib diisi.',
@@ -108,7 +126,23 @@ class BeritaAdminController extends Controller
             'deskripsi_berita.required' => 'Ringkasan singkat berita wajib diisi.',
             'isi_berita.required' => 'Konten lengkap berita wajib diisi.',
             'tanggal_publikasi.required' => 'Tanggal publikasi wajib ditentukan.',
+            'gambar_berita_file.mimes' => 'Format file media berita harus berupa PNG, JPG, JPEG, atau WEBP.',
+            'gambar_berita_file.max' => 'Ukuran file media berita maksimal 5 MB.',
         ]);
+
+        if ($request->boolean('hapus_gambar')) {
+            $this->mediaUploadService->deleteImage($berita->gambar_berita);
+            $validated['gambar_berita'] = null;
+        }
+
+        if ($request->hasFile('gambar_berita_file')) {
+            $validated['gambar_berita'] = $this->mediaUploadService->uploadImage(
+                $request->file('gambar_berita_file'),
+                'berita',
+                $berita->gambar_berita
+            );
+        }
+        unset($validated['gambar_berita_file'], $validated['hapus_gambar']);
 
         $berita->update($validated);
 
@@ -123,6 +157,8 @@ class BeritaAdminController extends Controller
     {
         $berita = Berita::findOrFail($id);
         $judul = $berita->judul_berita;
+
+        $this->mediaUploadService->deleteImage($berita->gambar_berita);
         $berita->delete();
 
         return redirect()->route('admin.berita.index')
