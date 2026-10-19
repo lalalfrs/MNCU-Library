@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Buku;
+use App\Models\JenisBuku;
+use App\Models\KategoriBuku;
 use App\Models\ProfilPustakawan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,46 +27,136 @@ class LibraryController extends Controller
         }
 
         $quickPrompts = [
-            'Jam buka perpustakaan?',
-            'Cara pinjam buku di OPAC?',
-            'Bagaimana akses e-journal dari rumah?',
-            'Batas waktu peminjaman buku?',
-            'Syarat bebas pustaka untuk wisuda?',
-            'Kontak pustakawan MNC University?',
+            [
+                'question' => 'Jam operasional perpustakaan?',
+                'category' => 'Layanan',
+                'icon' => 'fa-clock',
+            ],
+            [
+                'question' => 'Batas durasi & perpanjangan buku?',
+                'category' => 'Sirkulasi',
+                'icon' => 'fa-book-bookmark',
+            ],
+            [
+                'question' => 'Berapa denda keterlambatan buku?',
+                'category' => 'Sirkulasi',
+                'icon' => 'fa-money-bill-wave',
+            ],
+            [
+                'question' => 'Bagaimana cara cek Turnitin untuk skripsi?',
+                'category' => 'Turnitin & Riset',
+                'icon' => 'fa-magnifying-glass-chart',
+            ],
+            [
+                'question' => 'Bagaimana akses e-journal dari luar kampus?',
+                'category' => 'Digital',
+                'icon' => 'fa-globe',
+            ],
+            [
+                'question' => 'Cara reservasi buku yang sedang dipinjam?',
+                'category' => 'Sirkulasi',
+                'icon' => 'fa-calendar-check',
+            ],
+            [
+                'question' => 'Syarat bebas pustaka untuk wisuda?',
+                'category' => 'Turnitin & Riset',
+                'icon' => 'fa-graduation-cap',
+            ],
+            [
+                'question' => 'Bagaimana prosedur jika buku hilang atau rusak?',
+                'category' => 'Sirkulasi',
+                'icon' => 'fa-triangle-exclamation',
+            ],
+            [
+                'question' => 'Cara peminjaman ruang diskusi kelompok?',
+                'category' => 'Fasilitas',
+                'icon' => 'fa-users',
+            ],
+            [
+                'question' => 'Kontak & lokasi Perpustakaan MNCU?',
+                'category' => 'Layanan',
+                'icon' => 'fa-location-dot',
+            ],
         ];
 
         return view('chat', compact('quickPrompts'));
     }
 
     /**
-     * Tampilkan katalog OPAC dengan pencarian dan filter koleksi fisik.
+     * Tampilkan katalog OPAC dengan pencarian, filter, dan informasi ketersediaan stok eksemplar real-time.
      */
     public function opac(Request $request): View
     {
         $query = trim((string) $request->query('q', ''));
         $category = (string) $request->query('kategori', 'Semua');
         $prodi = (string) $request->query('prodi', 'Semua');
+        $statusFilter = (string) $request->query('status', 'Semua');
+        $jenisFilter = (string) $request->query('jenis', 'Semua');
 
-        $dbBooks = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'eksemplar'])->get();
+        $dbBooks = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar', 'subjek'])->get();
 
         if ($dbBooks->isNotEmpty()) {
             $catalogItems = $dbBooks->map(function (Buku $buku): array {
                 $authorName = $buku->penulis->pluck('nama_penulis')->join(', ') ?: 'Pustakawan MNC University';
                 $copiesCount = $buku->eksemplar->count();
+                $availableCount = $buku->eksemplar->where('status', 'Tersedia')->count();
+                $borrowedCount = $buku->eksemplar->where('status', 'Dipinjam')->count();
+                $otherCount = $buku->eksemplar->whereNotIn('status', ['Tersedia', 'Dipinjam'])->count();
                 $firstCopy = $buku->eksemplar->first();
-                $hasAvailable = $buku->eksemplar->contains('status', 'Tersedia');
+                $hasAvailable = $availableCount > 0;
+
+                // Tentukan status ketersediaan yang jelas dan informatif
+                if ($copiesCount === 0) {
+                    $statusLabel = 'Koleksi Digital / Tanpa Eksemplar Fisik';
+                } elseif ($hasAvailable) {
+                    $statusLabel = "Tersedia ({$availableCount} dari {$copiesCount} eksemplar)";
+                } else {
+                    $statusLabel = "Semua Dipinjam ({$copiesCount} eksemplar)";
+                }
+
+                $kategoriName = $buku->kategoriBuku?->nama_kategori ?? 'Umum';
+                $prodiName = match ($kategoriName) {
+                    'Teknologi Informasi' => 'Informatika',
+                    'Ekonomi & Bisnis' => 'Manajemen',
+                    'Desain & Seni Kreatif' => 'Desain Komunikasi Visual',
+                    'Ilmu Komunikasi' => 'Sains Komunikasi',
+                    default => 'Umum',
+                };
 
                 return [
                     'id' => $buku->id_buku,
                     'title' => $buku->judul_buku,
                     'author' => $authorName,
+                    'publisher' => $buku->penerbit?->nama_penerbit ?? 'Penerbit MNC University',
+                    'publisher_city' => $buku->penerbit?->kota ?? 'Jakarta',
                     'year' => $buku->tahun_terbit ?? 2024,
                     'category' => $buku->jenisBuku?->nama_jenis_buku ?? 'Buku Teks',
-                    'prodi' => 'Informatika',
+                    'category_name' => $kategoriName,
+                    'format' => $buku->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak',
+                    'prodi' => $prodiName,
+                    'isbn' => $buku->isbn ?? '-',
+                    'edition' => $buku->edisi ?? 'Edisi Pertama',
+                    'pages' => $buku->jumlah_halaman ? "{$buku->jumlah_halaman} hlm" : '-',
+                    'cover_url' => $buku->sampul_buku,
+                    'description' => $buku->deskripsi ?: 'Buku referensi akademik koleksi Perpustakaan MNC University.',
+                    'subjects' => $buku->subjek->pluck('nama_subjek')->all(),
                     'call_number' => $firstCopy?->nomor_panggil ?? '005.1 MNC b',
                     'location' => $firstCopy?->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
-                    'copies' => $copiesCount > 0 ? "{$copiesCount} eksemplar" : '1 eksemplar',
-                    'status' => $hasAvailable ? 'Tersedia' : 'Dipinjam',
+                    'copies' => $copiesCount > 0 ? "{$copiesCount} eksemplar" : '0 eksemplar',
+                    'copies_total' => $copiesCount,
+                    'copies_available' => $availableCount,
+                    'copies_borrowed' => $borrowedCount,
+                    'copies_other' => $otherCount,
+                    'status' => $hasAvailable ? 'Tersedia' : ($copiesCount > 0 ? 'Dipinjam' : 'Koleksi Digital'),
+                    'status_label' => $statusLabel,
+                    'eksemplar_list' => $buku->eksemplar->map(fn ($ek, $idx) => [
+                        'no' => $idx + 1,
+                        'id_eksemplar' => $ek->id_eksemplar,
+                        'kode_inventaris' => $ek->kode_inventaris,
+                        'nomor_panggil' => $ek->nomor_panggil ?? '-',
+                        'lokasi_rak' => $ek->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
+                        'status' => $ek->status ?? 'Tersedia',
+                    ])->values()->all(),
                 ];
             })->all();
         } else {
@@ -73,114 +165,134 @@ class LibraryController extends Controller
                     'id' => 1,
                     'title' => 'Algoritma & Struktur Data dengan Python',
                     'author' => 'Dr. Rian Hidayat, M.Kom.',
+                    'publisher' => 'Informatika Press',
+                    'publisher_city' => 'Bandung',
                     'year' => 2024,
                     'category' => 'Buku Teks',
+                    'category_name' => 'Teknologi Informasi',
+                    'format' => 'Buku Cetak',
                     'prodi' => 'Informatika',
+                    'isbn' => '978-602-1234-01-1',
+                    'edition' => 'Edisi 2',
+                    'pages' => '320 hlm',
+                    'cover_url' => 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80',
+                    'description' => 'Konsep algoritma fundamental dan implementasi struktur data modern menggunakan bahasa Python.',
+                    'subjects' => ['Algoritma', 'Python', 'Struktur Data'],
                     'call_number' => '005.1 HID a',
                     'location' => 'Lantai 2, Rak Komputer 03',
-                    'copies' => '4 eksemplar',
+                    'copies' => '3 eksemplar',
+                    'copies_total' => 3,
+                    'copies_available' => 2,
+                    'copies_borrowed' => 1,
+                    'copies_other' => 0,
                     'status' => 'Tersedia',
+                    'status_label' => 'Tersedia (2 dari 3 eksemplar)',
+                    'eksemplar_list' => [
+                        ['no' => 1, 'id_eksemplar' => 'EK-001', 'kode_inventaris' => 'INV-BK001-01', 'nomor_panggil' => '005.1 HID a c.1', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Tersedia'],
+                        ['no' => 2, 'id_eksemplar' => 'EK-002', 'kode_inventaris' => 'INV-BK001-02', 'nomor_panggil' => '005.1 HID a c.2', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Tersedia'],
+                        ['no' => 3, 'id_eksemplar' => 'EK-003', 'kode_inventaris' => 'INV-BK001-03', 'nomor_panggil' => '005.1 HID a c.3', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Dipinjam'],
+                    ],
                 ],
                 [
                     'id' => 2,
                     'title' => 'Manajemen Pemasaran Strategis di Era Digital',
                     'author' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+                    'publisher' => 'Penerbit Salemba Empat',
+                    'publisher_city' => 'Jakarta',
                     'year' => 2023,
                     'category' => 'Buku Teks',
+                    'category_name' => 'Ekonomi & Bisnis',
+                    'format' => 'Buku Cetak',
                     'prodi' => 'Manajemen',
+                    'isbn' => '978-602-2345-02-2',
+                    'edition' => 'Edisi 1',
+                    'pages' => '280 hlm',
+                    'cover_url' => 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+                    'description' => 'Strategi pemasaran terpadu di era media digital dan omnichannel marketing korporat.',
+                    'subjects' => ['Pemasaran', 'Digital Marketing', 'Manajemen'],
                     'call_number' => '658.8 GUN m',
                     'location' => 'Lantai 2, Rak Ekonomi 01',
-                    'copies' => '3 eksemplar',
+                    'copies' => '2 eksemplar',
+                    'copies_total' => 2,
+                    'copies_available' => 2,
+                    'copies_borrowed' => 0,
+                    'copies_other' => 0,
                     'status' => 'Tersedia',
+                    'status_label' => 'Tersedia (2 dari 2 eksemplar)',
+                    'eksemplar_list' => [
+                        ['no' => 1, 'id_eksemplar' => 'EK-004', 'kode_inventaris' => 'INV-BK002-01', 'nomor_panggil' => '658.8 GUN m c.1', 'lokasi_rak' => 'Lantai 2, Rak Ekonomi 01', 'status' => 'Tersedia'],
+                        ['no' => 2, 'id_eksemplar' => 'EK-005', 'kode_inventaris' => 'INV-BK002-02', 'nomor_panggil' => '658.8 GUN m c.2', 'lokasi_rak' => 'Lantai 2, Rak Ekonomi 01', 'status' => 'Tersedia'],
+                    ],
                 ],
                 [
                     'id' => 3,
                     'title' => 'Prinsip Desain Komunikasi Visual & Tipografi',
                     'author' => 'Siti Nurhaliza, M.Ds.',
+                    'publisher' => 'MNC Art Press',
+                    'publisher_city' => 'Jakarta Barat',
                     'year' => 2024,
                     'category' => 'Buku Teks',
+                    'category_name' => 'Desain & Seni Kreatif',
+                    'format' => 'Buku Cetak',
                     'prodi' => 'Desain Komunikasi Visual',
+                    'isbn' => '978-602-3456-03-3',
+                    'edition' => 'Edisi Revisi',
+                    'pages' => '240 hlm',
+                    'cover_url' => 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+                    'description' => 'Eksplorasi komposisi visual, hierarki grid tipografi, dan perancangan identitas visual media cetak.',
+                    'subjects' => ['DKV', 'Tipografi', 'Desain Grafis'],
                     'call_number' => '741.6 NUR p',
                     'location' => 'Lantai 2, Rak Desain 02',
                     'copies' => '2 eksemplar',
-                    'status' => 'Dipinjam (Kembali 20 Okt)',
-                ],
-                [
-                    'id' => 4,
-                    'title' => 'Analisis Perancangan Sistem Informasi Enterprise',
-                    'author' => 'Ahmad Fauzi, M.T.',
-                    'year' => 2023,
-                    'category' => 'Buku Teks',
-                    'prodi' => 'Sistem Informasi',
-                    'call_number' => '004.2 FAU a',
-                    'location' => 'Lantai 2, Rak Komputer 04',
-                    'copies' => '5 eksemplar',
+                    'copies_total' => 2,
+                    'copies_available' => 1,
+                    'copies_borrowed' => 1,
+                    'copies_other' => 0,
                     'status' => 'Tersedia',
-                ],
-                [
-                    'id' => 5,
-                    'title' => 'Akuntansi Keuangan Menengah Berbasis IFRS',
-                    'author' => 'Dewi Lestari, S.E., M.Ak., Ak.',
-                    'year' => 2022,
-                    'category' => 'Referensi',
-                    'prodi' => 'Akuntansi',
-                    'call_number' => '657.48 LES a',
-                    'location' => 'Lantai 2, Rak Akuntansi 01',
-                    'copies' => '3 eksemplar',
-                    'status' => 'Tersedia',
-                ],
-                [
-                    'id' => 6,
-                    'title' => 'Komunikasi Massa & Dinamika Media Penyiaran',
-                    'author' => 'Bambang Sudibyo, M.Si.',
-                    'year' => 2023,
-                    'category' => 'Buku Teks',
-                    'prodi' => 'Sains Komunikasi',
-                    'call_number' => '302.23 SUD k',
-                    'location' => 'Lantai 2, Rak Komunikasi 02',
-                    'copies' => '4 eksemplar',
-                    'status' => 'Tersedia',
-                ],
-                [
-                    'id' => 7,
-                    'title' => 'Penerapan Machine Learning untuk Deteksi Pola Data Medis',
-                    'author' => 'Muhammad Farhan (NIM: 20210801045)',
-                    'year' => 2025,
-                    'category' => 'Skripsi',
-                    'prodi' => 'Informatika',
-                    'call_number' => 'SKR-INF-2025-012',
-                    'location' => 'Koleksi Khusus Karya Ilmiah',
-                    'copies' => '1 eksemplar (Baca di Tempat)',
-                    'status' => 'Tersedia',
-                ],
-                [
-                    'id' => 8,
-                    'title' => 'Ensiklopedia Teknologi Informasi & Komunikasi',
-                    'author' => 'Tim Redaksi MNC Press',
-                    'year' => 2024,
-                    'category' => 'Referensi',
-                    'prodi' => 'Informatika',
-                    'call_number' => 'R 004.03 ENS t',
-                    'location' => 'Lantai 1, Ruang Referensi',
-                    'copies' => '2 eksemplar (Hanya Baca)',
-                    'status' => 'Tersedia',
+                    'status_label' => 'Tersedia (1 dari 2 eksemplar)',
+                    'eksemplar_list' => [
+                        ['no' => 1, 'id_eksemplar' => 'EK-006', 'kode_inventaris' => 'INV-BK003-01', 'nomor_panggil' => '741.6 NUR p c.1', 'lokasi_rak' => 'Lantai 2, Rak Desain 02', 'status' => 'Tersedia'],
+                        ['no' => 2, 'id_eksemplar' => 'EK-007', 'kode_inventaris' => 'INV-BK003-02', 'nomor_panggil' => '741.6 NUR p c.2', 'lokasi_rak' => 'Lantai 2, Rak Desain 02', 'status' => 'Dipinjam'],
+                    ],
                 ],
             ];
         }
 
-        $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $category, $prodi): bool {
+        $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $category, $prodi, $statusFilter, $jenisFilter): bool {
             $matchesQuery = empty($query) || (
                 stripos($item['title'], $query) !== false ||
                 stripos($item['author'], $query) !== false ||
-                stripos($item['call_number'], $query) !== false
+                stripos($item['call_number'] ?? '', $query) !== false ||
+                stripos($item['isbn'] ?? '', $query) !== false ||
+                stripos($item['publisher'] ?? '', $query) !== false ||
+                stripos($item['description'] ?? '', $query) !== false
             );
-            $matchesCategory = $category === 'Semua' || $item['category'] === $category;
+            $matchesCategory = $category === 'Semua' || $item['category'] === $category || ($item['category_name'] ?? '') === $category;
             $matchesProdi = $prodi === 'Semua' || $item['prodi'] === $prodi;
+            $matchesJenis = $jenisFilter === 'Semua' || ($item['format'] ?? '') === $jenisFilter || ($item['category'] ?? '') === $jenisFilter;
 
-            return $matchesQuery && $matchesCategory && $matchesProdi;
+            $matchesStatus = true;
+            if ($statusFilter === 'Tersedia' || $statusFilter === 'Hanya Tersedia') {
+                $matchesStatus = ($item['copies_available'] ?? 0) > 0;
+            } elseif ($statusFilter === 'Dipinjam' || $statusFilter === 'Sedang Dipinjam') {
+                $matchesStatus = ($item['copies_borrowed'] ?? 0) > 0 || ($item['copies_available'] ?? 0) === 0;
+            }
+
+            return $matchesQuery && $matchesCategory && $matchesProdi && $matchesJenis && $matchesStatus;
         });
 
-        $categories = ['Semua', 'Buku Teks', 'Referensi', 'Skripsi'];
+        // Hitung statistik inventaris koleksi untuk header OPAC
+        $totalKoleksi = count($catalogItems);
+        $totalEksemplarFisik = array_sum(array_column($catalogItems, 'copies_total'));
+        $totalEksemplarTersedia = array_sum(array_column($catalogItems, 'copies_available'));
+
+        $dbCategories = KategoriBuku::orderBy('nama_kategori')->pluck('nama_kategori')->all();
+        $categories = ['Semua', ...($dbCategories ?: ['Buku Teks', 'Referensi', 'Skripsi'])];
+
+        $dbTypes = JenisBuku::orderBy('nama_jenis_buku')->pluck('nama_jenis_buku')->all();
+        $types = ['Semua', ...($dbTypes ?: ['Buku Cetak', 'E-Book Digital', 'Karya Ilmiah'])];
+
+        $statuses = ['Semua', 'Hanya Tersedia', 'Sedang Dipinjam'];
         $prodis = ['Semua', 'Informatika', 'Sistem Informasi', 'Desain Komunikasi Visual', 'Manajemen', 'Akuntansi', 'Sains Komunikasi'];
 
         return view('opac', [
@@ -188,9 +300,16 @@ class LibraryController extends Controller
             'query' => $query,
             'category' => $category,
             'prodi' => $prodi,
+            'statusFilter' => $statusFilter,
+            'jenisFilter' => $jenisFilter,
             'categories' => $categories,
+            'types' => $types,
+            'statuses' => $statuses,
             'prodis' => $prodis,
             'totalCount' => count($filteredItems),
+            'totalKoleksi' => $totalKoleksi,
+            'totalEksemplarFisik' => $totalEksemplarFisik,
+            'totalEksemplarTersedia' => $totalEksemplarTersedia,
         ]);
     }
 
@@ -469,45 +588,170 @@ class LibraryController extends Controller
      */
     private function resolveChatbotReply(string $input): string
     {
-        $text = strtolower($input);
+        $text = strtolower(trim($input));
 
         if (empty($text)) {
-            return 'Halo! Ada yang bisa saya bantu terkait layanan Perpustakaan MNC University? Kamu bisa menanyakan jadwal operasional, peminjaman buku, katalog OPAC, e-journal, atau repository skripsi.';
+            return "Halo! Ada yang bisa saya bantu terkait layanan Perpustakaan MNC University?\n\nAnda dapat menanyakan informasi seputar jam operasional, peminjaman dan perpanjangan buku, denda, cek plagiarisme Turnitin, akses e-journal luar kampus, repository skripsi, hingga pengurusan bebas pustaka wisuda.";
         }
 
-        if (str_contains($text, 'jam') || str_contains($text, 'buka') || str_contains($text, 'operasional') || str_contains($text, 'tutup')) {
-            return "Perpustakaan MNC University buka pada hari:\n\n• Senin sampai Jumat: 08.30 - 17.00 WIB\n• Sabtu: 09.00 - 14.00 WIB\n• Minggu & Hari Libur Nasional: Tutup.\n\nLayanan online (OPAC, Repository, E-Journal, dan E-Book) dapat diakses 24 jam.";
+        // 1. Perpanjangan Peminjaman Buku
+        if (str_contains($text, 'perpanjang') || str_contains($text, 'renew') || str_contains($text, 'tambah waktu') || str_contains($text, 'tambah hari')) {
+            return "Ketentuan & Prosedur Perpanjangan Peminjaman Buku:\n\n"
+                ."• Perpanjangan diperbolehkan 1 kali selama 7 hari kalender tambahan.\n"
+                ."• Pengajuan perpanjangan dapat dilakukan langsung di loket sirkulasi perpustakaan atau melalui akun pemustaka sebelum tanggal jatuh tempo.\n"
+                ."• Syarat: Buku tidak dalam status terlambat/denda dan tidak sedang direservasi (dipesan) oleh pemustaka lain.\n"
+                .'• Jika buku telah melewati tanggal jatuh tempo, pemustaka wajib mengembalikan buku terlebih dahulu dan menyelesaikan denda administrasi sebelum dapat meminjam kembali.';
         }
 
+        // 2. Buku Hilang atau Rusak
+        if (str_contains($text, 'hilang') || str_contains($text, 'rusak') || str_contains($text, 'ganti buku') || str_contains($text, 'kehilangan')) {
+            return "Prosedur Penggantian Buku Hilang atau Rusak:\n\n"
+                ."1. Segera lapor ke loket sirkulasi agar status peminjaman dibekukan dan denda harian tidak terus berjalan.\n"
+                ."2. Mengganti dengan buku fisik yang identik (judul, pengarang, dan ISBN sama) atau edisi revisi terbaru yang disetujui pustakawan.\n"
+                ."3. Jika buku sudah tidak beredar di pasaran (out of print), pemustaka mengganti dengan buku subjek serumpun yang nilainya setara berdasarkan rekomendasi pustakawan.\n"
+                .'4. Membayar biaya administrasi pengolahan koleksi baru (label & barcode) sebesar Rp10.000 per buku.';
+        }
+
+        // 3. Denda Keterlambatan
+        if (str_contains($text, 'denda') || str_contains($text, 'terlambat') || str_contains($text, 'telat')) {
+            return "Ketentuan Denda Keterlambatan Pengembalian Buku:\n\n"
+                ."• Tarif denda: Rp1.000 per buku per hari keterlambatan (termasuk hari Sabtu dan Minggu selama masa pinjam terlewati).\n"
+                ."• Pembayaran denda dapat dilakukan secara tunai maupun nontunai (QRIS) di meja sirkulasi perpustakaan.\n"
+                .'• Pemustaka yang masih memiliki tanggungan denda belum dapat meminjam koleksi baru atau memproses surat bebas pustaka.';
+        }
+
+        // 4. Reservasi / Booking Buku
+        if (str_contains($text, 'reservasi') || str_contains($text, 'booking') || str_contains($text, 'pesan buku') || str_contains($text, 'antre buku')) {
+            return "Layanan Reservasi Buku Fisik:\n\n"
+                ."• Anda dapat memesan buku yang status eksemplarnya sedang dipinjam oleh pemustaka lain.\n"
+                ."• Reservasi dapat diajukan melalui petugas sirkulasi dengan menyebutkan Judul Buku dan Kode Call Number.\n"
+                ."• Saat buku dikembalikan oleh peminjam sebelumnya, sistem akan mengirim notifikasi ketersediaan ke kontak/email Anda.\n"
+                .'• Buku reservasi disimpan di meja layanan sirkulasi selama 2 x 24 jam. Jika tidak diambil, buku akan dialihkan ke pemustaka berikutnya.';
+        }
+
+        // 5. Uji Kemiripan / Cek Plagiarisme Turnitin
+        if (str_contains($text, 'turnitin') || str_contains($text, 'plagiat') || str_contains($text, 'plagiarisme') || str_contains($text, 'kemiripan') || str_contains($text, 'similarity')) {
+            return "Layanan Uji Kemiripan Naskah (Turnitin) MNC University:\n\n"
+                ."• Diperuntukkan bagi mahasiswa yang sedang menyusun Tugas Akhir/Skripsi/Tesis serta publikasi karya ilmiah sivitas akademika.\n"
+                ."• Batas toleransi kemiripan (similarity index): Umumnya maksimal 20% - 25% (mengacu pada pedoman akademik fakultas/prodi masing-masing).\n"
+                ."• Format naskah: Dokumen naskah (.docx atau .pdf) tanpa halaman cover, kata pengantar, dan daftar pustaka.\n"
+                ."• Cara pengajuan: Kirim naskah ke email perpustakaan@mncuniversity.ac.id dengan subjek 'Uji Turnitin - [NIM] - [Nama]' atau datang ke ruang konsultasi pustakawan.\n"
+                .'• Hasil uji berupa laporan digital resmi (PDF) akan dikirimkan dalam 1 x 24 jam hari kerja.';
+        }
+
+        // 6. Bebas Pustaka untuk Wisuda / Yudisium
+        if (str_contains($text, 'bebas pustaka') || str_contains($text, 'wisuda') || str_contains($text, 'yudisium') || str_contains($text, 'kelulusan')) {
+            return "Syarat & Prosedur Surat Keterangan Bebas Pustaka:\n\n"
+                ."1. Tidak memiliki pinjaman buku aktif dan tidak ada tunggakan denda.\n"
+                ."2. Telah lolos uji Turnitin dengan lembar persetujuan persentase kemiripan.\n"
+                ."3. Mengunggah file softcopy lengkap skripsi/tugas akhir (format PDF) ke portal Repository MNC University.\n"
+                ."4. Menyerahkan 1 eksemplar hardcopy jilid skripsi yang telah ditandatangani lengkap oleh dosen pembimbing dan penguji.\n"
+                ."5. Menyerahkan donasi buku referensi akademik alumni (sesuai ketentuan prodi).\n\n"
+                .'Surat keterangan bebas pustaka digital/cetak diterbitkan dalam 1 hari kerja setelah verifikasi berkas selesai.';
+        }
+
+        // 7. Skripsi & Repository Institusi
+        if (str_contains($text, 'skripsi') || str_contains($text, 'repository') || str_contains($text, 'karya ilmiah') || str_contains($text, 'tesis') || str_contains($text, 'tugas akhir') || str_contains($text, 'laporan magang')) {
+            return "Repository Karya Ilmiah Perpustakaan MNC University:\n\n"
+                ."• Menyimpan arsip digital Tugas Akhir, Skripsi S1, Laporan Magang, dan Publikasi Ilmiah Dosen.\n"
+                ."• Akses publik terbuka untuk abstrak, bab pendahuluan, dan daftar pustaka.\n"
+                ."• Naskah lengkap (full-text) dapat diakses oleh sivitas akademika aktif melalui login Single Sign-On (SSO) akun kampus MNC University.\n"
+                ."• Mahasiswa yang telah menyelesaikan sidang dapat melakukan serah simpan digital secara mandiri melalui menu 'Repository'.";
+        }
+
+        // 8. E-Journal & Pangkalan Data Jurnal Internasional
+        if (str_contains($text, 'journal') || str_contains($text, 'jurnal') || str_contains($text, 'ejournal') || str_contains($text, 'scopus') || str_contains($text, 'doaj') || str_contains($text, 'ieee') || str_contains($text, 'sciencedirect') || str_contains($text, 'springer') || str_contains($text, 'remote') || str_contains($text, 'luar kampus')) {
+            return "Panduan Akses E-Journal & Database Ilmiah:\n\n"
+                ."• Pangkalan data jurnal dapat dilihat pada menu 'E-Journal' (ScienceDirect, IEEE Xplore, SpringerLink, DOAJ, Emerald, ResearchGate).\n"
+                ."• Akses dari Luar Kampus: Gunakan Single Sign-On (SSO) email resmi institusi @mncuniversity.ac.id atau akses melalui portal e-Resources Perpustakaan Nasional RI (PNRI).\n"
+                .'• Untuk panduan registrasi akun e-Resources Perpusnas atau bantuan penelusuran artikel ilmiah berbayar, Anda dapat berkonsultasi langsung dengan pustakawan referensi.';
+        }
+
+        // 9. OJS (Open Journal Systems) Kampus
+        if (str_contains($text, 'ojs') || str_contains($text, 'jurnal prodi') || str_contains($text, 'submit artikel') || str_contains($text, 'publikasi internal')) {
+            return "Portal Open Journal Systems (OJS) MNC University:\n\n"
+                ."• Menampung jurnal ilmiah berkala yang dikelola oleh program studi di lingkungan MNC University (Informatika, Komunikasi, Desain, Bisnis).\n"
+                ."• Seluruh artikel jurnal dapat diunduh secara gratis (Open Access) melalui menu 'OJS per Prodi'.\n"
+                .'• Penulis (dosen/mahasiswa) dapat melakukan registrasi dan submisi manuskrip artikel secara daring melalui masing-masing laman jurnal OJS prodi terkait.';
+        }
+
+        // 10. Fasilitas Ruang Diskusi, Wi-Fi, dan Komputer
+        if (str_contains($text, 'ruang diskusi') || str_contains($text, 'diskusi') || str_contains($text, 'multimedia') || str_contains($text, 'fasilitas') || str_contains($text, 'wifi') || str_contains($text, 'komputer') || str_contains($text, 'colokan') || str_contains($text, 'charging')) {
+            return "Fasilitas Perpustakaan MNC University:\n\n"
+                ."• Ruang Diskusi Kelompok: Tersedia 2 ruang diskusi berkapasitas 4-8 orang yang dilengkapi papan tulis dan layar monitor. Pemesanan dilakukan di loket sirkulasi dengan durasi maksimal 2 jam per sesi.\n"
+                ."• PC Workstation & OPAC: Perangkat komputer untuk pencarian katalog buku dan akses jurnal digital di area lantai 2.\n"
+                ."• Area Baca Mandiri: Meja baca tenang dilengkapi stopkontak untuk laptop dan perangkat belajar.\n"
+                ."• Akses Wi-Fi: Terhubung ke hotspot 'MNCU-Student' dengan akun portal mahasiswa aktif.";
+        }
+
+        // 11. Keanggotaan & Kartu Tanda Mahasiswa (KTM)
+        if (str_contains($text, 'anggota') || str_contains($text, 'keanggotaan') || str_contains($text, 'ktm') || str_contains($text, 'kartu')) {
+            return "Informasi Keanggotaan Perpustakaan:\n\n"
+                ."• Seluruh mahasiswa, dosen, dan staf aktif MNC University secara otomatis terdaftar sebagai anggota perpustakaan.\n"
+                ."• Kartu anggota utama menggunakan Kartu Tanda Mahasiswa (KTM) fisik maupun kartu identitas digital pada portal akademik.\n"
+                .'• Jika KTM hilang atau belum dicetak, pemustaka dapat menggunakan Kartu Mahasiswa Sementara dari BAAK untuk transaksi peminjaman buku di loket sirkulasi.';
+        }
+
+        // 12. Usulan Pengadaan Buku Baru
+        if (str_contains($text, 'usul') || str_contains($text, 'pengadaan') || str_contains($text, 'request buku') || str_contains($text, 'beli buku') || str_contains($text, 'rekomendasi buku')) {
+            return "Layanan Usulan Koleksi Buku Baru:\n\n"
+                ."• Mahasiswa dan dosen dapat mengusulkan judul buku referensi atau buku teks baru yang belum tersedia di koleksi perpustakaan.\n"
+                ."• Formulir usulan dapat diisi di meja layanan atau diajukan via email ke perpustakaan@mncuniversity.ac.id dengan menyertakan: Judul Buku, Nama Pengarang, Penerbit, Tahun Terbit, ISBN, serta Mata Kuliah terkait.\n"
+                .'• Usulan akan diseleksi dan ditindaklanjuti oleh Tim Pengembangan Koleksi pada setiap periode pengadaan buku.';
+        }
+
+        // 13. Tata Tertib & Etika Kunjungan
+        if (str_contains($text, 'tata tertib') || str_contains($text, 'aturan') || str_contains($text, 'peraturan') || str_contains($text, 'etika') || str_contains($text, 'loker') || str_contains($text, 'pakaian') || str_contains($text, 'makan') || str_contains($text, 'merokok')) {
+            return "Tata Tertib Perpustakaan MNC University:\n\n"
+                ."1. Berpakaian rapi, sopan, dan mengenakan sepatu (tidak diperkenankan menggunakan kaos oblong tanpa kerah atau sandal jepit).\n"
+                ."2. Menitipkan tas ransel, jaket, dan wadah besar di loker penitipan sebelum memasuki area koleksi.\n"
+                ."3. Dilarang membawa makanan dan minuman tanpa wadah tertutup rapat ke dalam ruang baca.\n"
+                ."4. Menjaga ketenangan dan menyetel nada dering ponsel pada mode getar/senyap (silent).\n"
+                .'5. Dilarang keras merokok atau menggunakan vape di seluruh area perpustakaan.';
+        }
+
+        // 14. OPAC & Ketersediaan Stok Buku
+        if (str_contains($text, 'opac') || str_contains($text, 'katalog') || str_contains($text, 'cari buku') || str_contains($text, 'stok') || str_contains($text, 'call number') || str_contains($text, 'nomor panggil') || str_contains($text, 'rak') || str_contains($text, 'ketersediaan')) {
+            return "Panduan Penelusuran Katalog OPAC & Ketersediaan Stok:\n\n"
+                ."• Buka menu 'Katalog OPAC' pada navigasi situs.\n"
+                ."• Anda dapat melihat total eksemplar fisik, jumlah buku yang sedang tersedia di rak, lokasi rak, dan kode nomor panggil (Call Number).\n"
+                ."• Catat kode Call Number (contoh: 005.1 IND a) untuk memudahkan menemukan buku langsung di rak koleksi Lantai 2.\n"
+                .'• Jika semua eksemplar sedang dipinjam, Anda dapat memanfaatkan fitur Reservasi Buku melalui petugas sirkulasi.';
+        }
+
+        // 15. Jam Operasional
+        if (str_contains($text, 'jam') || str_contains($text, 'buka') || str_contains($text, 'operasional') || str_contains($text, 'tutup') || str_contains($text, 'jadwal')) {
+            return "Jadwal Operasional Perpustakaan MNC University:\n\n"
+                ."• Senin - Jumat: 08.30 - 17.00 WIB\n"
+                ."• Sabtu: 09.00 - 14.00 WIB\n"
+                ."• Minggu & Hari Libur Nasional: Tutup.\n\n"
+                .'Layanan daring (OPAC, Repository, E-Journal, dan Chatbot) dapat diakses 24 jam setiap hari.';
+        }
+
+        // 16. Peminjaman Buku (Umum)
         if (str_contains($text, 'pinjam') || str_contains($text, 'peminjaman') || str_contains($text, 'durasi') || str_contains($text, 'hari')) {
-            return "Ketentuan peminjaman buku untuk mahasiswa aktif MNC University:\n\n• Maksimal: 3 buku sekaligus\n• Durasi peminjaman: 7 hari kalender\n• Perpanjangan: Dapat diperpanjang 1 kali (7 hari) selama buku tidak direservasi pemustaka lain\n• Syarat: Membawa Kartu Tanda Mahasiswa (KTM) aktif ke meja sirkulasi.";
+            return "Ketentuan Peminjaman Buku Fisik MNC University:\n\n"
+                ."• Kuota peminjaman: Maksimal 3 eksemplar buku sekaligus untuk mahasiswa aktif.\n"
+                ."• Durasi pinjam: 7 hari kalender.\n"
+                ."• Perpanjangan: Dapat diperpanjang 1 kali (tambahan 7 hari) jika buku tidak sedang direservasi orang lain.\n"
+                .'• Syarat: Membawa KTM aktif dan melakukan pemindaian barcode buku di meja sirkulasi Lantai 2.';
         }
 
-        if (str_contains($text, 'denda') || str_contains($text, 'terlambat')) {
-            return 'Keterlambatan pengembalian buku dikenakan denda administrasi sebesar Rp1.000 per buku per hari keterlambatan. Denda dapat dibayarkan langsung di loket sirkulasi perpustakaan.';
+        // 17. Kontak & Lokasi
+        if (str_contains($text, 'kontak') || str_contains($text, 'hubungi') || str_contains($text, 'lokasi') || str_contains($text, 'alamat') || str_contains($text, 'email') || str_contains($text, 'telepon') || str_contains($text, 'wa') || str_contains($text, 'whatsapp') || str_contains($text, 'pustakawan')) {
+            return "Kontak & Lokasi Perpustakaan MNC University:\n\n"
+                ."• Lokasi: Gedung Rektorat MNC University, Lantai 2, Jl. Arteri Kedoya No. 2, Kebon Jeruk, Jakarta Barat\n"
+                ."• Email Layanan: perpustakaan@mncuniversity.ac.id\n"
+                ."• Telepon: (021) 5366-6555\n"
+                .'• Jam Layanan Petugas: Senin - Jumat (08.30 - 17.00 WIB) & Sabtu (09.00 - 14.00 WIB).';
         }
 
-        if (str_contains($text, 'opac') || str_contains($text, 'katalog') || str_contains($text, 'cari buku')) {
-            return "Katalog OPAC dapat diakses melalui menu 'Katalog OPAC'. Di sana kamu bisa mencari koleksi berdasarkan judul, pengarang, maupun subjek untuk mengetahui status ketersediaan dan lokasi rak buku secara langsung.";
+        // 18. Sapaan / Salam
+        if (str_contains($text, 'halo') || str_contains($text, 'hai') || str_contains($text, 'hello') || str_contains($text, 'pagi') || str_contains($text, 'siang') || str_contains($text, 'sore') || str_contains($text, 'malam') || str_contains($text, 'assalam')) {
+            return "Halo! Selamat datang di Layanan Bantuan Perpustakaan MNC University.\n\nAda yang bisa kami bantu hari ini? Anda dapat menanyakan tentang:\n• Jam operasional & lokasi perpustakaan\n• Peminjaman, perpanjangan, dan denda buku\n• Uji Turnitin & syarat bebas pustaka wisuda\n• Akses e-journal & repository skripsi\n• Peminjaman ruang diskusi & fasilitas lainnya.";
         }
 
-        if (str_contains($text, 'journal') || str_contains($text, 'jurnal') || str_contains($text, 'ejournal') || str_contains($text, 'scopus') || str_contains($text, 'doaj')) {
-            return "Akses e-journal MNC University dapat dibuka pada menu 'E-Journal' dan 'OJS per Prodi'. Untuk mengakses jurnal internasional dari luar kampus, kamu bisa menggunakan akun email resmi @mncuniversity.ac.id atau akun e-Resources Perpusnas.";
-        }
-
-        if (str_contains($text, 'skripsi') || str_contains($text, 'repository') || str_contains($text, 'karya ilmiah') || str_contains($text, 'tesis')) {
-            return "Seluruh karya ilmiah sivitas akademik (Skripsi, Tugas Akhir, dan Publikasi Dosen) diarsipkan secara digital di laman 'Repository'. Mahasiswa dapat membaca ringkasan dan abstrak langsung, atau mengunduh dokumen lengkap sesuai kebijakan prodi.";
-        }
-
-        if (str_contains($text, 'bebas pustaka') || str_contains($text, 'wisuda') || str_contains($text, 'yudisium')) {
-            return "Syarat pengurusan Surat Keterangan Bebas Pustaka untuk yudisium/wisuda:\n\n1. Tidak memiliki tanggungan pinjaman buku atau denda\n2. Menyerahkan softcopy skripsi/tugas akhir format PDF ke repository\n3. Menyerahkan 1 eksemplar hardcopy naskah yang telah disahkan\n4. Mengisi formulir verifikasi bebas pustaka di ruang pelayanan.";
-        }
-
-        if (str_contains($text, 'kontak') || str_contains($text, 'hubungi') || str_contains($text, 'lokasi') || str_contains($text, 'alamat') || str_contains($text, 'email')) {
-            return "Kontak Resmi Perpustakaan MNC University:\n\n• Lokasi: Kampus MNC University, Gedung Rektorat Lt. 2\n• Email: perpustakaan@mncuniversity.ac.id\n• Telepon/WhatsApp: (021) 5366-6555\n• Jam Pelayanan: Senin - Jumat (08.30 - 17.00 WIB).";
-        }
-
-        return 'Terima kasih atas pertanyaanmu! Kamu bisa menanyakan hal seputar peminjaman buku, katalog OPAC, akses jurnal, jam operasional, atau persyaratan bebas pustaka. Jika memerlukan bantuan khusus, pustakawan kami siap membantu di meja sirkulasi.';
+        return "Terima kasih atas pertanyaan Anda. Untuk topik tersebut, Anda dapat menanyakan seputar peminjaman buku, perpanjangan, denda keterlambatan, cek Turnitin skripsi, akses e-journal luar kampus, maupun surat bebas pustaka.\n\nBila membutuhkan informasi lebih rinci, pustakawan kami siap membantu di meja sirkulasi Lantai 2 atau via email perpustakaan@mncuniversity.ac.id.";
     }
 
     /**

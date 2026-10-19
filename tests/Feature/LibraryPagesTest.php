@@ -31,6 +31,66 @@ class LibraryPagesTest extends TestCase
         $this->assertStringContainsString('Senin', $response->json('reply'));
     }
 
+    public function test_chat_api_handles_perpanjangan_buku(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Bagaimana cara perpanjang pinjaman buku?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Perpanjangan', $response->json('reply'));
+        $this->assertStringContainsString('7 hari', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_turnitin(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Berapa persen batas similarity Turnitin untuk skripsi?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Turnitin', $response->json('reply'));
+        $this->assertStringContainsString('similarity', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_bebas_pustaka(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Apa syarat bebas pustaka wisuda?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Bebas Pustaka', $response->json('reply'));
+        $this->assertStringContainsString('Repository', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_denda(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Berapa denda kalau telat kembalikan buku?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Rp1.000', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_buku_hilang(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Bagaimana jika buku yang dipinjam hilang?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Hilang', $response->json('reply'));
+        $this->assertStringContainsString('ISBN', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_ruang_diskusi(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Apakah ada fasilitas ruang diskusi kelompok?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Ruang Diskusi', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_reservasi_buku(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Bagaimana booking atau reservasi buku?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Reservasi', $response->json('reply'));
+    }
+
+    public function test_chat_api_handles_ejournal(): void
+    {
+        $response = $this->postJson(route('chat'), ['message' => 'Bagaimana cara akses remote jurnal luar kampus?']);
+        $response->assertStatus(200);
+        $this->assertStringContainsString('E-Journal', $response->json('reply'));
+    }
+
     public function test_opac_page_is_successful(): void
     {
         $response = $this->get(route('opac'));

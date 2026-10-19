@@ -54,8 +54,11 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     // 1. Manajemen User
     Route::resource('users', UserController::class);
 
-    // 2. Manajemen Buku
+    // 2. Manajemen Buku & Stok Eksemplar
     Route::resource('buku', BookController::class)->names('books');
+    Route::post('buku/{buku}/eksemplar', [BookController::class, 'storeEksemplar'])->name('books.eksemplar.store');
+    Route::put('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'updateEksemplar'])->name('books.eksemplar.update');
+    Route::delete('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'destroyEksemplar'])->name('books.eksemplar.destroy');
 
     // 3. Manajemen Acara
     Route::resource('acara', AcaraAdminController::class)->names('acara');

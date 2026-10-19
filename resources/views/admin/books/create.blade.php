@@ -332,6 +332,69 @@
                             >{{ old('deskripsi') }}</textarea>
                         </div>
 
+                        {{-- Pengaturan Eksemplar Fisik & Stok Awal --}}
+                        <div class="space-y-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-xs font-bold text-emerald-950">
+                                    <i class="fa-solid fa-boxes-stacked text-emerald-700"></i>
+                                    Registrasi Eksemplar Fisik &amp; Stok Awal (Opsional)
+                                </span>
+                                <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">Inventaris Rak</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-900/80 leading-snug">
+                                Tentukan jumlah salinan fisik buku yang langsung tersedia di rak perpustakaan. Sistem otomatis men-generate barcode inventaris dan nomor panggil per eksemplar.
+                            </p>
+
+                            <div class="grid gap-4 sm:grid-cols-3">
+                                <div>
+                                    <label for="stok_awal" class="block text-xs font-semibold text-ink">
+                                        Jumlah Stok Awal
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="stok_awal"
+                                        id="stok_awal"
+                                        value="{{ old('stok_awal', 1) }}"
+                                        min="0"
+                                        max="50"
+                                        placeholder="Misal: 2"
+                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                    >
+                                    <span class="text-[10px] text-muted">Isi 0 jika buku digital / belum ada fisik</span>
+                                </div>
+
+                                <div>
+                                    <label for="nomor_panggil_dasar" class="block text-xs font-semibold text-ink">
+                                        Nomor Panggil Dasar
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="nomor_panggil_dasar"
+                                        id="nomor_panggil_dasar"
+                                        value="{{ old('nomor_panggil_dasar') }}"
+                                        placeholder="Contoh: 005.1 HID a"
+                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none font-mono"
+                                    >
+                                    <span class="text-[10px] text-muted">Akan diberi suffix c.1, c.2, dst.</span>
+                                </div>
+
+                                <div>
+                                    <label for="lokasi_rak_dasar" class="block text-xs font-semibold text-ink">
+                                        Lokasi Rak Koleksi
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="lokasi_rak_dasar"
+                                        id="lokasi_rak_dasar"
+                                        value="{{ old('lokasi_rak_dasar', 'Lantai 2, Rak Koleksi') }}"
+                                        placeholder="Contoh: Lantai 2, Rak Komputer 03"
+                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                    >
+                                    <span class="text-[10px] text-muted">Letak fisik buku di gedung</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Aksi --}}
                         <div class="flex items-center justify-end gap-3 pt-4 border-t border-line">
                             <a

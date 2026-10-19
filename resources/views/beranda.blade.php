@@ -282,7 +282,7 @@
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-5">
                     <div>
                         <h2 id="judul-admin-workspace" class="text-xl font-bold tracking-tight text-primary sm:text-2xl">
-                            Pusat Tata Kelola & Layanan Perpustakaan
+                            Panel Kontrol & Manajemen Perpustakaan
                         </h2>
                         <p class="text-xs text-ink-secondary sm:text-sm">
                             Selamat bertugas, <span class="font-semibold text-ink">{{ Auth::user()->nama_lengkap }}</span> ({{ Auth::user()->peran?->nama_peran }}). Kelola katalog, agenda, dan pantau operasional pemustaka.
@@ -296,7 +296,7 @@
                             class="inline-flex items-center gap-2 rounded-xl bg-white border border-line px-4 py-2.5 text-xs font-semibold text-primary shadow-sm hover:border-primary transition-all"
                         >
                             <i class="fa-solid fa-bars-staggered"></i>
-                            <span>Menu Sidebar</span>
+                            <span>Buka Menu Sidebar</span>
                         </button>
                     </div>
                 </div>
@@ -436,6 +436,10 @@
                                     <i class="fa-solid fa-graduation-cap text-[11px]"></i>
                                     Mahasiswa
                                 </span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                                    <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                    Status keanggotaan aktif
+                                </span>
                                 @if (Auth::user()->prodi)
                                     <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
                                         {{ Auth::user()->prodi->nama_prodi }}
@@ -476,7 +480,7 @@
                                 <i class="fa-solid fa-book-bookmark text-base"></i>
                             </span>
                             <div>
-                                <h3 class="text-sm font-semibold text-ink group-hover:text-primary transition-colors">Katalog Buku OPAC</h3>
+                                <h3 class="text-sm font-semibold text-ink group-hover:text-primary transition-colors">Cari Buku OPAC</h3>
                                 <p class="text-[11px] text-muted">Cek stok & letak rak buku fisik</p>
                             </div>
                         </div>
