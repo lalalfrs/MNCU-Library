@@ -12,7 +12,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-[#FDFBF7] font-sans text-ink antialiased">
-    <div class="grid min-h-screen lg:grid-cols-2">
+    {{-- Loading Screen & Top Progress Bar --}}
+    @include('partials.loading-screen')
+
+    <div class="grid min-h-screen lg:grid-cols-2 page-transition-wrapper">
         {{-- Sisi Kiri: Formulir Login --}}
         <div class="flex flex-col justify-between bg-white px-6 py-8 sm:px-12 md:px-16 lg:px-14 xl:px-20">
             {{-- Header Atas: Brand & Tombol Kembali --}}
@@ -240,7 +243,7 @@
                         <button
                             type="submit"
                             id="btn-submit-login"
-                            class="flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-dark active:scale-[0.99] focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
+                            class="flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-dark btn-press btn-sheen focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
                         >
                             <span>Masuk Sekarang</span>
                         </button>

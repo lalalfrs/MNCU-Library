@@ -15,7 +15,7 @@
         <button
             type="button"
             id="sidebar-close"
-            class="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-xl text-muted hover:bg-[#F3F4F6] transition-colors"
+            class="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-xl text-muted hover:bg-[#F3F4F6] transition-colors btn-press"
             aria-label="Tutup menu"
         >
             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">

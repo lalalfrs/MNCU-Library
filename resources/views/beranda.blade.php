@@ -76,10 +76,13 @@
 
         $upcomingEvents = $upcomingEvents ?? array_fill(0, 3, [
             'title' => '[Nama acara]',
+            'excerpt' => '[Ringkasan acara, maksimal dua baris]',
+            'date' => '[Tanggal]',
             'day' => '--',
             'month' => 'Bln',
             'time' => '[Waktu]',
             'place' => '[Tempat]',
+            'category' => 'Agenda Kampus',
             'slug' => '#',
         ]);
 
@@ -111,15 +114,15 @@
                                 Kelola operasional dan sirkulasi Perpustakaan MNC University. Pantau statistik kunjungan harian pemustaka, perbarui katalog koleksi buku, publikasikan agenda acara, dan kelola rilis berita kampus.
                             </p>
                             <div class="mt-8 flex flex-wrap items-center gap-4">
-                                <a href="{{ route('admin.books.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                <a href="{{ route('admin.books.index') }}" class="btn-press btn-sheen inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark">
                                     <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
                                     Kelola Buku (OPAC)
                                 </a>
-                                <a href="{{ route('admin.acara.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('admin.acara.index') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-calendar-plus text-primary text-base" aria-hidden="true"></i>
                                     Kelola Acara & Poster
                                 </a>
-                                <a href="{{ route('admin.users.index') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('admin.users.index') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-users-gear text-primary text-base" aria-hidden="true"></i>
                                     Data Pemustaka
                                 </a>
@@ -133,15 +136,15 @@
                                 Akses seluruh fasilitas referensi riset, jurnal internasional terakreditasi Scopus & SINTA, portal publikasi ilmiah OJS MNC University, serta ajukan usulan pengadaan buku ajar silabus perkuliahan.
                             </p>
                             <div class="mt-8 flex flex-wrap items-center gap-4">
-                                <a href="{{ route('ejournal') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                <a href="{{ route('ejournal') }}" class="btn-press btn-sheen inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark">
                                     <i class="fa-solid fa-newspaper text-sm" aria-hidden="true"></i>
                                     E-Journal Internasional
                                 </a>
-                                <a href="{{ route('ojs') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('ojs') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-layer-group text-primary text-base" aria-hidden="true"></i>
                                     Portal OJS Prodi
                                 </a>
-                                <a href="{{ route('repository') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('repository') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-book-atlas text-primary text-base" aria-hidden="true"></i>
                                     Repository Riset
                                 </a>
@@ -155,15 +158,15 @@
                                 Temukan referensi tugas akhir, buku teks perkuliahan, dan e-book pembelajaran untuk mendukung studimu di MNC University. Jelajahi katalog buku fisik OPAC dan baca koleksi digital kapan saja.
                             </p>
                             <div class="mt-8 flex flex-wrap items-center gap-4">
-                                <a href="{{ route('opac') }}" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                                <a href="{{ route('opac') }}" class="btn-press btn-sheen inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark">
                                     <i class="fa-solid fa-magnifying-glass text-sm" aria-hidden="true"></i>
                                     Cari Buku di OPAC
                                 </a>
-                                <a href="{{ route('repository') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('repository') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-graduation-cap text-primary text-base" aria-hidden="true"></i>
                                     Repository Skripsi
                                 </a>
-                                <a href="{{ route('ebook') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                                <a href="{{ route('ebook') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                     <i class="fa-solid fa-book-open-reader text-primary text-base" aria-hidden="true"></i>
                                     E-Book Reader
                                 </a>
@@ -178,15 +181,15 @@
                             Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
                         </p>
                         <div class="mt-8 flex flex-wrap items-center gap-4">
-                            <a href="#layanan" class="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark">
+                            <a href="#layanan" class="btn-press btn-sheen inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark">
                                 <i class="fa-solid fa-book-bookmark text-sm" aria-hidden="true"></i>
                                 Pilih Layanan Perpustakaan
                             </a>
-                            <a href="{{ route('register') }}" class="inline-flex h-12 items-center gap-2 rounded-xl border border-primary text-primary bg-white px-5 text-base font-semibold transition-colors duration-150 hover:bg-primary/5">
+                            <a href="{{ route('register') }}" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-primary text-primary bg-white px-5 text-base font-semibold transition-all duration-150 hover:bg-primary/5">
                                 <i class="fa-solid fa-user-plus text-sm"></i>
                                 Daftar Anggota
                             </a>
-                            <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-colors duration-150 hover:border-primary/40 hover:bg-subtle">
+                            <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="btn-press inline-flex h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 text-base font-medium text-ink transition-all duration-150 hover:border-primary/40 hover:bg-subtle">
                                 <i class="fa-solid fa-location-dot text-primary text-base" aria-hidden="true"></i>
                                 Lokasi Kampus
                             </a>
@@ -866,30 +869,67 @@
 
             @forelse ($upcomingEvents as $eventItem)
                 @if ($loop->first)
-                    <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <ul class="mt-5 grid gap-5 md:grid-cols-2 lg:mt-6 lg:grid-cols-3 lg:gap-[30px]">
                 @endif
                         <li>
-                            <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex items-center gap-3.5 rounded-xl border border-line bg-white p-3.5 transition-colors duration-200 hover:border-primary/30 hover:bg-subtle">
-                                @if (!empty($eventItem['image']))
-                                    <div class="relative size-14 shrink-0 overflow-hidden rounded-lg bg-subtle">
-                                        <img src="{{ filter_var($eventItem['image'], FILTER_VALIDATE_URL) ? $eventItem['image'] : asset($eventItem['image']) }}" alt="{{ $eventItem['title'] }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
-                                        <div class="absolute inset-0 bg-primary/20"></div>
-                                        <div class="absolute inset-0 flex flex-col items-center justify-center text-white drop-shadow">
-                                            <span class="text-base font-bold leading-none">{{ $eventItem['day'] }}</span>
-                                            <span class="text-[10px] font-medium uppercase tracking-wider">{{ $eventItem['month'] }}</span>
+                            <a href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}" class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                                <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5">
+                                    @if (!empty($eventItem['image']))
+                                        <img
+                                            src="{{ filter_var($eventItem['image'], FILTER_VALIDATE_URL) ? $eventItem['image'] : asset($eventItem['image']) }}"
+                                            alt="{{ $eventItem['title'] }}"
+                                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            loading="lazy"
+                                        >
+                                    @else
+                                        <div class="flex h-full w-full items-center justify-center p-6 text-muted">
+                                            <svg class="size-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                                <line x1="16" x2="16" y1="2" y2="6"/>
+                                                <line x1="8" x2="8" y1="2" y2="6"/>
+                                                <line x1="3" x2="21" y1="10" y2="10"/>
+                                            </svg>
                                         </div>
-                                    </div>
-                                @else
-                                    <span class="flex size-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary text-white">
-                                        <span class="text-lg leading-none font-semibold">{{ $eventItem['day'] }}</span>
-                                        <span class="mt-1 text-[11px]">{{ $eventItem['month'] }}</span>
+                                    @endif
+                                    <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-primary shadow-xs backdrop-blur-xs">
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                            <line x1="16" x2="16" y1="2" y2="6"/>
+                                            <line x1="8" x2="8" y1="2" y2="6"/>
+                                            <line x1="3" x2="21" y1="10" y2="10"/>
+                                        </svg>
+                                        {{ $eventItem['category'] ?? 'Acara Kampus' }}
                                     </span>
-                                @endif
-                                <span class="min-w-0 flex-1">
-                                    <span class="block truncate text-sm font-semibold text-ink group-hover:text-primary lg:text-base">{{ $eventItem['title'] }}</span>
-                                    <span class="mt-0.5 block truncate text-xs text-muted">{{ $eventItem['time'] }} &middot; {{ $eventItem['place'] }}</span>
+                                    @if (!empty($eventItem['day']) && $eventItem['day'] !== '--')
+                                        <span class="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-ink shadow-xs backdrop-blur-xs">
+                                            <svg class="size-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <polyline points="12 6 12 12 16 14"/>
+                                            </svg>
+                                            {{ $eventItem['day'] }} {{ $eventItem['month'] }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <span class="flex flex-1 flex-col p-5">
+                                    <span class="text-[13px] text-muted">
+                                        {{ !empty($eventItem['date']) ? $eventItem['date'] : ($eventItem['day'] . ' ' . $eventItem['month']) }}
+                                        @if (!empty($eventItem['time']))
+                                            &middot; {{ $eventItem['time'] }}
+                                        @endif
+                                    </span>
+                                    <span class="mt-2 line-clamp-2 text-base font-medium text-ink group-hover:text-primary lg:text-lg">{{ $eventItem['title'] }}</span>
+                                    <span class="mt-2 line-clamp-2 text-sm text-ink-secondary">{{ !empty($eventItem['excerpt']) && $eventItem['excerpt'] !== '[Ringkasan acara, maksimal dua baris]' ? $eventItem['excerpt'] : (!empty($eventItem['place']) ? 'Diselenggarakan di ' . $eventItem['place'] . '.' : 'Agenda kegiatan perpustakaan.') }}</span>
+                                    @if (!empty($eventItem['place']))
+                                        <span class="mt-2.5 flex items-center gap-1.5 text-xs text-muted truncate">
+                                            <svg class="size-3.5 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            <span class="truncate">{{ $eventItem['place'] }}</span>
+                                        </span>
+                                    @endif
+                                    <span class="mt-auto pt-4 text-sm font-medium text-primary">Lihat detail acara &rarr;</span>
                                 </span>
-                                <span class="hidden shrink-0 text-xs font-semibold text-primary sm:inline">Lihat &rarr;</span>
                             </a>
                         </li>
                 @if ($loop->last)
@@ -901,6 +941,8 @@
                     <p class="mt-1 text-[13px] text-muted">Jadwal kegiatan perpustakaan akan diumumkan di sini.</p>
                 </div>
             @endforelse
+
+            <div class="mt-5 h-1 rounded-full bg-track"></div>
         </section>
 
         {{-- Map --}}

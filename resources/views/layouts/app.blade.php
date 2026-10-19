@@ -14,6 +14,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
+        {{-- Loading Screen & Top Progress Bar --}}
+        @include('partials.loading-screen')
+
         @php
             /**
              * Menu navbar sesuai flowchart Beranda.
@@ -32,7 +35,7 @@
         @include('partials.navbar')
         @include('partials.sidebar')
 
-        <main id="konten" class="flex flex-1 flex-col">
+        <main id="konten" class="flex flex-1 flex-col page-transition-wrapper">
             @if (session('success'))
                 <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
                     <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
