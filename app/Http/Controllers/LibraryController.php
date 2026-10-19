@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Buku;
+use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
-use App\Models\KategoriBuku;
+use App\Models\KunjunganBuku;
+use App\Models\Prodi;
 use App\Models\ProfilPustakawan;
+use App\Models\SubjekBuku;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class LibraryController extends Controller
@@ -83,17 +89,90 @@ class LibraryController extends Controller
     }
 
     /**
-     * Tampilkan katalog OPAC dengan pencarian, filter, dan informasi ketersediaan stok eksemplar real-time.
+     * Tampilkan katalog OPAC dengan perlindungan otentikasi, alur flowchart fitur,
+     * pencarian kriteria, penyortiran kriteria, box filter lanjutan, dan ketersediaan stok eksemplar.
      */
-    public function opac(Request $request): View
+    public function opac(Request $request): View|RedirectResponse
     {
-        $query = trim((string) $request->query('q', ''));
-        $category = (string) $request->query('kategori', 'Semua');
-        $prodi = (string) $request->query('prodi', 'Semua');
-        $statusFilter = (string) $request->query('status', 'Semua');
-        $jenisFilter = (string) $request->query('jenis', 'Semua');
+        // 1. Proteksi Otentikasi: Tamu/guest diarahkan ke halaman login atau pendaftaran terlebih dahulu
+        if (! Auth::check()) {
+            return redirect()->guest(route('login'))->with(
+                'info',
+                'Silakan masuk atau daftar akun terlebih dahulu untuk mengakses katalog OPAC Perpustakaan MNC University.'
+            );
+        }
 
-        $dbBooks = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar', 'subjek'])->get();
+        // 2. Alur Flowchart Fitur OPAC (Kategori Subjek, Koleksi Populer, Koleksi Baru & Diperbarui)
+        $fitur = (string) $request->query('fitur', 'semua');
+        $subjekId = trim((string) $request->query('subjek_id', ''));
+
+        // 3. Point 1: Search Bar Sederhana dengan Kriteria Tertentu
+        $query = trim((string) $request->query('q', ''));
+        $kriteria = (string) $request->query('kriteria', 'semua');
+
+        // 4. Point 2: Sort By Kriteria Tertentu
+        $sort = (string) $request->query('sort', '');
+        if ($sort === '') {
+            if ($fitur === 'populer') {
+                $sort = 'populer';
+            } elseif ($fitur === 'terbaru') {
+                $sort = 'terbaru';
+            } else {
+                $sort = 'terbaru';
+            }
+        }
+
+        // 5. Box Filter Pencarian Lanjutan (Sesuai Referensi Gambar Desain)
+        $filterPengarang = trim((string) $request->query('filter_pengarang', ''));
+        $filterIsbn = trim((string) $request->query('filter_isbn', ''));
+        $filterDdc = trim((string) $request->query('filter_ddc', ''));
+        $filterNomorInduk = trim((string) $request->query('filter_nomor_induk', ''));
+        $filterTahun = (string) $request->query('filter_tahun', 'Semua');
+        $filterLokasi = (string) $request->query('filter_lokasi', 'Semua');
+        $filterJenis = (string) $request->query('filter_jenis', 'Semua');
+        $filterProdi = (string) $request->query('filter_prodi', 'Semua');
+        $statusFilter = (string) $request->query('status', 'Semua');
+
+        // Hitung berapa banyak filter dari Box Filter yang sedang aktif
+        $activeFilterCount = 0;
+        if (! empty($filterPengarang)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterIsbn)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterDdc)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterNomorInduk)) {
+            $activeFilterCount++;
+        }
+        if ($filterTahun !== 'Semua' && ! empty($filterTahun)) {
+            $activeFilterCount++;
+        }
+        if ($filterLokasi !== 'Semua' && ! empty($filterLokasi)) {
+            $activeFilterCount++;
+        }
+        if ($filterJenis !== 'Semua' && ! empty($filterJenis)) {
+            $activeFilterCount++;
+        }
+        if ($filterProdi !== 'Semua' && ! empty($filterProdi)) {
+            $activeFilterCount++;
+        }
+        if ($statusFilter !== 'Semua' && ! empty($statusFilter)) {
+            $activeFilterCount++;
+        }
+
+        // Ambil data buku dengan relasi lengkap
+        $dbBooks = Buku::with([
+            'penulis',
+            'jenisBuku',
+            'kategoriBuku',
+            'penerbit',
+            'eksemplar',
+            'subjek',
+            'kunjungan',
+        ])->get();
 
         if ($dbBooks->isNotEmpty()) {
             $catalogItems = $dbBooks->map(function (Buku $buku): array {
@@ -105,7 +184,6 @@ class LibraryController extends Controller
                 $firstCopy = $buku->eksemplar->first();
                 $hasAvailable = $availableCount > 0;
 
-                // Tentukan status ketersediaan yang jelas dan informatif
                 if ($copiesCount === 0) {
                     $statusLabel = 'Koleksi Digital / Tanpa Eksemplar Fisik';
                 } elseif ($hasAvailable) {
@@ -116,15 +194,17 @@ class LibraryController extends Controller
 
                 $kategoriName = $buku->kategoriBuku?->nama_kategori ?? 'Umum';
                 $prodiName = match ($kategoriName) {
-                    'Teknologi Informasi' => 'Informatika',
-                    'Ekonomi & Bisnis' => 'Manajemen',
-                    'Desain & Seni Kreatif' => 'Desain Komunikasi Visual',
+                    'Teknologi Informasi', 'Teknologi & Ilmu Komputer' => 'Informatika',
+                    'Ekonomi & Bisnis', 'Bisnis, Manajemen & Ekonomi' => 'Manajemen',
+                    'Desain & Seni Kreatif', 'Desain & Seni Visual' => 'Desain Komunikasi Visual',
                     'Ilmu Komunikasi' => 'Sains Komunikasi',
+                    'Sains Data & Matematika' => 'Sistem Informasi',
                     default => 'Umum',
                 };
 
                 return [
                     'id' => $buku->id_buku,
+                    'uuid' => $buku->uuid,
                     'title' => $buku->judul_buku,
                     'author' => $authorName,
                     'publisher' => $buku->penerbit?->nama_penerbit ?? 'Penerbit MNC University',
@@ -140,7 +220,8 @@ class LibraryController extends Controller
                     'cover_url' => $buku->sampul_buku,
                     'description' => $buku->deskripsi ?: 'Buku referensi akademik koleksi Perpustakaan MNC University.',
                     'subjects' => $buku->subjek->pluck('nama_subjek')->all(),
-                    'call_number' => $firstCopy?->nomor_panggil ?? '005.1 MNC b',
+                    'subject_ids' => $buku->subjek->pluck('id_subjek_buku')->all(),
+                    'call_number' => $firstCopy?->nomor_panggil ?? '000.00 MNC b',
                     'location' => $firstCopy?->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
                     'copies' => $copiesCount > 0 ? "{$copiesCount} eksemplar" : '0 eksemplar',
                     'copies_total' => $copiesCount,
@@ -149,6 +230,9 @@ class LibraryController extends Controller
                     'copies_other' => $otherCount,
                     'status' => $hasAvailable ? 'Tersedia' : ($copiesCount > 0 ? 'Dipinjam' : 'Koleksi Digital'),
                     'status_label' => $statusLabel,
+                    'visits' => $buku->kunjungan?->jumlah_kunjungan ?? 0,
+                    'created_at' => $buku->created_at ? $buku->created_at->toISOString() : '',
+                    'updated_at' => $buku->updated_at ? $buku->updated_at->toISOString() : '',
                     'eksemplar_list' => $buku->eksemplar->map(fn ($ek, $idx) => [
                         'no' => $idx + 1,
                         'id_eksemplar' => $ek->id_eksemplar,
@@ -160,117 +244,83 @@ class LibraryController extends Controller
                 ];
             })->all();
         } else {
-            $catalogItems = [
-                [
-                    'id' => 1,
-                    'title' => 'Algoritma & Struktur Data dengan Python',
-                    'author' => 'Dr. Rian Hidayat, M.Kom.',
-                    'publisher' => 'Informatika Press',
-                    'publisher_city' => 'Bandung',
-                    'year' => 2024,
-                    'category' => 'Buku Teks',
-                    'category_name' => 'Teknologi Informasi',
-                    'format' => 'Buku Cetak',
-                    'prodi' => 'Informatika',
-                    'isbn' => '978-602-1234-01-1',
-                    'edition' => 'Edisi 2',
-                    'pages' => '320 hlm',
-                    'cover_url' => 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80',
-                    'description' => 'Konsep algoritma fundamental dan implementasi struktur data modern menggunakan bahasa Python.',
-                    'subjects' => ['Algoritma', 'Python', 'Struktur Data'],
-                    'call_number' => '005.1 HID a',
-                    'location' => 'Lantai 2, Rak Komputer 03',
-                    'copies' => '3 eksemplar',
-                    'copies_total' => 3,
-                    'copies_available' => 2,
-                    'copies_borrowed' => 1,
-                    'copies_other' => 0,
-                    'status' => 'Tersedia',
-                    'status_label' => 'Tersedia (2 dari 3 eksemplar)',
-                    'eksemplar_list' => [
-                        ['no' => 1, 'id_eksemplar' => 'EK-001', 'kode_inventaris' => 'INV-BK001-01', 'nomor_panggil' => '005.1 HID a c.1', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Tersedia'],
-                        ['no' => 2, 'id_eksemplar' => 'EK-002', 'kode_inventaris' => 'INV-BK001-02', 'nomor_panggil' => '005.1 HID a c.2', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Tersedia'],
-                        ['no' => 3, 'id_eksemplar' => 'EK-003', 'kode_inventaris' => 'INV-BK001-03', 'nomor_panggil' => '005.1 HID a c.3', 'lokasi_rak' => 'Lantai 2, Rak Komputer 03', 'status' => 'Dipinjam'],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'Manajemen Pemasaran Strategis di Era Digital',
-                    'author' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
-                    'publisher' => 'Penerbit Salemba Empat',
-                    'publisher_city' => 'Jakarta',
-                    'year' => 2023,
-                    'category' => 'Buku Teks',
-                    'category_name' => 'Ekonomi & Bisnis',
-                    'format' => 'Buku Cetak',
-                    'prodi' => 'Manajemen',
-                    'isbn' => '978-602-2345-02-2',
-                    'edition' => 'Edisi 1',
-                    'pages' => '280 hlm',
-                    'cover_url' => 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-                    'description' => 'Strategi pemasaran terpadu di era media digital dan omnichannel marketing korporat.',
-                    'subjects' => ['Pemasaran', 'Digital Marketing', 'Manajemen'],
-                    'call_number' => '658.8 GUN m',
-                    'location' => 'Lantai 2, Rak Ekonomi 01',
-                    'copies' => '2 eksemplar',
-                    'copies_total' => 2,
-                    'copies_available' => 2,
-                    'copies_borrowed' => 0,
-                    'copies_other' => 0,
-                    'status' => 'Tersedia',
-                    'status_label' => 'Tersedia (2 dari 2 eksemplar)',
-                    'eksemplar_list' => [
-                        ['no' => 1, 'id_eksemplar' => 'EK-004', 'kode_inventaris' => 'INV-BK002-01', 'nomor_panggil' => '658.8 GUN m c.1', 'lokasi_rak' => 'Lantai 2, Rak Ekonomi 01', 'status' => 'Tersedia'],
-                        ['no' => 2, 'id_eksemplar' => 'EK-005', 'kode_inventaris' => 'INV-BK002-02', 'nomor_panggil' => '658.8 GUN m c.2', 'lokasi_rak' => 'Lantai 2, Rak Ekonomi 01', 'status' => 'Tersedia'],
-                    ],
-                ],
-                [
-                    'id' => 3,
-                    'title' => 'Prinsip Desain Komunikasi Visual & Tipografi',
-                    'author' => 'Siti Nurhaliza, M.Ds.',
-                    'publisher' => 'MNC Art Press',
-                    'publisher_city' => 'Jakarta Barat',
-                    'year' => 2024,
-                    'category' => 'Buku Teks',
-                    'category_name' => 'Desain & Seni Kreatif',
-                    'format' => 'Buku Cetak',
-                    'prodi' => 'Desain Komunikasi Visual',
-                    'isbn' => '978-602-3456-03-3',
-                    'edition' => 'Edisi Revisi',
-                    'pages' => '240 hlm',
-                    'cover_url' => 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
-                    'description' => 'Eksplorasi komposisi visual, hierarki grid tipografi, dan perancangan identitas visual media cetak.',
-                    'subjects' => ['DKV', 'Tipografi', 'Desain Grafis'],
-                    'call_number' => '741.6 NUR p',
-                    'location' => 'Lantai 2, Rak Desain 02',
-                    'copies' => '2 eksemplar',
-                    'copies_total' => 2,
-                    'copies_available' => 1,
-                    'copies_borrowed' => 1,
-                    'copies_other' => 0,
-                    'status' => 'Tersedia',
-                    'status_label' => 'Tersedia (1 dari 2 eksemplar)',
-                    'eksemplar_list' => [
-                        ['no' => 1, 'id_eksemplar' => 'EK-006', 'kode_inventaris' => 'INV-BK003-01', 'nomor_panggil' => '741.6 NUR p c.1', 'lokasi_rak' => 'Lantai 2, Rak Desain 02', 'status' => 'Tersedia'],
-                        ['no' => 2, 'id_eksemplar' => 'EK-007', 'kode_inventaris' => 'INV-BK003-02', 'nomor_panggil' => '741.6 NUR p c.2', 'lokasi_rak' => 'Lantai 2, Rak Desain 02', 'status' => 'Dipinjam'],
-                    ],
-                ],
-            ];
+            $catalogItems = [];
         }
 
-        $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $category, $prodi, $statusFilter, $jenisFilter): bool {
-            $matchesQuery = empty($query) || (
-                stripos($item['title'], $query) !== false ||
-                stripos($item['author'], $query) !== false ||
-                stripos($item['call_number'] ?? '', $query) !== false ||
-                stripos($item['isbn'] ?? '', $query) !== false ||
-                stripos($item['publisher'] ?? '', $query) !== false ||
-                stripos($item['description'] ?? '', $query) !== false
-            );
-            $matchesCategory = $category === 'Semua' || $item['category'] === $category || ($item['category_name'] ?? '') === $category;
-            $matchesProdi = $prodi === 'Semua' || $item['prodi'] === $prodi;
-            $matchesJenis = $jenisFilter === 'Semua' || ($item['format'] ?? '') === $jenisFilter || ($item['category'] ?? '') === $jenisFilter;
+        // Terapkan Logika Penyaringan (Filtering)
+        $filteredItems = array_filter($catalogItems, function (array $item) use (
+            $query,
+            $kriteria,
+            $fitur,
+            $subjekId,
+            $filterPengarang,
+            $filterIsbn,
+            $filterDdc,
+            $filterNomorInduk,
+            $filterTahun,
+            $filterLokasi,
+            $filterJenis,
+            $filterProdi,
+            $statusFilter
+        ): bool {
+            // A. Search Bar Sederhana dengan Kriteria Tertentu
+            $matchesQuery = true;
+            if (! empty($query)) {
+                if ($kriteria === 'judul') {
+                    $matchesQuery = stripos($item['title'], $query) !== false;
+                } elseif ($kriteria === 'pengarang') {
+                    $matchesQuery = stripos($item['author'], $query) !== false;
+                } elseif ($kriteria === 'subjek') {
+                    $matchesQuery = collect($item['subjects'] ?? [])->contains(fn ($s) => stripos($s, $query) !== false);
+                } elseif ($kriteria === 'isbn') {
+                    $matchesQuery = stripos($item['isbn'] ?? '', $query) !== false;
+                } elseif ($kriteria === 'ddc') {
+                    $matchesQuery = stripos($item['call_number'] ?? '', $query) !== false ||
+                        collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false);
+                } else {
+                    // Semua kriteria / umum
+                    $matchesQuery = (
+                        stripos($item['title'], $query) !== false ||
+                        stripos($item['author'], $query) !== false ||
+                        stripos($item['call_number'] ?? '', $query) !== false ||
+                        stripos($item['isbn'] ?? '', $query) !== false ||
+                        stripos($item['publisher'] ?? '', $query) !== false ||
+                        stripos($item['description'] ?? '', $query) !== false ||
+                        collect($item['subjects'] ?? [])->contains(fn ($s) => stripos($s, $query) !== false)
+                    );
+                }
+            }
 
+            // B. Filter Kategori Subjek (Flowchart Cabang 1)
+            $matchesSubjek = true;
+            if ($fitur === 'subjek' && ! empty($subjekId) && $subjekId !== 'Semua') {
+                $matchesSubjek = in_array($subjekId, $item['subject_ids'] ?? [], true) ||
+                    collect($item['subjects'] ?? [])->contains(fn ($s) => strcasecmp($s, $subjekId) === 0);
+            }
+
+            // C. Box Filter Pencarian Lanjutan (Referensi Desain Gambar 2)
+            $matchesPengarang = empty($filterPengarang) || stripos($item['author'], $filterPengarang) !== false;
+            $matchesIsbn = empty($filterIsbn) || stripos($item['isbn'] ?? '', $filterIsbn) !== false;
+            $matchesDdc = empty($filterDdc) || (
+                stripos($item['call_number'] ?? '', $filterDdc) !== false ||
+                collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $filterDdc) !== false)
+            );
+            $matchesNomorInduk = empty($filterNomorInduk) || (
+                collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['kode_inventaris'] ?? '', $filterNomorInduk) !== false)
+            );
+            $matchesTahun = empty($filterTahun) || $filterTahun === 'Semua' || (string) $item['year'] === (string) $filterTahun;
+            $matchesLokasi = empty($filterLokasi) || $filterLokasi === 'Semua' || (
+                stripos($item['location'] ?? '', $filterLokasi) !== false ||
+                collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['lokasi_rak'] ?? '', $filterLokasi) !== false)
+            );
+            $matchesJenis = empty($filterJenis) || $filterJenis === 'Semua' || (
+                $item['category'] === $filterJenis || ($item['format'] ?? '') === $filterJenis
+            );
+            $matchesProdi = empty($filterProdi) || $filterProdi === 'Semua' || (
+                $item['prodi'] === $filterProdi
+            );
+
+            // D. Status Ketersediaan
             $matchesStatus = true;
             if ($statusFilter === 'Tersedia' || $statusFilter === 'Hanya Tersedia') {
                 $matchesStatus = ($item['copies_available'] ?? 0) > 0;
@@ -278,38 +328,137 @@ class LibraryController extends Controller
                 $matchesStatus = ($item['copies_borrowed'] ?? 0) > 0 || ($item['copies_available'] ?? 0) === 0;
             }
 
-            return $matchesQuery && $matchesCategory && $matchesProdi && $matchesJenis && $matchesStatus;
+            return $matchesQuery &&
+                $matchesSubjek &&
+                $matchesPengarang &&
+                $matchesIsbn &&
+                $matchesDdc &&
+                $matchesNomorInduk &&
+                $matchesTahun &&
+                $matchesLokasi &&
+                $matchesJenis &&
+                $matchesProdi &&
+                $matchesStatus;
         });
 
-        // Hitung statistik inventaris koleksi untuk header OPAC
+        // Re-index array
+        $filteredItems = array_values($filteredItems);
+
+        // 6. Point 2: Penyortiran (Sorting) Koleksi
+        usort($filteredItems, function (array $a, array $b) use ($sort): int {
+            if ($sort === 'populer') {
+                $comp = ($b['visits'] ?? 0) <=> ($a['visits'] ?? 0);
+                if ($comp !== 0) {
+                    return $comp;
+                }
+
+                return ($b['copies_borrowed'] ?? 0) <=> ($a['copies_borrowed'] ?? 0);
+            }
+
+            if ($sort === 'terbaru') {
+                return strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? ''));
+            }
+
+            if ($sort === 'judul_asc') {
+                return strcasecmp($a['title'] ?? '', $b['title'] ?? '');
+            }
+
+            if ($sort === 'judul_desc') {
+                return strcasecmp($b['title'] ?? '', $a['title'] ?? '');
+            }
+
+            if ($sort === 'tahun_desc') {
+                return ($b['year'] ?? 0) <=> ($a['year'] ?? 0);
+            }
+
+            if ($sort === 'tahun_asc') {
+                return ($a['year'] ?? 0) <=> ($b['year'] ?? 0);
+            }
+
+            return 0;
+        });
+
+        // Hitung statistik inventaris
         $totalKoleksi = count($catalogItems);
         $totalEksemplarFisik = array_sum(array_column($catalogItems, 'copies_total'));
         $totalEksemplarTersedia = array_sum(array_column($catalogItems, 'copies_available'));
 
-        $dbCategories = KategoriBuku::orderBy('nama_kategori')->pluck('nama_kategori')->all();
-        $categories = ['Semua', ...($dbCategories ?: ['Buku Teks', 'Referensi', 'Skripsi'])];
+        // Data Pilihan Dropdown & Filter Lanjutan
+        $subjekList = SubjekBuku::withCount('buku')->orderBy('nama_subjek')->get();
+        $selectedSubjek = null;
+        if (! empty($subjekId)) {
+            $selectedSubjek = SubjekBuku::where('id_subjek_buku', $subjekId)->orWhere('nama_subjek', $subjekId)->first();
+        }
+
+        $tahunList = Buku::whereNotNull('tahun_terbit')->distinct()->orderByDesc('tahun_terbit')->pluck('tahun_terbit')->all();
+        if (empty($tahunList)) {
+            $tahunList = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
+        }
+
+        $lokasiList = EksemplarBuku::whereNotNull('lokasi_rak')->distinct()->orderBy('lokasi_rak')->pluck('lokasi_rak')->all();
+        if (empty($lokasiList)) {
+            $lokasiList = ['Lantai 2, Rak Komputer 03', 'Lantai 2, Rak Komputer 04', 'Lantai 2, Rak Ekonomi 01', 'Lantai 2, Rak Desain 02', 'Lantai 1, Rak Umum 01', 'Lantai 1, Rak Sastra 02'];
+        }
 
         $dbTypes = JenisBuku::orderBy('nama_jenis_buku')->pluck('nama_jenis_buku')->all();
-        $types = ['Semua', ...($dbTypes ?: ['Buku Cetak', 'E-Book Digital', 'Karya Ilmiah'])];
+        $types = $dbTypes ?: ['Buku Teks', 'Buku Referensi', 'Karya Ilmiah / Skripsi', 'Jurnal & Majalah Ilmiah', 'Buku Fiksi & Sastra'];
 
-        $statuses = ['Semua', 'Hanya Tersedia', 'Sedang Dipinjam'];
-        $prodis = ['Semua', 'Informatika', 'Sistem Informasi', 'Desain Komunikasi Visual', 'Manajemen', 'Akuntansi', 'Sains Komunikasi'];
+        $prodiList = Prodi::orderBy('nama_prodi')->get();
 
         return view('opac', [
-            'items' => array_values($filteredItems),
+            'items' => $filteredItems,
+            'fitur' => $fitur,
+            'subjekId' => $subjekId,
+            'selectedSubjek' => $selectedSubjek,
+            'subjekList' => $subjekList,
             'query' => $query,
-            'category' => $category,
-            'prodi' => $prodi,
+            'kriteria' => $kriteria,
+            'sort' => $sort,
+            'filterPengarang' => $filterPengarang,
+            'filterIsbn' => $filterIsbn,
+            'filterDdc' => $filterDdc,
+            'filterNomorInduk' => $filterNomorInduk,
+            'filterTahun' => $filterTahun,
+            'filterLokasi' => $filterLokasi,
+            'filterJenis' => $filterJenis,
+            'filterProdi' => $filterProdi,
             'statusFilter' => $statusFilter,
-            'jenisFilter' => $jenisFilter,
-            'categories' => $categories,
+            'activeFilterCount' => $activeFilterCount,
+            'tahunList' => $tahunList,
+            'lokasiList' => $lokasiList,
             'types' => $types,
-            'statuses' => $statuses,
-            'prodis' => $prodis,
+            'prodiList' => $prodiList,
             'totalCount' => count($filteredItems),
             'totalKoleksi' => $totalKoleksi,
             'totalEksemplarFisik' => $totalEksemplarFisik,
             'totalEksemplarTersedia' => $totalEksemplarTersedia,
+        ]);
+    }
+
+    /**
+     * Catat kunjungan penelusuran buku saat user membuka rincian informasi buku.
+     */
+    public function recordKunjungan(Request $request, Buku $buku): JsonResponse
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $kunjungan = KunjunganBuku::firstOrCreate(
+            ['id_buku' => $buku->id_buku],
+            [
+                'id_kunjungan_buku' => sprintf('MNCU%05d', KunjunganBuku::count() + 1),
+                'uuid' => (string) Str::uuid(),
+                'jumlah_kunjungan' => 0,
+            ]
+        );
+
+        $kunjungan->increment('jumlah_kunjungan');
+
+        return response()->json([
+            'success' => true,
+            'id_buku' => $buku->id_buku,
+            'jumlah_kunjungan' => $kunjungan->fresh()->jumlah_kunjungan,
         ]);
     }
 

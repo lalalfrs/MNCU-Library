@@ -80,7 +80,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('beranda')->with(
+        return redirect()->intended(route('beranda'))->with(
             'success',
             "Selamat bergabung di Perpustakaan MNC University, {$user->nama_lengkap}! Akun pemustaka Anda ({$user->id_pengguna}) berhasil didaftarkan."
         );

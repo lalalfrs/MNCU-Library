@@ -44,6 +44,7 @@ Route::match(['get', 'post'], '/chat', [LibraryController::class, 'chat'])->name
 
 // 5 Layanan Perpustakaan Utama
 Route::get('/opac', [LibraryController::class, 'opac'])->name('opac');
+Route::post('/opac/kunjungan/{buku}', [LibraryController::class, 'recordKunjungan'])->name('opac.kunjungan');
 Route::get('/repository', [LibraryController::class, 'repository'])->name('repository');
 Route::get('/e-journal', [LibraryController::class, 'ejournal'])->name('ejournal');
 Route::get('/ojs-prodi', [LibraryController::class, 'ojs'])->name('ojs');

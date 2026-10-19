@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Pengguna;
+use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -93,7 +95,13 @@ class LibraryPagesTest extends TestCase
 
     public function test_opac_page_is_successful(): void
     {
-        $response = $this->get(route('opac'));
+        $user = Pengguna::first();
+        if (! $user) {
+            $this->seed(PerpustakaanSeeder::class);
+            $user = Pengguna::first();
+        }
+
+        $response = $this->actingAs($user)->get(route('opac'));
         $response->assertStatus(200);
         $response->assertSee('Katalog OPAC');
         $response->assertSee('Algoritma & Struktur Data');

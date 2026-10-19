@@ -23,11 +23,24 @@ class BookStockAndOpacTest extends TestCase
     }
 
     /**
-     * Pastikan halaman OPAC menampilkan metrik inventaris dan status ketersediaan stok buku.
+     * Pastikan tamu yang belum login diarahkan ke halaman login saat membuka OPAC.
      */
-    public function test_opac_displays_real_time_stock_and_availability_badges(): void
+    public function test_opac_redirects_unauthenticated_guest_to_login(): void
     {
         $response = $this->get(route('opac'));
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('info');
+    }
+
+    /**
+     * Pastikan halaman OPAC menampilkan metrik inventaris dan status ketersediaan stok buku saat user telah login.
+     */
+    public function test_opac_displays_real_time_stock_and_availability_badges_for_authenticated_user(): void
+    {
+        $user = Pengguna::first();
+
+        $response = $this->actingAs($user)->get(route('opac'));
 
         $response->assertStatus(200);
         $response->assertSee('Katalog OPAC Perpustakaan');
@@ -35,20 +48,59 @@ class BookStockAndOpacTest extends TestCase
         $response->assertSee('Total Fisik');
         $response->assertSee('Siap Pinjam');
         $response->assertSee('Algoritma & Struktur Data');
-        $response->assertSee('Tersedia:');
-        $response->assertSee('Rincian &amp; Stok Eksemplar', false);
-        $response->assertSee('Tanya Pustakawan');
+        $response->assertSee('Kategori Subjek');
+        $response->assertSee('Koleksi Populer');
+        $response->assertSee('Koleksi Baru');
+        $response->assertSee('Filter Pencarian');
+        $response->assertSee('Detail Buku');
     }
 
     /**
-     * Pastikan filter ketersediaan stok di OPAC berfungsi menyaring data.
+     * Pastikan fitur flowchart (Kategori Subjek, Populer, Baru) dan filter box bekerja dengan baik.
      */
-    public function test_opac_supports_stock_status_filter(): void
+    public function test_opac_supports_flowchart_features_and_filters(): void
     {
-        $response = $this->get(route('opac', ['status' => 'Hanya Tersedia']));
+        $user = Pengguna::first();
+
+        // 1. Fitur Kategori Subjek
+        $responseSubjek = $this->actingAs($user)->get(route('opac', ['fitur' => 'subjek']));
+        $responseSubjek->assertStatus(200);
+        $responseSubjek->assertSee('Pilih Kategori Subjek Koleksi');
+
+        // 2. Fitur Koleksi Populer
+        $responsePopuler = $this->actingAs($user)->get(route('opac', ['fitur' => 'populer', 'sort' => 'populer']));
+        $responsePopuler->assertStatus(200);
+        $responsePopuler->assertSee('Koleksi Terpopuler Perpustakaan');
+
+        // 3. Fitur Koleksi Baru
+        $responseBaru = $this->actingAs($user)->get(route('opac', ['fitur' => 'terbaru', 'sort' => 'terbaru']));
+        $responseBaru->assertStatus(200);
+        $responseBaru->assertSee('Koleksi Baru dan Diperbarui');
+
+        // 4. Pencarian berdasarkan Kriteria Tertentu
+        $responseSearch = $this->actingAs($user)->get(route('opac', ['q' => 'Python', 'kriteria' => 'judul']));
+        $responseSearch->assertStatus(200);
+        $responseSearch->assertSee('Algoritma & Struktur Data');
+
+        // 5. Box Filter Lanjutan (Pengarang, Tahun, DDC)
+        $responseBox = $this->actingAs($user)->get(route('opac', ['filter_pengarang' => 'Rian', 'filter_tahun' => '2024']));
+        $responseBox->assertStatus(200);
+        $responseBox->assertSee('Algoritma & Struktur Data');
+    }
+
+    /**
+     * Pastikan pencatatan kunjungan penelusuran buku via endpoint recordKunjungan bekerja.
+     */
+    public function test_opac_record_kunjungan_increments_views(): void
+    {
+        $user = Pengguna::first();
+        $book = Buku::first();
+
+        $response = $this->actingAs($user)->postJson(route('opac.kunjungan', $book->id_buku));
 
         $response->assertStatus(200);
-        $response->assertSee('Algoritma & Struktur Data');
+        $response->assertJson(['success' => true, 'id_buku' => $book->id_buku]);
+        $this->assertGreaterThanOrEqual(1, $response->json('jumlah_kunjungan'));
     }
 
     /**
