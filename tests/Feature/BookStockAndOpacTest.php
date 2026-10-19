@@ -52,6 +52,40 @@ class BookStockAndOpacTest extends TestCase
     }
 
     /**
+     * Pastikan pencarian OPAC berdasarkan kriteria koleksi (judul, pengarang, nomor panggil) berfungsi sesuai flowchart.
+     */
+    public function test_opac_supports_search_by_criteria(): void
+    {
+        // 1. Pencarian kriteria judul
+        $responseJudul = $this->get(route('opac', ['q' => 'Algoritma', 'kriteria' => 'judul']));
+        $responseJudul->assertStatus(200);
+        $responseJudul->assertSee('Algoritma & Struktur Data');
+
+        // 2. Pencarian kriteria pengarang
+        $responseAuthor = $this->get(route('opac', ['q' => 'Rian Hidayat', 'kriteria' => 'pengarang']));
+        $responseAuthor->assertStatus(200);
+        $responseAuthor->assertSee('Algoritma & Struktur Data');
+
+        // 3. Pencarian kriteria kustom yang tidak cocok
+        $responseMismatch = $this->get(route('opac', ['q' => 'Python', 'kriteria' => 'pengarang']));
+        $responseMismatch->assertStatus(200);
+        $responseMismatch->assertSee('Koleksi Tidak Ditemukan');
+    }
+
+    /**
+     * Pastikan saat koleksi tidak ditemukan, pesan tidak ditemukan dan tombol coba kata kunci lain ditampilkan (loop F -> B).
+     */
+    public function test_opac_displays_not_found_message_with_loop_back_action_when_no_match(): void
+    {
+        $response = $this->get(route('opac', ['q' => 'KataKunciYangPastiTidakAda12345']));
+
+        $response->assertStatus(200);
+        $response->assertSee('Koleksi Tidak Ditemukan');
+        $response->assertSee('Coba Kata Kunci Lain');
+        $response->assertSee('Lihat Semua Koleksi');
+    }
+
+    /**
      * Pastikan halaman manajemen buku admin menampilkan metrik global dan kolom stok eksemplar.
      */
     public function test_admin_book_index_displays_inventory_stock_metrics_and_column(): void

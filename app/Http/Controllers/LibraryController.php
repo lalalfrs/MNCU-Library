@@ -88,10 +88,12 @@ class LibraryController extends Controller
     public function opac(Request $request): View
     {
         $query = trim((string) $request->query('q', ''));
+        $kriteria = (string) $request->query('kriteria', 'semua');
         $category = (string) $request->query('kategori', 'Semua');
         $prodi = (string) $request->query('prodi', 'Semua');
         $statusFilter = (string) $request->query('status', 'Semua');
         $jenisFilter = (string) $request->query('jenis', 'Semua');
+        $selectedBookId = $request->query('buku');
 
         $dbBooks = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar', 'subjek'])->get();
 
@@ -258,15 +260,29 @@ class LibraryController extends Controller
             ];
         }
 
-        $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $category, $prodi, $statusFilter, $jenisFilter): bool {
-            $matchesQuery = empty($query) || (
-                stripos($item['title'], $query) !== false ||
-                stripos($item['author'], $query) !== false ||
-                stripos($item['call_number'] ?? '', $query) !== false ||
-                stripos($item['isbn'] ?? '', $query) !== false ||
-                stripos($item['publisher'] ?? '', $query) !== false ||
-                stripos($item['description'] ?? '', $query) !== false
-            );
+        $filteredItems = array_filter($catalogItems, function (array $item) use ($query, $kriteria, $category, $prodi, $statusFilter, $jenisFilter): bool {
+            $matchesQuery = true;
+            if (! empty($query)) {
+                $subjectsText = implode(' ', $item['subjects'] ?? []);
+                $matchesQuery = match ($kriteria) {
+                    'judul' => stripos($item['title'], $query) !== false,
+                    'pengarang' => stripos($item['author'], $query) !== false,
+                    'penerbit' => stripos($item['publisher'], $query) !== false || stripos($item['publisher_city'] ?? '', $query) !== false,
+                    'subjek' => stripos($subjectsText, $query) !== false || stripos($item['category_name'] ?? '', $query) !== false,
+                    'nomor_panggil' => stripos($item['call_number'] ?? '', $query) !== false,
+                    'isbn' => stripos($item['isbn'] ?? '', $query) !== false,
+                    default => (
+                        stripos($item['title'], $query) !== false ||
+                        stripos($item['author'], $query) !== false ||
+                        stripos($item['call_number'] ?? '', $query) !== false ||
+                        stripos($item['isbn'] ?? '', $query) !== false ||
+                        stripos($item['publisher'] ?? '', $query) !== false ||
+                        stripos($item['description'] ?? '', $query) !== false ||
+                        stripos($subjectsText, $query) !== false
+                    ),
+                };
+            }
+
             $matchesCategory = $category === 'Semua' || $item['category'] === $category || ($item['category_name'] ?? '') === $category;
             $matchesProdi = $prodi === 'Semua' || $item['prodi'] === $prodi;
             $matchesJenis = $jenisFilter === 'Semua' || ($item['format'] ?? '') === $jenisFilter || ($item['category'] ?? '') === $jenisFilter;
@@ -298,6 +314,7 @@ class LibraryController extends Controller
         return view('opac', [
             'items' => array_values($filteredItems),
             'query' => $query,
+            'kriteria' => $kriteria,
             'category' => $category,
             'prodi' => $prodi,
             'statusFilter' => $statusFilter,
@@ -310,6 +327,7 @@ class LibraryController extends Controller
             'totalKoleksi' => $totalKoleksi,
             'totalEksemplarFisik' => $totalEksemplarFisik,
             'totalEksemplarTersedia' => $totalEksemplarTersedia,
+            'selectedBookId' => $selectedBookId,
         ]);
     }
 
