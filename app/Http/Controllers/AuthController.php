@@ -172,6 +172,60 @@ class AuthController extends Controller
     }
 
     /**
+     * Skenario 1: Tampilkan formulir reset / ganti kata sandi untuk pengguna yang sedang masuk.
+     */
+    public function showChangePasswordForm(): View
+    {
+        /** @var Pengguna $user */
+        $user = Auth::user();
+
+        return view('auth.change-password', compact('user'));
+    }
+
+    /**
+     * Skenario 1: Proses pembaruan kata sandi oleh pengguna sendiri (Dosen & Mahasiswa).
+     * Wajib memverifikasi kata sandi lama sebelum memperbarui ke kata sandi baru.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password_lama' => ['required', 'string'],
+            'password_baru' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'password_lama.required' => 'Kata sandi lama wajib diisi untuk verifikasi keamanan.',
+            'password_baru.required' => 'Kata sandi baru wajib diisi.',
+            'password_baru.min' => 'Kata sandi baru minimal 6 karakter.',
+            'password_baru.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
+        ]);
+
+        /** @var Pengguna $user */
+        $user = Auth::user();
+
+        // 1. Verifikasi keamanan: Pastikan kata sandi lama sesuai dengan yang ada di database
+        if (! Hash::check($validated['password_lama'], $user->kata_sandi)) {
+            return back()->withErrors([
+                'password_lama' => 'Kata sandi lama yang Anda masukkan tidak sesuai dengan database.',
+            ])->withInput();
+        }
+
+        // 2. Cegah penggunaan kata sandi yang sama persis dengan yang lama
+        if (Hash::check($validated['password_baru'], $user->kata_sandi)) {
+            return back()->withErrors([
+                'password_baru' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini.',
+            ])->withInput();
+        }
+
+        // 3. Enkripsi dan simpan kata sandi baru
+        $user->kata_sandi = Hash::make($validated['password_baru']);
+        $user->save();
+
+        return redirect()->route('password.edit')->with(
+            'success',
+            'Kata sandi Anda berhasil diperbarui! Silakan gunakan kata sandi baru untuk login berikutnya.'
+        );
+    }
+
+    /**
      * Proses keluar dari sesi sistem perpustakaan.
      */
     public function logout(Request $request): RedirectResponse

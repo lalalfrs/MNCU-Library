@@ -145,4 +145,46 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', "Pengguna {$nama} berhasil dihapus dari sistem.");
     }
+
+    /**
+     * Skenario 2: Reset / ganti kata sandi pengguna lain oleh Super Admin.
+     * Admin TIDAK PERLU memasukkan kata sandi lama milik pengguna sasaran.
+     * Mendukung:
+     * 1. Reset manual (kata sandi baru & konfirmasi kata sandi baru).
+     * 2. Reset ke Default Password (tombol cepat).
+     */
+    public function resetPassword(Request $request, string $id): RedirectResponse
+    {
+        $user = Pengguna::with('peran')->findOrFail($id);
+
+        if ($request->boolean('reset_to_default')) {
+            $suffix = $user->nomor_identitas ?: substr($user->id_pengguna, -5);
+            $defaultPassword = 'Mncu#'.$suffix;
+
+            $user->kata_sandi = Hash::make($defaultPassword);
+            $user->save();
+
+            return back()->with(
+                'success',
+                "Kata sandi akun {$user->nama_lengkap} ({$user->peran?->nama_peran}) berhasil direset ke kata sandi default: {$defaultPassword}"
+            )->with('reset_user_id', $user->id_pengguna)
+                ->with('reset_password_preview', $defaultPassword);
+        }
+
+        $validated = $request->validate([
+            'password_baru' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'password_baru.required' => 'Kata sandi baru untuk pengguna wajib diisi.',
+            'password_baru.min' => 'Kata sandi baru minimal 6 karakter.',
+            'password_baru.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
+        ]);
+
+        $user->kata_sandi = Hash::make($validated['password_baru']);
+        $user->save();
+
+        return back()->with(
+            'success',
+            "Kata sandi akun {$user->nama_lengkap} ({$user->peran?->nama_peran}) berhasil diperbarui oleh Administrator."
+        )->with('reset_user_id', $user->id_pengguna);
+    }
 }

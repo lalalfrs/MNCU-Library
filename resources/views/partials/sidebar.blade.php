@@ -186,13 +186,19 @@
                 </a>
             </div>
         @else
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 text-xs font-semibold text-[#E11D48] hover:bg-red-100 transition-colors">
-                    <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-                    <span>Keluar dari Akun</span>
-                </button>
-            </form>
+            <div class="flex flex-col gap-2">
+                <a href="{{ route('password.edit') }}" class="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-subtle">
+                    <i class="fa-solid fa-key text-xs text-primary"></i>
+                    <span>Ubah Kata Sandi</span>
+                </a>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 text-xs font-semibold text-[#E11D48] hover:bg-red-100 transition-colors">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+                        <span>Keluar dari Akun</span>
+                    </button>
+                </form>
+            </div>
         @endguest
     </div>
 </aside>

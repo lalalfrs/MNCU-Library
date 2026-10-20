@@ -103,6 +103,10 @@
                         @endif
 
                         <div class="py-1">
+                            <a href="{{ route('password.edit') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                <i class="fa-solid fa-key text-muted w-4"></i>
+                                <span>Ubah Kata Sandi</span>
+                            </a>
                             <a href="{{ route('pustakawan') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
                                 <i class="fa-regular fa-user text-muted w-4"></i>
                                 <span>Profil Pustakawan</span>

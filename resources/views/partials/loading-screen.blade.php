@@ -59,3 +59,41 @@
         </p>
     </div>
 </div>
+
+{{-- Fallback Aman: Sembunyikan jika JS dinonaktifkan --}}
+<noscript>
+    <style>
+        #mncu-loading-screen { display: none !important; }
+        #mncu-progress-bar { display: none !important; }
+    </style>
+</noscript>
+
+{{-- Inline Self-Dismiss Fail-Safe (Memastikan loading screen SELALU tertutup secara mulus tanpa pernah ngestuck) --}}
+<script>
+    (() => {
+        const dismissLoader = () => {
+            const loader = document.getElementById('mncu-loading-screen');
+            const bar = document.getElementById('mncu-progress-bar');
+            if (bar) {
+                bar.style.width = '100%';
+                setTimeout(() => { bar.style.opacity = '0'; }, 150);
+            }
+            if (loader && loader.style.display !== 'none' && !loader.classList.contains('pointer-events-none')) {
+                loader.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 300);
+            }
+        };
+
+        if (document.readyState === 'complete') {
+            dismissLoader();
+        } else {
+            window.addEventListener('load', dismissLoader);
+            document.addEventListener('DOMContentLoaded', dismissLoader);
+        }
+
+        // Batas maksimal: loading screen otomatis memudar dan terbuka setelah 500ms
+        setTimeout(dismissLoader, 500);
+    })();
+</script>

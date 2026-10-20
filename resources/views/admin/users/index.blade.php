@@ -34,6 +34,45 @@
             </div>
         </div>
 
+        {{-- Alert Notifikasi Sukses / Feedback Reset Password --}}
+        @if (session('success'))
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-xs sm:text-sm text-emerald-900 shadow-xs">
+                <div class="flex items-start gap-3">
+                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                        <i class="fa-solid fa-circle-check text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-emerald-950">{{ session('success') }}</p>
+                        @if (session('reset_password_preview'))
+                            <div class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs">
+                                <span class="font-medium text-emerald-800">Password Baru Akun:</span>
+                                <code class="rounded bg-emerald-100 px-2 py-0.5 font-mono font-bold text-emerald-900 text-sm select-all">{{ session('reset_password_preview') }}</code>
+                                <span class="text-[11px] text-muted">(Salin dan informasikan kepada pengguna bersangkutan)</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-xs sm:text-sm text-rose-900 shadow-xs">
+                <div class="flex items-start gap-3">
+                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white">
+                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-rose-950">Gagal Memproses Permintaan</p>
+                        <ul class="mt-1 list-disc list-inside space-y-0.5 text-xs text-rose-800">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Filter & Pencarian Bar --}}
         <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
             <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -142,6 +181,17 @@
                                             <i class="fa-regular fa-pen-to-square text-xs"></i>
                                         </a>
 
+                                        {{-- Skenario 2: Tombol Reset Password oleh Admin --}}
+                                        <button
+                                            type="button"
+                                            onclick="openResetPasswordModal('{{ $user->id_pengguna }}', '{{ addslashes($user->nama_lengkap) }}', '{{ $user->email }}', '{{ $user->peran?->nama_peran ?? 'Pengguna' }}', '{{ $user->nomor_identitas ?? '-' }}', 'Mncu#{{ $user->nomor_identitas ?: substr($user->id_pengguna, -5) }}')"
+                                            class="inline-flex size-8 items-center justify-center rounded-lg border border-amber-200 text-amber-700 transition-colors hover:bg-amber-50 hover:border-amber-300"
+                                            title="Reset Password Pengguna"
+                                            aria-label="Reset Password Pengguna {{ $user->nama_lengkap }}"
+                                        >
+                                            <i class="fa-solid fa-key text-xs"></i>
+                                        </button>
+
                                         @if (Auth::id() !== $user->id_pengguna)
                                             <form
                                                 action="{{ route('admin.users.destroy', $user->id_pengguna) }}"
@@ -185,4 +235,267 @@
             @endif
         </div>
     </div>
+
+    {{-- ========================================================================= --}}
+    {{-- MODAL RESET PASSWORD OLEH ADMIN (SKENARIO 2)                             --}}
+    {{-- ========================================================================= --}}
+    <div
+        id="admin-reset-password-modal"
+        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-reset-title"
+    >
+        <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
+            <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+                
+                {{-- Header Modal --}}
+                <div class="flex items-center justify-between border-b border-line bg-slate-50/80 px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700">
+                            <i class="fa-solid fa-key text-sm"></i>
+                        </span>
+                        <div>
+                            <h3 id="modal-reset-title" class="text-sm font-bold text-ink sm:text-base">Reset Password Pengguna</h3>
+                            <p class="text-[11px] text-muted">Panel Administrator Perpustakaan MNC University</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="closeResetPasswordModal()"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                        aria-label="Tutup dialog"
+                    >
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                {{-- Target User Preview --}}
+                <div class="bg-subtle/50 px-6 py-3.5 border-b border-line/80">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p id="modal-user-name" class="font-bold text-xs sm:text-sm text-ink">-</p>
+                            <p id="modal-user-email" class="text-[11px] text-muted">-</p>
+                        </div>
+                        <div class="text-right">
+                            <span id="modal-user-role" class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold bg-white border-line text-ink-secondary">-</span>
+                            <p id="modal-user-id" class="font-mono text-[10px] text-muted mt-0.5">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Body Modal --}}
+                <div class="p-6">
+                    <form id="admin-reset-form" method="POST" action="" class="space-y-5">
+                        @csrf
+
+                        {{-- Pilihan Mode Reset --}}
+                        <div class="grid grid-cols-2 gap-2 rounded-xl border border-line bg-subtle p-1 text-xs font-semibold">
+                            <button
+                                type="button"
+                                id="tab-btn-default"
+                                onclick="switchResetTab('default')"
+                                class="flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all bg-white text-primary shadow-xs"
+                            >
+                                <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
+                                <span>Reset ke Default</span>
+                            </button>
+                            <button
+                                type="button"
+                                id="tab-btn-custom"
+                                onclick="switchResetTab('custom')"
+                                class="flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all text-muted hover:text-ink"
+                            >
+                                <i class="fa-solid fa-pen text-[11px]"></i>
+                                <span>Password Manual</span>
+                            </button>
+                        </div>
+
+                        {{-- Section 1: Mode Default Password --}}
+                        <div id="section-default-mode" class="space-y-3">
+                            <input type="hidden" name="reset_to_default" id="input-reset-to-default" value="1">
+
+                            <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-950">
+                                <div class="flex items-start gap-2.5">
+                                    <i class="fa-solid fa-circle-info mt-0.5 text-amber-600"></i>
+                                    <div class="leading-relaxed">
+                                        <p class="font-semibold">Reset ke Password Standar Cepat</p>
+                                        <p class="mt-0.5 text-[11px] text-amber-900">
+                                            Password akun akan disetel secara otomatis ke format standar yang aman tanpa perlu memasukkan password lama pengguna.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between rounded-lg border border-amber-300/80 bg-white p-2.5">
+                                    <span class="text-[11px] text-muted">Pratinjau Password:</span>
+                                    <code id="preview-default-pass" class="font-mono font-bold text-amber-900 text-xs sm:text-sm">Mncu#123456</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Section 2: Mode Custom Password --}}
+                        <div id="section-custom-mode" class="hidden space-y-4">
+                            <div>
+                                <label for="admin_password_baru" class="block text-xs font-semibold text-ink">
+                                    Password Baru untuk Pengguna <span class="text-rose-600">*</span>
+                                </label>
+                                <div class="relative mt-1.5">
+                                    <input
+                                        type="password"
+                                        name="password_baru"
+                                        id="admin_password_baru"
+                                        minlength="6"
+                                        placeholder="Ketik password baru (min. 6 karakter)..."
+                                        class="h-10 w-full rounded-xl border border-line bg-subtle/40 pr-10 pl-3 text-xs text-ink placeholder:text-muted/70 focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
+                                    >
+                                    <button
+                                        type="button"
+                                        onclick="togglePasswordVisibility('admin_password_baru', 'admin-icon-pass')"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-ink"
+                                        aria-label="Tampilkan atau sembunyikan password baru"
+                                    >
+                                        <i id="admin-icon-pass" class="fa-regular fa-eye text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="admin_password_baru_confirmation" class="block text-xs font-semibold text-ink">
+                                    Ulangi Konfirmasi Password Baru <span class="text-rose-600">*</span>
+                                </label>
+                                <div class="relative mt-1.5">
+                                    <input
+                                        type="password"
+                                        name="password_baru_confirmation"
+                                        id="admin_password_baru_confirmation"
+                                        minlength="6"
+                                        placeholder="Ketik ulang password baru..."
+                                        class="h-10 w-full rounded-xl border border-line bg-subtle/40 pr-10 pl-3 text-xs text-ink placeholder:text-muted/70 focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
+                                    >
+                                    <button
+                                        type="button"
+                                        onclick="togglePasswordVisibility('admin_password_baru_confirmation', 'admin-icon-confirm')"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-ink"
+                                        aria-label="Tampilkan atau sembunyikan konfirmasi password"
+                                    >
+                                        <i id="admin-icon-confirm" class="fa-regular fa-eye text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi Modal --}}
+                        <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-line">
+                            <button
+                                type="button"
+                                onclick="closeResetPasswordModal()"
+                                class="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink-secondary hover:bg-subtle transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                id="btn-submit-reset"
+                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 transition-colors"
+                            >
+                                <i class="fa-solid fa-check text-xs"></i>
+                                <span>Reset Password Sekarang</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Script Modal Reset Password Admin --}}
+    <script>
+        function openResetPasswordModal(id, name, email, role, identity, defaultPass) {
+            const modal = document.getElementById('admin-reset-password-modal');
+            const form = document.getElementById('admin-reset-form');
+            if (!modal || !form) return;
+
+            form.action = `/admin/users/${encodeURIComponent(id)}/reset-password`;
+
+            document.getElementById('modal-user-name').textContent = name;
+            document.getElementById('modal-user-email').textContent = email;
+            document.getElementById('modal-user-role').textContent = role;
+            document.getElementById('modal-user-id').textContent = id + (identity !== '-' ? ' • ' + identity : '');
+            document.getElementById('preview-default-pass').textContent = defaultPass;
+
+            // Reset tabs to default
+            switchResetTab('default');
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeResetPasswordModal() {
+            const modal = document.getElementById('admin-reset-password-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function switchResetTab(mode) {
+            const btnDefault = document.getElementById('tab-btn-default');
+            const btnCustom = document.getElementById('tab-btn-custom');
+            const secDefault = document.getElementById('section-default-mode');
+            const secCustom = document.getElementById('section-custom-mode');
+            const inputResetDefault = document.getElementById('input-reset-to-default');
+            const inputCustomPass = document.getElementById('admin_password_baru');
+            const inputCustomConfirm = document.getElementById('admin_password_baru_confirmation');
+            const btnSubmit = document.getElementById('btn-submit-reset');
+
+            if (mode === 'default') {
+                btnDefault.className = 'flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all bg-white text-primary shadow-xs';
+                btnCustom.className = 'flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all text-muted hover:text-ink';
+                secDefault.classList.remove('hidden');
+                secCustom.classList.add('hidden');
+                inputResetDefault.value = '1';
+                inputCustomPass.removeAttribute('required');
+                inputCustomConfirm.removeAttribute('required');
+                btnSubmit.textContent = 'Reset ke Default Sekarang';
+                btnSubmit.className = 'inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 transition-colors';
+            } else {
+                btnCustom.className = 'flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all bg-white text-primary shadow-xs';
+                btnDefault.className = 'flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all text-muted hover:text-ink';
+                secCustom.classList.remove('hidden');
+                secDefault.classList.add('hidden');
+                inputResetDefault.value = '0';
+                inputCustomPass.setAttribute('required', 'required');
+                inputCustomConfirm.setAttribute('required', 'required');
+                btnSubmit.textContent = 'Simpan Password Baru';
+                btnSubmit.className = 'inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors';
+            }
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeResetPasswordModal();
+            }
+        });
+
+        document.getElementById('admin-reset-password-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResetPasswordModal();
+            }
+        });
+    </script>
 @endsection

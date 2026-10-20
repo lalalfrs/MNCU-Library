@@ -21,7 +21,12 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/lupa-password', [AuthController::class, 'sendResetPassword'])->name('password.email');
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+// Skenario 1: Reset / Ubah Password oleh Pengguna yang Sedang Login (Dosen & Mahasiswa)
+Route::middleware('auth')->group(function (): void {
+    Route::get('/ubah-password', [AuthController::class, 'showChangePasswordForm'])->name('password.edit');
+    Route::put('/ubah-password', [AuthController::class, 'updatePassword'])->name('password.update');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 
 // Beranda Utama
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
@@ -54,6 +59,7 @@ Route::get('/e-book', [LibraryController::class, 'ebook'])->name('ebook');
 Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(function (): void {
     // 1. Manajemen User
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // 2. Manajemen Buku & Stok Eksemplar
     Route::resource('buku', BookController::class)->names('books');
