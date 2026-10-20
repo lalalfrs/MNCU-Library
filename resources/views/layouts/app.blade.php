@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
+    <body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased overflow-x-hidden">
         {{-- Loading Screen & Top Progress Bar --}}
         @include('partials.loading-screen')
 
@@ -79,6 +79,7 @@
 
                 const setOpen = (isOpen) => {
                     sidebar.classList.toggle('-translate-x-full', !isOpen);
+                    sidebar.style.transform = isOpen ? 'translateX(0)' : 'translateX(-100%)';
                     sidebar.setAttribute('aria-hidden', String(!isOpen));
                     sidebar.inert = !isOpen;
                     backdrop.classList.toggle('opacity-0', !isOpen);

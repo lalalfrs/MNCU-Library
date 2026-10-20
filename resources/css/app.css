@@ -1,7 +1,18 @@
 @import 'tailwindcss';
 
+@source '../views/**/*.blade.php';
+@source '../../app/**/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+
+/* Logo containment safeguard to prevent layout explosions */
+img[src*="Logo"],
+img[src*="logo"],
+.brand-logo {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
 
 /* Design tokens: spesifikasi-desain-ui.md §2 */
 @theme {

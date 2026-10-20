@@ -21,7 +21,7 @@
             {{-- Header Atas --}}
             <div class="flex items-center justify-between">
                 <a href="{{ route('login') }}" class="inline-flex items-center gap-3 transition-opacity hover:opacity-85">
-                    <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-9 w-auto">
+                    <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-9 max-w-[120px] w-auto object-contain" style="max-height: 36px; max-width: 120px;" width="120" height="36">
                     <div class="flex flex-col">
                         <span class="text-base font-semibold tracking-tight text-primary">MNC Library</span>
                         <span class="text-[11px] text-muted">Perpustakaan MNC University</span>
