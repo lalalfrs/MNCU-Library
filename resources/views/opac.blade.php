@@ -10,15 +10,18 @@
             <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
                 <a href="{{ route('beranda') }}" class="hover:text-primary transition-colors">Beranda</a>
                 <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-                <span class="font-medium text-ink">Katalog OPAC</span>
+                <span class="font-medium text-ink">Layanan Perpustakaan</span>
+                <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                <span class="font-medium text-primary">Katalog OPAC</span>
             </nav>
+
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl lg:text-4xl">
                         Katalog OPAC Perpustakaan
                     </h1>
-                    <p class="mt-1 text-xs text-ink-secondary sm:text-sm lg:text-base">
-                        Pencarian koleksi fisik, buku teks perkuliahan, dan referensi tercetak MNC University lengkap dengan status ketersediaan stok eksemplar.
+                    <p class="mt-1 text-xs text-ink-secondary sm:text-sm lg:text-base leading-relaxed">
+                        Pencarian koleksi fisik, buku teks perkuliahan, dan referensi tercetak MNC University lengkap dengan status ketersediaan stok eksemplar real-time.
                     </p>
                 </div>
 
@@ -27,7 +30,7 @@
                     <div class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2 shadow-xs">
                         <i class="fa-solid fa-book-bookmark text-primary text-xs"></i>
                         <span class="text-muted">Total Judul:</span>
-                        <strong class="font-bold text-primary" id="badge-total-judul">{{ $totalCount }} judul</strong>
+                        <strong class="font-bold text-primary">{{ $totalCount }} judul</strong>
                     </div>
                     <div class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2 shadow-xs">
                         <i class="fa-solid fa-boxes-stacked text-[#7C3AED] text-xs"></i>
@@ -43,395 +46,699 @@
             </div>
         </div>
 
-        {{-- Search & Filter Section (Berdasarkan Flowchart Pencarian Koleksi) --}}
-        <section aria-labelledby="judul-filter-opac" class="rounded-2xl border border-line bg-white p-5 lg:p-6 shadow-sm">
-            <h2 id="judul-filter-opac" class="sr-only">Form Pencarian dan Filter Katalog OPAC</h2>
-            <form id="opac-search-form" action="{{ route('opac') }}" method="GET" class="flex flex-col gap-4">
-                {{-- Search Bar Utama dengan Pemilihan Kriteria Koleksi --}}
-                <div class="flex flex-col gap-2 md:flex-row md:items-center">
-                    {{-- Dropdown Kriteria Koleksi --}}
-                    <div class="w-full md:w-56 shrink-0">
-                        <label for="opac-kriteria" class="sr-only">Kriteria Koleksi</label>
-                        <div class="relative">
-                            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted">
-                                <i class="fa-solid fa-filter text-xs"></i>
-                            </span>
-                            <select
-                                id="opac-kriteria"
-                                name="kriteria"
-                                class="h-12 w-full appearance-none rounded-xl border border-line bg-subtle/70 pl-9 pr-8 text-xs font-semibold text-ink focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
-                            >
-                                <option value="semua" @selected(($kriteria ?? 'semua') === 'semua')>Semua Kriteria</option>
-                                <option value="judul" @selected(($kriteria ?? '') === 'judul')>Judul Buku</option>
-                                <option value="pengarang" @selected(($kriteria ?? '') === 'pengarang')>Pengarang / Penulis</option>
-                                <option value="penerbit" @selected(($kriteria ?? '') === 'penerbit')>Penerbit</option>
-                                <option value="subjek" @selected(($kriteria ?? '') === 'subjek')>Subjek / Topik</option>
-                                <option value="nomor_panggil" @selected(($kriteria ?? '') === 'nomor_panggil')>Nomor Panggil Rak</option>
-                                <option value="isbn" @selected(($kriteria ?? '') === 'isbn')>Nomor ISBN</option>
-                            </select>
-                            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
-                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                            </span>
-                        </div>
-                    </div>
+        {{-- ========================================================================= --}}
+        {{-- ALUR FLOWCHART: FITUR NAVIGASI OPAC (KATEGORI SUBJEK, POPULER, BARU)     --}}
+        {{-- ========================================================================= --}}
+        <section aria-label="Pilihan Fitur Penelusuran OPAC" class="rounded-2xl border border-line bg-white p-2.5 shadow-xs">
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {{-- Fitur 1: Semua Koleksi --}}
+                <a
+                    href="{{ route('opac', ['fitur' => 'semua']) }}"
+                    class="flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-150 {{ $fitur === 'semua' && empty($subjekId) ? 'bg-primary text-white shadow-xs' : 'bg-subtle/70 text-ink-secondary hover:bg-subtle hover:text-primary' }}"
+                >
+                    <i class="fa-solid fa-layer-group text-xs"></i>
+                    <span>Semua Koleksi</span>
+                </a>
 
-                    {{-- Input Kata Kunci & Tombol Submit --}}
-                    <div class="relative flex flex-1 items-center">
-                        <span class="pointer-events-none absolute left-4 text-muted">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.3-4.3"/>
-                            </svg>
+                {{-- Fitur 2: Kategori Subjek (Sesuai Flowchart Cabang 1) --}}
+                <a
+                    href="{{ route('opac', ['fitur' => 'subjek']) }}"
+                    class="flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-150 {{ $fitur === 'subjek' ? 'bg-primary text-white shadow-xs' : 'bg-subtle/70 text-ink-secondary hover:bg-subtle hover:text-primary' }}"
+                >
+                    <i class="fa-solid fa-tags text-xs"></i>
+                    <span>Kategori Subjek</span>
+                    @if ($subjekList->isNotEmpty())
+                        <span class="rounded-full px-1.5 py-0.2 text-[10px] {{ $fitur === 'subjek' ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary' }}">
+                            {{ $subjekList->count() }}
                         </span>
-                        <input
-                            type="text"
-                            id="opac-search-input"
-                            name="q"
-                            value="{{ $query }}"
-                            placeholder="Ketik kata kunci pencarian koleksi (judul, pengarang, ISBN, dsb)..."
-                            autocomplete="off"
-                            class="h-12 w-full rounded-xl border border-line bg-subtle/60 pl-12 pr-12 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
-                        >
-                        {{-- Tombol Bersihkan Pencarian (X) --}}
-                        <button
-                            type="button"
-                            id="btn-clear-search"
-                            onclick="clearSearchInput()"
-                            class="{{ empty($query) ? 'hidden' : '' }} absolute right-3 flex size-7 items-center justify-center rounded-lg text-muted hover:bg-slate-200 hover:text-ink transition-colors"
-                            aria-label="Bersihkan kata kunci pencarian"
-                        >
-                            <i class="fa-solid fa-xmark text-xs"></i>
-                        </button>
-                    </div>
+                    @endif
+                </a>
 
-                    {{-- Tombol Cari Koleksi --}}
-                    <button
-                        type="submit"
-                        class="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
-                    >
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.3-4.3"/>
-                        </svg>
-                        <span>Cari Koleksi</span>
-                    </button>
-                </div>
+                {{-- Fitur 3: Koleksi Populer (Sesuai Flowchart Cabang 2) --}}
+                <a
+                    href="{{ route('opac', ['fitur' => 'populer', 'sort' => 'populer']) }}"
+                    class="flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-150 {{ $fitur === 'populer' ? 'bg-primary text-white shadow-xs' : 'bg-subtle/70 text-ink-secondary hover:bg-subtle hover:text-primary' }}"
+                >
+                    <i class="fa-solid fa-fire text-xs {{ $fitur === 'populer' ? 'text-amber-300' : 'text-amber-600' }}"></i>
+                    <span>Koleksi Populer</span>
+                </a>
 
-                {{-- Baris Filter Tambahan: Kategori, Format/Jenis, Status Ketersediaan, dan Reset --}}
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-[1fr_1fr_1fr_auto] pt-1 border-t border-line/60">
-                    <div>
-                        <label for="filter-kategori" class="mb-1 block text-xs font-medium text-ink-secondary">
-                            Kategori Koleksi
-                        </label>
-                        <select
-                            id="filter-kategori"
-                            name="kategori"
-                            class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        >
-                            @foreach ($categories as $cat)
-                                <option value="{{ $cat }}" @selected($category === $cat)>{{ $cat }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filter-jenis" class="mb-1 block text-xs font-medium text-ink-secondary">
-                            Format / Jenis
-                        </label>
-                        <select
-                            id="filter-jenis"
-                            name="jenis"
-                            class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        >
-                            @foreach ($types as $type)
-                                <option value="{{ $type }}" @selected($jenisFilter === $type)>{{ $type }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filter-status" class="mb-1 block text-xs font-medium text-ink-secondary">
-                            Status Ketersediaan Stok
-                        </label>
-                        <select
-                            id="filter-status"
-                            name="status"
-                            class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        >
-                            @foreach ($statuses as $st)
-                                <option value="{{ $st }}" @selected($statusFilter === $st)>{{ $st }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="flex items-end gap-2">
-                        <button
-                            type="submit"
-                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-subtle px-4 text-xs font-semibold text-ink-secondary hover:bg-slate-200 hover:text-ink transition-colors"
-                        >
-                            <i class="fa-solid fa-sliders text-xs"></i>
-                            <span>Terapkan Filter</span>
-                        </button>
-                        @if ($query !== '' || ($kriteria ?? 'semua') !== 'semua' || $category !== 'Semua' || $prodi !== 'Semua' || $statusFilter !== 'Semua' || $jenisFilter !== 'Semua')
-                            <a
-                                href="{{ route('opac') }}"
-                                class="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-white px-3.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
-                                title="Reset Pencarian & Filter"
-                            >
-                                <i class="fa-solid fa-rotate-left mr-1.5 text-xs"></i>Reset
-                            </a>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Indikator Hasil Pencarian Dinamis --}}
-                <div id="live-search-status" class="hidden items-center justify-between text-xs text-muted pt-2 border-t border-line/40">
-                    <span id="live-search-text">Menampilkan hasil pencarian...</span>
-                    <span class="text-[11px] text-muted/70">Tekan <kbd class="rounded border border-line bg-subtle px-1.5 py-0.5 font-mono text-[10px]">Enter</kbd> untuk pencarian menyeluruh</span>
-                </div>
-            </form>
+                {{-- Fitur 4: Koleksi Baru & Diperbarui (Sesuai Flowchart Cabang 3) --}}
+                <a
+                    href="{{ route('opac', ['fitur' => 'terbaru', 'sort' => 'terbaru']) }}"
+                    class="flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-150 {{ $fitur === 'terbaru' ? 'bg-primary text-white shadow-xs' : 'bg-subtle/70 text-ink-secondary hover:bg-subtle hover:text-primary' }}"
+                >
+                    <i class="fa-solid fa-sparkles text-xs {{ $fitur === 'terbaru' ? 'text-yellow-300' : 'text-amber-500' }}"></i>
+                    <span>Koleksi Baru</span>
+                </a>
+            </div>
         </section>
 
-        {{-- Section Daftar Koleksi OPAC --}}
-        <section aria-labelledby="daftar-koleksi-opac">
-            <h2 id="daftar-koleksi-opac" class="sr-only">Daftar Buku Koleksi OPAC</h2>
-
-            {{-- Grid Kartu Koleksi --}}
-            <div id="catalog-grid" class="{{ count($items) > 0 ? 'grid' : 'hidden' }} gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-                @foreach ($items as $item)
-                    <article
-                        class="opac-card group relative flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md sm:p-6 cursor-pointer focus-within:ring-2 focus-within:ring-primary"
-                        tabindex="0"
-                        role="button"
-                        aria-label="Pilih buku: {{ $item['title'] }}"
-                        data-id="{{ $item['id'] }}"
-                        data-title="{{ strtolower($item['title']) }}"
-                        data-author="{{ strtolower($item['author']) }}"
-                        data-publisher="{{ strtolower($item['publisher']) }}"
-                        data-isbn="{{ strtolower($item['isbn'] ?? '') }}"
-                        data-call-number="{{ strtolower($item['call_number'] ?? '') }}"
-                        data-subjects="{{ strtolower(implode(' ', $item['subjects'] ?? [])) }}"
-                        data-category="{{ strtolower($item['category'] ?? '') }}"
-                        data-format="{{ strtolower($item['format'] ?? '') }}"
-                        data-available="{{ ($item['copies_available'] ?? 0) > 0 ? '1' : '0' }}"
-                        onclick="handleCardClick(event, {{ json_encode($item) }})"
-                        onkeydown="handleCardKeydown(event, {{ json_encode($item) }})"
-                    >
-                        <div>
-                            {{-- Header Kartu: Kategori & Status Ketersediaan Stok --}}
-                            <div class="flex flex-wrap items-start justify-between gap-2.5">
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    <span class="rounded-lg bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
-                                        {{ $item['category'] }}
-                                    </span>
-                                    <span class="rounded-lg bg-subtle px-2.5 py-1 text-[11px] font-medium text-ink-secondary">
-                                        {{ $item['format'] ?? 'Buku Cetak' }}
-                                    </span>
-                                </div>
-
-                                {{-- Badge Stok Tersedia --}}
-                                @php
-                                    $available = $item['copies_available'] ?? 0;
-                                    $total = $item['copies_total'] ?? 0;
-                                @endphp
-                                @if ($total === 0)
-                                    <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                                        <i class="fa-solid fa-circle-nodes text-[10px] text-slate-500"></i>
-                                        Koleksi Digital
-                                    </span>
-                                @elseif ($available > 0)
-                                    <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-                                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                                        Tersedia: {{ $available }} / {{ $total }} Eksemplar
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
-                                        <span class="size-1.5 rounded-full bg-amber-500"></span>
-                                        Semua Dipinjam ({{ $total }} Eks)
-                                    </span>
-                                @endif
-                            </div>
-
-                            {{-- Layout Konten: Sampul Buku di Sisi Kiri, Detail Bibliografi di Kanan --}}
-                            <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
-                                {{-- Sampul Buku --}}
-                                <div class="relative h-44 w-32 shrink-0 overflow-hidden rounded-xl border border-line bg-gradient-to-br from-subtle to-slate-100 shadow-xs mx-auto sm:mx-0">
-                                    @if (!empty($item['cover_url']))
-                                        <img
-                                            src="{{ $item['cover_url'] }}"
-                                            alt="{{ $item['title'] }}"
-                                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                            loading="lazy"
-                                        >
-                                    @else
-                                        <div class="flex h-full w-full flex-col items-center justify-center p-3 text-center text-muted">
-                                            <div class="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                                <i class="fa-solid fa-book text-xl"></i>
-                                            </div>
-                                            <span class="mt-2 text-[10px] font-semibold text-ink/70 uppercase tracking-wider">Perpustakaan</span>
-                                            <span class="text-[9px] text-muted">MNC University</span>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                {{-- Rincian Bibliografi --}}
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-base font-bold text-ink leading-snug transition-colors group-hover:text-primary sm:text-lg">
-                                        {{ $item['title'] }}
-                                    </h3>
-
-                                    <p class="mt-1.5 text-xs text-ink-secondary">
-                                        <span class="font-medium text-ink">Pengarang:</span> {{ $item['author'] }}
-                                    </p>
-
-                                    <p class="mt-0.5 text-xs text-muted">
-                                        <span class="font-medium text-ink-secondary">Penerbit:</span> {{ $item['publisher'] }} &bull; Tahun {{ $item['year'] }}
-                                    </p>
-
-                                    @if (!empty($item['isbn']) && $item['isbn'] !== '-')
-                                        <p class="mt-0.5 font-mono text-[11px] text-muted">
-                                            ISBN: {{ $item['isbn'] }}
-                                        </p>
-                                    @endif
-
-                                    {{-- Cuplikan Deskripsi --}}
-                                    @if (!empty($item['description']))
-                                        <p class="mt-2 line-clamp-2 text-xs text-muted leading-relaxed">
-                                            {{ $item['description'] }}
-                                        </p>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Rincian Rak, Nomor Panggil & Ringkasan Stok Eksemplar --}}
-                            <div class="mt-4 grid grid-cols-1 gap-2.5 rounded-xl bg-subtle/80 p-3.5 text-xs sm:grid-cols-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-muted shrink-0">Nomor Panggil:</span>
-                                    <code class="rounded bg-white px-2 py-0.5 font-mono font-semibold text-primary border border-line text-[11px]">
-                                        {{ $item['call_number'] }}
-                                    </code>
-                                </div>
-
-                                <div class="flex items-center gap-2">
-                                    <span class="text-muted shrink-0">Total Stok:</span>
-                                    <span class="font-semibold text-ink">
-                                        {{ $item['copies_total'] ?? 0 }} eksemplar
-                                        @if (($item['copies_available'] ?? 0) > 0)
-                                            <span class="text-emerald-700 font-medium">({{ $item['copies_available'] }} siap pinjam)</span>
-                                        @endif
-                                    </span>
-                                </div>
-
-                                <div class="sm:col-span-2 flex items-center gap-2 pt-1 border-t border-line/60">
-                                    <svg class="size-4 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                                        <circle cx="12" cy="10" r="3"/>
-                                    </svg>
-                                    <span class="text-ink font-medium">{{ $item['location'] }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Card Footer & Tombol Aksi --}}
-                        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-                            <span class="font-mono text-[11px] text-muted">ID: #{{ $item['id'] }}</span>
-
-                            <div class="flex items-center gap-2">
-                                {{-- Tombol Lihat Rincian & Tabel Eksemplar (Memilih Buku) --}}
-                                <button
-                                    type="button"
-                                    onclick="event.stopPropagation(); openBookDetailModal({{ json_encode($item) }})"
-                                    class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-primary-dark"
-                                >
-                                    <i class="fa-solid fa-list-check text-xs"></i>
-                                    <span>Rincian &amp; Stok Eksemplar</span>
-                                </button>
-
-                                {{-- Tanya Pustakawan --}}
-                                <a
-                                    href="{{ route('chat') }}?q={{ urlencode('Tanya ketersediaan buku: ' . $item['title']) }}"
-                                    onclick="event.stopPropagation();"
-                                    class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink-secondary transition-colors hover:border-primary/40 hover:bg-subtle hover:text-primary"
-                                    title="Tanya ketersediaan atau reservasi peminjaman ke Pustakawan"
-                                >
-                                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                    </svg>
-                                    <span class="hidden sm:inline">Tanya Pustakawan</span>
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-
-            {{-- State: Koleksi Tidak Ditemukan (Flowchart Cabang 'Tidak' -> Loop Balik ke Pencarian) --}}
-            <div
-                id="empty-state-container"
-                class="{{ count($items) === 0 ? 'flex' : 'hidden' }} flex-col items-center justify-center rounded-2xl border border-line bg-subtle p-8 text-center sm:p-12"
-            >
-                <div class="flex size-16 items-center justify-center rounded-2xl bg-white text-primary border border-line shadow-xs">
-                    <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.3-4.3"/>
-                        <path d="m8 11 6 0" stroke-linecap="round"/>
-                    </svg>
+        {{-- TAMPILAN CABANG FLOWCHART: DAFTAR KATEGORI SUBJEK UNTUK DIPILIH USER --}}
+        @if ($fitur === 'subjek' && empty($subjekId))
+            <section aria-labelledby="judul-pilih-subjek" class="rounded-2xl border border-line bg-white p-5 lg:p-6 shadow-sm">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-4">
+                    <div>
+                        <h2 id="judul-pilih-subjek" class="text-base font-bold text-ink sm:text-lg">
+                            <i class="fa-solid fa-tags mr-2 text-primary"></i>Pilih Kategori Subjek Koleksi
+                        </h2>
+                        <p class="text-xs text-muted">
+                            Silakan pilih salah satu kategori subjek keilmuan di bawah ini untuk melihat seluruh koleksi buku terkait:
+                        </p>
+                    </div>
+                    <span class="text-xs font-medium text-ink-secondary">
+                        Tersedia {{ $subjekList->count() }} Subjek Akademik
+                    </span>
                 </div>
 
-                <h3 class="mt-4 text-lg font-bold text-ink">Koleksi Tidak Ditemukan</h3>
+                <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                    @forelse ($subjekList as $subj)
+                        <a
+                            href="{{ route('opac', ['fitur' => 'subjek', 'subjek_id' => $subj->id_subjek_buku]) }}"
+                            class="group flex flex-col justify-between rounded-xl border border-line bg-subtle/40 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary hover:bg-white hover:shadow-sm"
+                        >
+                            <div class="flex items-start justify-between gap-2">
+                                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-book-bookmark text-xs"></i>
+                                </span>
+                                <span class="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-primary border border-line group-hover:border-primary/30">
+                                    {{ $subj->buku_count ?? 0 }} buku
+                                </span>
+                            </div>
+                            <div class="mt-3">
+                                <h3 class="text-xs font-bold text-ink group-hover:text-primary transition-colors line-clamp-2">
+                                    {{ $subj->nama_subjek }}
+                                </h3>
+                                <p class="mt-1 text-[11px] text-muted line-clamp-1">
+                                    {{ $subj->deskripsi_subjek ?: 'Koleksi akademik Perpustakaan MNC University.' }}
+                                </p>
+                            </div>
+                            <div class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-primary group-hover:translate-x-1 transition-transform">
+                                <span>Lihat Buku</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="col-span-full py-8 text-center text-xs text-muted">
+                            Belum ada kategori subjek tercatat di sistem.
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+        @endif
 
-                <p id="empty-state-message" class="mt-1.5 max-w-lg text-xs text-muted sm:text-sm leading-relaxed">
-                    @if (!empty($query))
-                        Tidak ditemukan koleksi buku dengan kata kunci <strong class="text-ink font-semibold">"{{ $query }}"</strong>
-                        @if (($kriteria ?? 'semua') !== 'semua')
-                            pada kriteria <span class="text-primary font-medium">{{ ucwords(str_replace('_', ' ', $kriteria)) }}</span>.
-                        @else
-                            di katalog OPAC.
-                        @endif
-                    @else
-                        Koleksi dengan filter yang Anda tentukan tidak ditemukan di sistem katalog perpustakaan.
-                    @endif
-                </p>
-
-                {{-- Tips Pencarian Sesuai Alur Flowchart --}}
-                <div class="mt-5 max-w-md rounded-xl border border-line bg-white p-4 text-left text-xs text-ink-secondary">
-                    <p class="font-semibold text-ink flex items-center gap-1.5">
-                        <i class="fa-solid fa-lightbulb text-amber-500"></i> Tips Pencarian Koleksi:
-                    </p>
-                    <ul class="mt-2 list-disc list-inside space-y-1 text-muted text-[11px] sm:text-xs">
-                        <li>Periksa kembali ketepatan ejaan kata kunci.</li>
-                        <li>Gunakan kata kunci yang lebih umum (misalnya: <em>"Python"</em> atau <em>"Manajemen"</em>).</li>
-                        <li>Ganti pilihan kriteria pencarian ke <strong>"Semua Kriteria"</strong>.</li>
-                        <li>Gunakan kata kunci pengarang atau nomor ISBN buku.</li>
-                    </ul>
+        {{-- BANNER SUBJEK TERPILIH (JIKA USER SUDAH MEMILIH SUBJEK TERTENTU) --}}
+        @if ($fitur === 'subjek' && ! empty($subjekId))
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-ink sm:px-6">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-white shadow-xs">
+                        <i class="fa-solid fa-bookmark text-sm"></i>
+                    </span>
+                    <div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-primary">Kategori Subjek Terpilih</div>
+                        <h2 class="text-sm font-bold text-ink sm:text-base">
+                            {{ $selectedSubjek?->nama_subjek ?? $subjekId }}
+                        </h2>
+                    </div>
                 </div>
 
-                {{-- Action Buttons: Loop balik ke Search Bar (F --> B) atau Reset --}}
-                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-                    <button
-                        type="button"
-                        onclick="focusToSearchBar()"
-                        class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all"
-                    >
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        <span>Coba Kata Kunci Lain</span>
-                    </button>
-
+                <div class="flex items-center gap-2">
                     <a
-                        href="{{ route('opac') }}"
-                        class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-medium text-ink hover:bg-subtle transition-colors"
+                        href="{{ route('opac', ['fitur' => 'subjek']) }}"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-white px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
                     >
-                        <i class="fa-solid fa-rotate-left text-xs text-muted"></i>
-                        <span>Lihat Semua Koleksi</span>
+                        <i class="fa-solid fa-rotate text-[11px]"></i>
+                        <span>Ganti Subjek</span>
+                    </a>
+                    <a
+                        href="{{ route('opac', ['fitur' => 'semua']) }}"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-medium text-muted hover:text-ink transition-colors"
+                    >
+                        <i class="fa-solid fa-xmark text-[11px]"></i>
+                        <span>Lihat Semua</span>
                     </a>
                 </div>
             </div>
+        @endif
+
+        {{-- BANNER KOLEKSI POPULER / TERBARU --}}
+        @if ($fitur === 'populer')
+            <div class="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-950 sm:px-6">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                        <i class="fa-solid fa-fire text-sm"></i>
+                    </span>
+                    <div>
+                        <span class="font-bold text-amber-900">Koleksi Terpopuler Perpustakaan</span>
+                        <p class="text-[11px] text-amber-800">Menampilkan buku-buku yang paling sering dikunjungi, dipelajari, dan dipinjam oleh mahasiswa &amp; dosen.</p>
+                    </div>
+                </div>
+            </div>
+        @elseif ($fitur === 'terbaru')
+            <div class="flex items-center justify-between rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-950 sm:px-6">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-xs">
+                        <i class="fa-solid fa-sparkles text-sm"></i>
+                    </span>
+                    <div>
+                        <span class="font-bold text-primary">Koleksi Baru dan Diperbarui</span>
+                        <p class="text-[11px] text-blue-800">Menampilkan buku referensi dan teks terbaru yang baru saja didaftarkan ke dalam katalog perpustakaan.</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- ========================================================================= --}}
+        {{-- SECTION UTAMA: 2 POINT PENCARIAN & PENYORTIRAN (SESUAI REQUEST USER)       --}}
+        {{-- ========================================================================= --}}
+        <section aria-labelledby="judul-filter-opac" class="rounded-2xl border border-line bg-white p-5 lg:p-6 shadow-sm">
+            <h2 id="judul-filter-opac" class="sr-only">Form Pencarian dan Filter Katalog OPAC</h2>
+
+            <form action="{{ route('opac') }}" method="GET" class="flex flex-col gap-4" id="main-opac-form">
+                {{-- Parameter Tersembunyi untuk mempertahankan Fitur & Subjek --}}
+                <input type="hidden" name="fitur" value="{{ $fitur }}">
+                @if (! empty($subjekId))
+                    <input type="hidden" name="subjek_id" value="{{ $subjekId }}">
+                @endif
+
+                {{-- Hidden input untuk menyimpan nilai dari Modal Box Filter --}}
+                <input type="hidden" name="filter_pengarang" id="hidden-filter-pengarang" value="{{ $filterPengarang }}">
+                <input type="hidden" name="filter_isbn" id="hidden-filter-isbn" value="{{ $filterIsbn }}">
+                <input type="hidden" name="filter_ddc" id="hidden-filter-ddc" value="{{ $filterDdc }}">
+                <input type="hidden" name="filter_nomor_induk" id="hidden-filter-nomor-induk" value="{{ $filterNomorInduk }}">
+                <input type="hidden" name="filter_tahun" id="hidden-filter-tahun" value="{{ $filterTahun }}">
+                <input type="hidden" name="filter_lokasi" id="hidden-filter-lokasi" value="{{ $filterLokasi }}">
+                <input type="hidden" name="filter_jenis" id="hidden-filter-jenis" value="{{ $filterJenis }}">
+                <input type="hidden" name="filter_prodi" id="hidden-filter-prodi" value="{{ $filterProdi }}">
+
+                {{-- Baris Utama: Search Bar (Point 1) & Sort By (Point 2) & Tombol Box Filter --}}
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
+                    {{-- POINT 1: Search Bar Sederhana dengan Kriteria Tertentu --}}
+                    <div class="md:col-span-7 flex flex-col sm:flex-row gap-2">
+                        {{-- Dropdown Kriteria Pencarian --}}
+                        <div class="sm:w-44 shrink-0">
+                            <label for="opac-kriteria" class="sr-only">Kriteria Pencarian</label>
+                            <select
+                                id="opac-kriteria"
+                                name="kriteria"
+                                class="h-11 w-full rounded-xl border border-line bg-subtle/50 px-3 text-xs font-semibold text-ink focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="semua" @selected($kriteria === 'semua')>Semua Kriteria</option>
+                                <option value="judul" @selected($kriteria === 'judul')>Judul Buku</option>
+                                <option value="pengarang" @selected($kriteria === 'pengarang')>Pengarang</option>
+                                <option value="subjek" @selected($kriteria === 'subjek')>Subjek</option>
+                                <option value="isbn" @selected($kriteria === 'isbn')>Nomor ISBN</option>
+                                <option value="ddc" @selected($kriteria === 'ddc')>Nomor Panggil (DDC)</option>
+                            </select>
+                        </div>
+
+                        {{-- Input Kata Kunci --}}
+                        <div class="relative flex-1">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input
+                                type="text"
+                                name="q"
+                                value="{{ $query }}"
+                                placeholder="Ketik kata kunci pencarian buku..."
+                                class="h-11 w-full rounded-xl border border-line bg-subtle/50 pr-4 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                        </div>
+                    </div>
+
+                    {{-- POINT 2: Sort By Kriteria Tertentu --}}
+                    <div class="md:col-span-3">
+                        <label for="opac-sort" class="sr-only">Urutkan Berdasarkan</label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted">
+                                <i class="fa-solid fa-arrow-down-short-wide text-xs"></i>
+                            </span>
+                            <select
+                                id="opac-sort"
+                                name="sort"
+                                onchange="this.form.submit()"
+                                class="h-11 w-full rounded-xl border border-line bg-subtle/50 pr-8 pl-8 text-xs font-semibold text-ink focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="populer" @selected($sort === 'populer')>Sort: Paling Populer</option>
+                                <option value="terbaru" @selected($sort === 'terbaru')>Sort: Koleksi Terbaru</option>
+                                <option value="judul_asc" @selected($sort === 'judul_asc')>Sort: Judul (A - Z)</option>
+                                <option value="judul_desc" @selected($sort === 'judul_desc')>Sort: Judul (Z - A)</option>
+                                <option value="tahun_desc" @selected($sort === 'tahun_desc')>Sort: Tahun Terbit (Terbaru)</option>
+                                <option value="tahun_asc" @selected($sort === 'tahun_asc')>Sort: Tahun Terbit (Terlama)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Tombol Cari & Tombol Box Filter Lanjutan --}}
+                    <div class="md:col-span-2 flex items-center gap-2">
+                        {{-- Tombol Buka Modal Box Filter (Sesuai Referensi Gambar 2) --}}
+                        <button
+                            type="button"
+                            onclick="openFilterModal()"
+                            class="relative inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-3 text-xs font-semibold text-ink hover:border-primary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                            title="Buka Box Filter Pencarian Lanjutan"
+                        >
+                            <i class="fa-solid fa-sliders text-xs text-primary"></i>
+                            <span>Filter</span>
+                            @if ($activeFilterCount > 0)
+                                <span class="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                                    {{ $activeFilterCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        {{-- Tombol Submit Search --}}
+                        <button
+                            type="submit"
+                            class="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary shrink-0"
+                            title="Terapkan Pencarian"
+                        >
+                            <span>Cari</span>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- TAG FILTER AKTIF: Memudahkan user melihat dan menghapus filter yang sedang berjalan --}}
+                @if ($activeFilterCount > 0 || ! empty($query) || ($fitur === 'subjek' && ! empty($subjekId)))
+                    <div class="flex flex-wrap items-center gap-2 border-t border-line/70 pt-3 text-xs">
+                        <span class="text-muted font-medium text-[11px]">Filter Aktif:</span>
+
+                        @if (! empty($query))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
+                                Kata Kunci: "{{ $query }}"
+                                <a href="{{ route('opac', array_merge(request()->except('q'), ['fitur' => $fitur])) }}" class="ml-1 text-primary/70 hover:text-primary"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if (! empty($filterPengarang))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                Pengarang: {{ $filterPengarang }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_pengarang'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if (! empty($filterIsbn))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                ISBN: {{ $filterIsbn }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_isbn'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if (! empty($filterDdc))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                DDC: {{ $filterDdc }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_ddc'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if (! empty($filterNomorInduk))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                No. Induk: {{ $filterNomorInduk }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_nomor_induk'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if ($filterTahun !== 'Semua' && ! empty($filterTahun))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                Tahun: {{ $filterTahun }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_tahun'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if ($filterLokasi !== 'Semua' && ! empty($filterLokasi))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                Lokasi: {{ $filterLokasi }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_lokasi'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if ($filterJenis !== 'Semua' && ! empty($filterJenis))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                Jenis: {{ $filterJenis }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_jenis'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        @if ($filterProdi !== 'Semua' && ! empty($filterProdi))
+                            <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                Jurusan: {{ $filterProdi }}
+                                <a href="{{ route('opac', array_merge(request()->except('filter_prodi'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></a>
+                            </span>
+                        @endif
+
+                        {{-- Tombol Reset Semua Filter --}}
+                        <a
+                            href="{{ route('opac', ['fitur' => $fitur]) }}"
+                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:text-rose-700 hover:underline transition-colors ml-auto"
+                        >
+                            <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                            <span>Reset Semua Filter</span>
+                        </a>
+                    </div>
+                @endif
+            </form>
+        </section>
+
+        {{-- ========================================================================= --}}
+        {{-- DAFTAR KARTU BUKU (CARDS MENIRU REFERENSI DESAIN GAMBAR 2)                --}}
+        {{-- ========================================================================= --}}
+        <section aria-labelledby="daftar-koleksi-opac">
+            <h2 id="daftar-koleksi-opac" class="sr-only">Daftar Buku Koleksi OPAC</h2>
+
+            <div class="mb-3 flex items-center justify-between text-xs text-muted">
+                <span>Menampilkan <strong>{{ count($items) }}</strong> judul buku</span>
+                <span class="font-medium text-ink-secondary">
+                    Urutan:
+                    @if ($sort === 'populer')
+                        Paling Populer
+                    @elseif ($sort === 'terbaru')
+                        Koleksi Terbaru
+                    @elseif ($sort === 'judul_asc')
+                        Judul (A-Z)
+                    @elseif ($sort === 'judul_desc')
+                        Judul (Z-A)
+                    @elseif ($sort === 'tahun_desc')
+                        Tahun Terbit (Terbaru)
+                    @else
+                        Tahun Terbit (Terlama)
+                    @endif
+                </span>
+            </div>
+
+            @if (count($items) > 0)
+                {{-- Grid Card Buku: Desain Elegan Mengacu pada Gambar 2 (Gunadarma Library OPAC Style) --}}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+                    @foreach ($items as $item)
+                        <article
+                            tabindex="0"
+                            onclick="openBookDetailModal({{ json_encode($item) }})"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBookDetailModal({{ json_encode($item) }});}"
+                            class="group relative flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            aria-label="Lihat detail buku {{ $item['title'] }}"
+                        >
+                            <div>
+                                {{-- Baris Atas: Nomor Panggil DDC & Badge Ketersediaan --}}
+                                <div class="flex items-center justify-between gap-2 border-b border-line/60 pb-3">
+                                    <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-amber-700">
+                                        <i class="fa-solid fa-bookmark text-[11px] text-amber-600"></i>
+                                        <span>{{ $item['call_number'] ?? '000.00 MNC' }}</span>
+                                    </div>
+
+                                    {{-- Status Stok Eksemplar --}}
+                                    @php
+                                        $available = $item['copies_available'] ?? 0;
+                                        $total = $item['copies_total'] ?? 0;
+                                    @endphp
+                                    @if ($total === 0)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                                            Koleksi Digital
+                                        </span>
+                                    @elseif ($available > 0)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                                            <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Tersedia: {{ $available }} / {{ $total }} Eks
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">
+                                            <span class="size-1.5 rounded-full bg-amber-500"></span>
+                                            Dipinjam ({{ $total }} Eks)
+                                        </span>
+                                    @endif
+                                </div>
+
+                                {{-- Judul Buku Besar & Kontras --}}
+                                <h3 class="mt-3 text-base font-bold text-ink transition-colors group-hover:text-primary sm:text-lg leading-snug line-clamp-2">
+                                    {{ $item['title'] }}
+                                </h3>
+
+                                {{-- Baris Penulis & Penerbit (Persis Gaya Referensi Gambar 2) --}}
+                                <p class="mt-2 text-xs text-ink-secondary flex items-start gap-1.5 leading-relaxed">
+                                    <i class="fa-regular fa-user text-muted shrink-0 mt-0.5 text-[11px]"></i>
+                                    <span>
+                                        oleh <strong class="font-semibold text-ink">{{ $item['author'] }}</strong>
+                                        &bull; {{ $item['year'] }}
+                                        &bull; {{ $item['publisher'] }}
+                                    </span>
+                                </p>
+
+                                {{-- Nomor ISBN --}}
+                                @if (! empty($item['isbn']) && $item['isbn'] !== '-')
+                                    <p class="mt-1 font-mono text-[11px] text-muted">
+                                        ISBN {{ $item['isbn'] }}
+                                    </p>
+                                @endif
+
+                                {{-- Lokasi Rak & Subjek --}}
+                                <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-subtle px-2 py-1 text-muted">
+                                        <i class="fa-solid fa-location-dot text-primary text-[10px]"></i>
+                                        <span>{{ $item['location'] }}</span>
+                                    </span>
+
+                                    @if (! empty($item['category']))
+                                        <span class="rounded-lg bg-primary/10 px-2 py-1 font-semibold text-primary">
+                                            {{ $item['category'] }}
+                                        </span>
+                                    @endif
+
+                                    @if ($item['visits'] > 0)
+                                        <span class="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-amber-800 border border-amber-200">
+                                            <i class="fa-solid fa-eye text-[10px]"></i>
+                                            <span>{{ $item['visits'] }}x Dilihat</span>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Card Footer: Tombol Aksi --}}
+                            <div class="mt-4 flex items-center justify-between border-t border-line/70 pt-3 text-xs">
+                                <span class="font-mono text-[11px] text-muted">ID: {{ $item['id'] }}</span>
+
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs group-hover:bg-primary-dark transition-colors"
+                                    >
+                                        <i class="fa-solid fa-circle-info text-[11px]"></i>
+                                        <span>Detail Buku</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="flex flex-col items-center justify-center rounded-2xl border border-line bg-subtle/50 p-12 text-center">
+                    <div class="flex size-14 items-center justify-center rounded-2xl bg-white text-muted shadow-sm">
+                        <i class="fa-solid fa-book-open text-2xl text-muted/60"></i>
+                    </div>
+                    <h3 class="mt-4 text-base font-bold text-ink">Koleksi Tidak Ditemukan</h3>
+                    <p class="mt-1 max-w-md text-xs text-muted leading-relaxed">
+                        Tidak ada koleksi buku yang cocok dengan kriteria kata kunci atau kombinasi box filter yang Anda tentukan. Silakan gunakan kata kunci umum atau reset filter pencarian Anda.
+                    </p>
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+                        <button
+                            type="button"
+                            onclick="document.querySelector('input[name=q]')?.focus()"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-white px-5 text-xs font-semibold text-ink shadow-xs hover:bg-subtle transition-colors"
+                        >
+                            <i class="fa-solid fa-magnifying-glass text-xs text-muted"></i>
+                            <span>Coba Kata Kunci Lain</span>
+                        </button>
+                        <a
+                            href="{{ route('opac', ['fitur' => 'semua']) }}"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors"
+                        >
+                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                            <span>Lihat Semua Koleksi</span>
+                        </a>
+                    </div>
+                </div>
+            @endif
         </section>
     </div>
 
     {{-- ========================================================================= --}}
-    {{-- MODAL INTERAKTIF: RINCIAN BIBLIOGRAFI & TABEL INVENTARIS EKSEMPLAR       --}}
-    {{-- (Sesuai Flowchart: User Memilih Buku -> Tampilkan Detail Informasi Buku)   --}}
+    {{-- MODAL BOX FILTER PENCARIAN (PERSIS REFERENSI GAMBAR 2)                     --}}
+    {{-- ========================================================================= --}}
+    <div
+        id="search-filter-modal"
+        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-filter-title"
+    >
+        <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
+            <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+                {{-- Header Box Filter: Icon Slider Ungu + Judul "Filter Pencarian" + Tombol X --}}
+                <div class="flex items-center justify-between border-b border-line bg-white px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <i class="fa-solid fa-sliders text-sm"></i>
+                        </span>
+                        <h3 id="modal-filter-title" class="text-base font-bold text-ink">
+                            Filter Pencarian
+                        </h3>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="closeFilterModal()"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-slate-100 hover:text-ink transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label="Tutup dialog filter pencarian"
+                    >
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+
+                {{-- Body Box Filter: Grid 2 Baris x 4 Kolom Sesuai Desain Gambar 2 --}}
+                <form id="filter-modal-form" onsubmit="applyModalFilters(event)" class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {{-- Field 1: Pengarang (Placeholder: elliot) --}}
+                        <div>
+                            <label for="modal-input-pengarang" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Pengarang
+                            </label>
+                            <input
+                                type="text"
+                                id="modal-input-pengarang"
+                                value="{{ $filterPengarang }}"
+                                placeholder="elliot"
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                        </div>
+
+                        {{-- Field 2: ISBN (Placeholder: 978-xxx...) --}}
+                        <div>
+                            <label for="modal-input-isbn" class="mb-1.5 block text-xs font-semibold text-ink">
+                                ISBN
+                            </label>
+                            <input
+                                type="text"
+                                id="modal-input-isbn"
+                                value="{{ $filterIsbn }}"
+                                placeholder="978-xxx..."
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                            >
+                        </div>
+
+                        {{-- Field 3: DDC (Placeholder: 000.00...) --}}
+                        <div>
+                            <label for="modal-input-ddc" class="mb-1.5 block text-xs font-semibold text-ink">
+                                DDC
+                            </label>
+                            <input
+                                type="text"
+                                id="modal-input-ddc"
+                                value="{{ $filterDdc }}"
+                                placeholder="000.00..."
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                            >
+                        </div>
+
+                        {{-- Field 4: Nomor Induk (Placeholder: Nomor induk...) --}}
+                        <div>
+                            <label for="modal-input-nomor-induk" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Nomor Induk
+                            </label>
+                            <input
+                                type="text"
+                                id="modal-input-nomor-induk"
+                                value="{{ $filterNomorInduk }}"
+                                placeholder="Nomor induk..."
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                            >
+                        </div>
+
+                        {{-- Field 5: Tahun Terbit (Dropdown: Semua tahun) --}}
+                        <div>
+                            <label for="modal-select-tahun" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Tahun Terbit
+                            </label>
+                            <select
+                                id="modal-select-tahun"
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="Semua">Semua tahun</option>
+                                @foreach ($tahunList as $thn)
+                                    <option value="{{ $thn }}" @selected($filterTahun == $thn)>{{ $thn }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Field 6: Lokasi (Dropdown: Semua lokasi) --}}
+                        <div>
+                            <label for="modal-select-lokasi" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Lokasi
+                            </label>
+                            <select
+                                id="modal-select-lokasi"
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="Semua">Semua lokasi</option>
+                                @foreach ($lokasiList as $lok)
+                                    <option value="{{ $lok }}" @selected($filterLokasi == $lok)>{{ $lok }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Field 7: Jenis Koleksi (Dropdown: Semua jenis) --}}
+                        <div>
+                            <label for="modal-select-jenis" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Jenis Koleksi
+                            </label>
+                            <select
+                                id="modal-select-jenis"
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="Semua">Semua jenis</option>
+                                @foreach ($types as $tp)
+                                    <option value="{{ $tp }}" @selected($filterJenis == $tp)>{{ $tp }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Field 8: Fakultas / Jurusan (Dropdown: Semua Fakultas) --}}
+                        <div>
+                            <label for="modal-select-prodi" class="mb-1.5 block text-xs font-semibold text-ink">
+                                Fakultas / Jurusan
+                            </label>
+                            <select
+                                id="modal-select-prodi"
+                                class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                                <option value="Semua">Semua Fakultas</option>
+                                @foreach ($prodiList as $prd)
+                                    <option value="{{ $prd->nama_prodi }}" @selected($filterProdi == $prd->nama_prodi)>{{ $prd->nama_prodi }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Footer Box Filter: Tombol Terapkan & Reset --}}
+                    <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-line">
+                        <button
+                            type="button"
+                            onclick="resetModalFilters()"
+                            class="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink-secondary hover:bg-slate-50 transition-colors"
+                        >
+                            Reset Filter
+                        </button>
+                        <button
+                            type="submit"
+                            class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-colors"
+                        >
+                            <i class="fa-solid fa-check text-xs"></i>
+                            <span>Terapkan Filter</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- ========================================================================= --}}
+    {{-- MODAL DETAIL INFORMASI BUKU LENGKAP & STOK EKSEMPLAR FISIK              --}}
     {{-- ========================================================================= --}}
     <div
         id="book-detail-modal"
@@ -442,30 +749,30 @@
     >
         <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
             <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
-                {{-- Modal Header --}}
-                <div class="flex items-center justify-between border-b border-line bg-slate-50/80 px-5 py-4">
+                {{-- Header Detail Buku --}}
+                <div class="flex items-center justify-between border-b border-line bg-slate-50/80 px-6 py-4">
                     <div class="flex items-center gap-2.5">
                         <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <i class="fa-solid fa-book-open text-sm"></i>
                         </span>
                         <div>
-                            <h3 class="text-sm font-bold text-ink">Rincian Koleksi &amp; Status Eksemplar Fisik</h3>
-                            <p class="text-[11px] text-muted">Informasi ketersediaan buku fisik di rak Perpustakaan MNC University</p>
+                            <h3 class="text-sm font-bold text-ink">Detail Informasi Buku &amp; Ketersediaan Stok</h3>
+                            <p class="text-[11px] text-muted">Informasi bibliografi dan nomor panggil rak Perpustakaan MNC University</p>
                         </div>
                     </div>
                     <button
                         type="button"
                         onclick="closeBookDetailModal()"
-                        class="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-slate-200 hover:text-ink transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                         aria-label="Tutup dialog rincian buku"
                     >
-                        <i class="fa-solid fa-xmark text-sm"></i>
+                        <i class="fa-solid fa-xmark text-base"></i>
                     </button>
                 </div>
 
-                {{-- Modal Body --}}
-                <div class="max-h-[78vh] overflow-y-auto p-5 sm:p-6 space-y-6">
-                    {{-- Baris Info Bibliografi Utama --}}
+                {{-- Body Detail Buku --}}
+                <div class="max-h-[78vh] overflow-y-auto p-6 space-y-6">
+                    {{-- Baris Metadata Bibliografi --}}
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
                         {{-- Cover Image --}}
                         <div class="relative h-48 w-36 shrink-0 overflow-hidden rounded-xl border border-line bg-subtle mx-auto sm:mx-0 shadow-xs">
@@ -505,11 +812,20 @@
                                 <p><span class="font-medium text-ink">Tahun Terbit:</span> <span id="modal-year">-</span></p>
                                 <p><span class="font-medium text-ink">Edisi / Halaman:</span> <span id="modal-pages">-</span></p>
                                 <p class="sm:col-span-2 font-mono"><span class="font-medium text-ink font-sans">ISBN:</span> <span id="modal-isbn">-</span></p>
+                                <p class="sm:col-span-2"><span class="font-medium text-ink">Nomor Panggil (DDC):</span> <code id="modal-call-number" class="font-mono text-primary font-bold bg-subtle px-1.5 py-0.5 rounded">-</code></p>
+                            </div>
+
+                            {{-- Subjek Terkait --}}
+                            <div class="pt-1">
+                                <span class="text-[11px] font-semibold text-muted block mb-1">Subjek Keilmuan:</span>
+                                <div id="modal-subjects-container" class="flex flex-wrap gap-1">
+                                    {{-- Diisi secara dinamis --}}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- 3 Metrik Status Stok --}}
+                    {{-- 3 Metrik Status Stok Eksemplar --}}
                     <div class="grid grid-cols-3 gap-3">
                         <div class="rounded-xl border border-line bg-subtle/50 p-3 text-center">
                             <span class="text-[11px] font-medium text-muted uppercase">Total Eksemplar</span>
@@ -530,17 +846,17 @@
 
                     {{-- Sinopsis / Deskripsi --}}
                     <div class="rounded-xl border border-line bg-white p-4">
-                        <h5 class="text-xs font-bold uppercase tracking-wider text-muted">Sinopsis &amp; Deskripsi</h5>
+                        <h5 class="text-xs font-bold uppercase tracking-wider text-muted">Sinopsis &amp; Deskripsi Buku</h5>
                         <p id="modal-description" class="mt-2 text-xs text-ink-secondary leading-relaxed whitespace-pre-line">
                             -
                         </p>
                     </div>
 
-                    {{-- Tabel Seluruh Eksemplar Fisik --}}
+                    {{-- Tabel Seluruh Eksemplar Fisik & Nomor Induk Inventaris --}}
                     <div>
                         <div class="flex items-center justify-between mb-2.5">
                             <h5 class="text-xs font-bold uppercase tracking-wider text-primary">
-                                <i class="fa-solid fa-boxes-stacked mr-1.5"></i>Daftar Eksemplar Fisik &amp; Nomor Panggil
+                                <i class="fa-solid fa-boxes-stacked mr-1.5"></i>Daftar Eksemplar Fisik &amp; Nomor Induk
                             </h5>
                             <span id="modal-copy-count" class="text-xs text-muted">0 eksemplar</span>
                         </div>
@@ -550,8 +866,8 @@
                                 <thead class="border-b border-line bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-muted">
                                     <tr>
                                         <th class="px-3.5 py-2.5">No</th>
-                                        <th class="px-3.5 py-2.5">Barcode / Inventaris</th>
-                                        <th class="px-3.5 py-2.5">Nomor Panggil</th>
+                                        <th class="px-3.5 py-2.5">Nomor Induk / Barcode</th>
+                                        <th class="px-3.5 py-2.5">Nomor Panggil (DDC)</th>
                                         <th class="px-3.5 py-2.5">Lokasi Rak</th>
                                         <th class="px-3.5 py-2.5 text-center">Status</th>
                                     </tr>
@@ -573,11 +889,11 @@
                 </div>
 
                 {{-- Modal Footer --}}
-                <div class="flex items-center justify-between border-t border-line bg-slate-50/80 px-5 py-3.5">
+                <div class="flex items-center justify-between border-t border-line bg-slate-50/80 px-6 py-3.5">
                     <button
                         type="button"
                         onclick="closeBookDetailModal()"
-                        class="inline-flex h-9 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs font-medium text-ink hover:bg-subtle transition-colors"
+                        class="inline-flex h-9 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink hover:bg-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         Tutup
                     </button>
@@ -585,7 +901,7 @@
                     <a
                         id="modal-chat-link"
                         href="{{ route('chat') }}"
-                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <i class="fa-solid fa-headset text-xs"></i>
                         <span>Tanya Pustakawan</span>
@@ -595,30 +911,75 @@
         </div>
     </div>
 
-    {{-- Script Logika Interaktif OPAC (Flowchart SearchBar -> Filter -> Select Book -> Detail) --}}
+    {{-- SCRIPT INTERAKTIVITAS: BOX FILTER PENCARIAN & MODAL DETAIL BUKU --}}
     <script>
-        // Data koleksi untuk live-search dan auto-open detail
-        const allCatalogItems = @json($items);
-        const selectedBookId = @json($selectedBookId);
-
-        // Handler klik kartu (Memilih Buku)
-        function handleCardClick(event, item) {
-            // Hindari memicu modal jika user mengklik link atau tombol di dalam kartu
-            if (event.target.closest('a') || event.target.closest('button')) {
-                return;
-            }
-            openBookDetailModal(item);
-        }
-
-        // Handler keyboard (Enter / Space) untuk aksesibilitas pemilihan buku
-        function handleCardKeydown(event, item) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openBookDetailModal(item);
+        // =========================================================================
+        // 1. KONTROL BOX FILTER PENCARIAN (MODAL SEPERTI GAMBAR 2)
+        // =========================================================================
+        function openFilterModal() {
+            const modal = document.getElementById('search-filter-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+                document.getElementById('modal-input-pengarang')?.focus();
             }
         }
 
-        // Tampilkan Detail Buku di Modal (Flowchart: Tampilkan detail informasi buku)
+        function closeFilterModal() {
+            const modal = document.getElementById('search-filter-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function applyModalFilters(event) {
+            event.preventDefault();
+            const mainForm = document.getElementById('main-opac-form');
+            if (!mainForm) return;
+
+            document.getElementById('hidden-filter-pengarang').value = document.getElementById('modal-input-pengarang').value.trim();
+            document.getElementById('hidden-filter-isbn').value = document.getElementById('modal-input-isbn').value.trim();
+            document.getElementById('hidden-filter-ddc').value = document.getElementById('modal-input-ddc').value.trim();
+            document.getElementById('hidden-filter-nomor-induk').value = document.getElementById('modal-input-nomor-induk').value.trim();
+            document.getElementById('hidden-filter-tahun').value = document.getElementById('modal-select-tahun').value;
+            document.getElementById('hidden-filter-lokasi').value = document.getElementById('modal-select-lokasi').value;
+            document.getElementById('hidden-filter-jenis').value = document.getElementById('modal-select-jenis').value;
+            document.getElementById('hidden-filter-prodi').value = document.getElementById('modal-select-prodi').value;
+
+            closeFilterModal();
+            mainForm.submit();
+        }
+
+        function resetModalFilters() {
+            document.getElementById('modal-input-pengarang').value = '';
+            document.getElementById('modal-input-isbn').value = '';
+            document.getElementById('modal-input-ddc').value = '';
+            document.getElementById('modal-input-nomor-induk').value = '';
+            document.getElementById('modal-select-tahun').value = 'Semua';
+            document.getElementById('modal-select-lokasi').value = 'Semua';
+            document.getElementById('modal-select-jenis').value = 'Semua';
+            document.getElementById('modal-select-prodi').value = 'Semua';
+
+            document.getElementById('hidden-filter-pengarang').value = '';
+            document.getElementById('hidden-filter-isbn').value = '';
+            document.getElementById('hidden-filter-ddc').value = '';
+            document.getElementById('hidden-filter-nomor-induk').value = '';
+            document.getElementById('hidden-filter-tahun').value = 'Semua';
+            document.getElementById('hidden-filter-lokasi').value = 'Semua';
+            document.getElementById('hidden-filter-jenis').value = 'Semua';
+            document.getElementById('hidden-filter-prodi').value = 'Semua';
+
+            const mainForm = document.getElementById('main-opac-form');
+            if (mainForm) {
+                closeFilterModal();
+                mainForm.submit();
+            }
+        }
+
+        // =========================================================================
+        // 2. KONTROL MODAL DETAIL BUKU & PENCATATAN KUNJUNGAN REAL-TIME
+        // =========================================================================
         function openBookDetailModal(item) {
             const modal = document.getElementById('book-detail-modal');
             if (!modal || !item) return;
@@ -629,6 +990,7 @@
             document.getElementById('modal-year').textContent = item.year || '-';
             document.getElementById('modal-pages').textContent = (item.edition || '-') + ' / ' + (item.pages || '-');
             document.getElementById('modal-isbn').textContent = item.isbn || '-';
+            document.getElementById('modal-call-number').textContent = item.call_number || '-';
             document.getElementById('modal-category').textContent = item.category || 'Buku Teks';
             document.getElementById('modal-format').textContent = item.format || 'Buku Cetak';
             document.getElementById('modal-id').textContent = '#' + (item.id || '');
@@ -643,6 +1005,22 @@
             document.getElementById('modal-stat-available').textContent = available;
             document.getElementById('modal-stat-borrowed').textContent = borrowed;
             document.getElementById('modal-copy-count').textContent = total + ' eksemplar terdaftar';
+
+            // Subjek tags
+            const subContainer = document.getElementById('modal-subjects-container');
+            subContainer.innerHTML = '';
+            const subjects = item.subjects || [];
+            if (subjects.length > 0) {
+                subjects.forEach(function (s) {
+                    const tag = document.createElement('a');
+                    tag.href = '{{ route("opac") }}?fitur=subjek&subjek_id=' + encodeURIComponent(s);
+                    tag.className = 'rounded-md bg-subtle px-2 py-0.5 text-[11px] font-medium text-ink-secondary hover:bg-primary/10 hover:text-primary transition-colors';
+                    tag.textContent = s;
+                    subContainer.appendChild(tag);
+                });
+            } else {
+                subContainer.innerHTML = '<span class="text-xs text-muted">Umum</span>';
+            }
 
             // Cover Image
             const coverImg = document.getElementById('modal-cover-img');
@@ -663,7 +1041,7 @@
                 chatLink.href = '{{ route("chat") }}?q=' + encodeURIComponent('Halo Pustakawan, saya ingin reservasi/cek buku: ' + item.title);
             }
 
-            // Exemplar table
+            // Exemplar table (Nomor Induk, Call Number, Lokasi, Status)
             const tbody = document.getElementById('modal-exemplar-tbody');
             tbody.innerHTML = '';
 
@@ -697,191 +1075,46 @@
                 });
             }
 
-            // Update URL hash/query secara aman tanpa reload halaman
-            const url = new URL(window.location.href);
-            url.searchParams.set('buku', item.id);
-            window.history.replaceState({ bookId: item.id }, '', url.toString());
-
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
+
+            // Catat kunjungan penelusuran buku secara otomatis via AJAX
+            if (item.id) {
+                fetch('/opac/kunjungan/' + encodeURIComponent(item.id), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(() => {});
+            }
         }
 
-        // Tutup Modal Detail Buku
         function closeBookDetailModal() {
             const modal = document.getElementById('book-detail-modal');
             if (modal) {
                 modal.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
-
-                // Hapus parameter buku dari URL
-                const url = new URL(window.location.href);
-                if (url.searchParams.has('buku')) {
-                    url.searchParams.delete('buku');
-                    window.history.replaceState({}, '', url.toString());
-                }
             }
         }
 
-        // Fokus kembali ke Search Bar (Flowchart: F --> B jika buku tidak ditemukan)
-        function focusToSearchBar() {
-            const input = document.getElementById('opac-search-input');
-            if (input) {
-                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                input.focus();
-                input.select();
-            }
-        }
-
-        // Bersihkan input pencarian
-        function clearSearchInput() {
-            const input = document.getElementById('opac-search-input');
-            const clearBtn = document.getElementById('btn-clear-search');
-            if (input) {
-                input.value = '';
-                input.focus();
-                if (clearBtn) clearBtn.classList.add('hidden');
-                runLiveFilter();
-            }
-        }
-
-        // Live Client-side Search & Filter dengan Debounce
-        let searchDebounceTimer = null;
-        function runLiveFilter() {
-            const searchInput = document.getElementById('opac-search-input');
-            const kriteriaSelect = document.getElementById('opac-kriteria');
-            const clearBtn = document.getElementById('btn-clear-search');
-            const liveStatus = document.getElementById('live-search-status');
-            const liveText = document.getElementById('live-search-text');
-            const grid = document.getElementById('catalog-grid');
-            const emptyContainer = document.getElementById('empty-state-container');
-            const emptyMsg = document.getElementById('empty-state-message');
-            const totalBadge = document.getElementById('badge-total-judul');
-
-            if (!searchInput || !grid) return;
-
-            const query = searchInput.value.trim().toLowerCase();
-            const kriteria = kriteriaSelect ? kriteriaSelect.value : 'semua';
-
-            // Toggle tombol clear (X)
-            if (clearBtn) {
-                if (query.length > 0) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
-            }
-
-            const cards = grid.querySelectorAll('.opac-card');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                let match = false;
-                if (!query) {
-                    match = true;
-                } else {
-                    const title = card.getAttribute('data-title') || '';
-                    const author = card.getAttribute('data-author') || '';
-                    const publisher = card.getAttribute('data-publisher') || '';
-                    const isbn = card.getAttribute('data-isbn') || '';
-                    const callNumber = card.getAttribute('data-call-number') || '';
-                    const subjects = card.getAttribute('data-subjects') || '';
-
-                    switch (kriteria) {
-                        case 'judul':
-                            match = title.includes(query);
-                            break;
-                        case 'pengarang':
-                            match = author.includes(query);
-                            break;
-                        case 'penerbit':
-                            match = publisher.includes(query);
-                            break;
-                        case 'isbn':
-                            match = isbn.includes(query);
-                            break;
-                        case 'nomor_panggil':
-                            match = callNumber.includes(query);
-                            break;
-                        case 'subjek':
-                            match = subjects.includes(query);
-                            break;
-                        default:
-                            match = title.includes(query) ||
-                                    author.includes(query) ||
-                                    publisher.includes(query) ||
-                                    isbn.includes(query) ||
-                                    callNumber.includes(query) ||
-                                    subjects.includes(query);
-                            break;
-                    }
-                }
-
-                if (match) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Update status badge & empty state
-            if (totalBadge) {
-                totalBadge.textContent = visibleCount + ' judul';
-            }
-
-            if (visibleCount > 0) {
-                grid.classList.remove('hidden');
-                if (emptyContainer) emptyContainer.classList.add('hidden');
-
-                if (query && liveStatus && liveText) {
-                    liveStatus.classList.remove('hidden');
-                    liveStatus.classList.add('flex');
-                    liveText.textContent = `Menemukan ${visibleCount} koleksi untuk kata kunci "${searchInput.value.trim()}".`;
-                } else if (liveStatus) {
-                    liveStatus.classList.add('hidden');
-                    liveStatus.classList.remove('flex');
-                }
-            } else {
-                // Sesuai flowchart: Tampilkan pesan 'koleksi tidak ditemukan'
-                grid.classList.add('hidden');
-                if (emptyContainer) {
-                    emptyContainer.classList.remove('hidden');
-                    emptyContainer.classList.add('flex');
-                }
-                if (emptyMsg) {
-                    emptyMsg.innerHTML = `Tidak ditemukan koleksi dengan kata kunci <strong class="text-ink font-semibold">"${searchInput.value.trim()}"</strong> pada kriteria <span class="text-primary font-medium">${kriteriaSelect ? kriteriaSelect.options[kriteriaSelect.selectedIndex].text : 'katalog'}</span>.`;
-                }
-                if (liveStatus) {
-                    liveStatus.classList.add('hidden');
-                    liveStatus.classList.remove('flex');
-                }
-            }
-        }
-
-        // Listener input real-time dengan debounce
-        const searchInputEl = document.getElementById('opac-search-input');
-        if (searchInputEl) {
-            searchInputEl.addEventListener('input', function () {
-                clearTimeout(searchDebounceTimer);
-                searchDebounceTimer = setTimeout(runLiveFilter, 150);
-            });
-        }
-
-        const kriteriaSelectEl = document.getElementById('opac-kriteria');
-        if (kriteriaSelectEl) {
-            kriteriaSelectEl.addEventListener('change', function () {
-                runLiveFilter();
-            });
-        }
-
-        // Tutup modal dengan tombol Escape
+        // =========================================================================
+        // 3. EVENT LISTENER KEYBOARD (ESCAPE) & CLICK OUTSIDE
+        // =========================================================================
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
+                closeFilterModal();
                 closeBookDetailModal();
             }
         });
 
-        // Tutup modal jika klik di luar area dialog
+        document.getElementById('search-filter-modal')?.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeFilterModal();
+            }
+        });
+
         document.getElementById('book-detail-modal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeBookDetailModal();
@@ -889,6 +1122,9 @@
         });
 
         // Buka otomatis detail buku jika ada parameter buku pada URL saat memuat halaman
+        const allCatalogItems = @json($items);
+        const selectedBookId = @json($selectedBookId ?? null);
+
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const targetId = selectedBookId || urlParams.get('buku');

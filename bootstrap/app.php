@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->statefulApi();
+        $middleware->redirectTo(
+            guests: '/login',
+            users: '/',
+        );
         $middleware->alias([
             'superadmin' => EnsureSuperAdmin::class,
         ]);

@@ -5,18 +5,18 @@
             <button
                 type="button"
                 id="sidebar-open"
-                class="-ml-2 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-primary hover:bg-[#F3F4F6] @guest lg:hidden @else flex @endguest"
+                class="-ml-2 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-primary hover:bg-[#F3F4F6] btn-press @guest lg:hidden @else flex @endguest"
                 aria-label="Buka menu navigasi & panel manajemen"
                 aria-expanded="false"
                 aria-controls="sidebar"
                 title="Buka Menu & Panel Manajemen"
             >
-                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <svg class="size-6 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
 
-            <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2.5 rounded-lg lg:gap-3">
+            <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2.5 rounded-lg transition-transform duration-150 hover:scale-[1.01] lg:gap-3">
                 <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-8 w-auto shrink-0 lg:h-9">
                 <span class="truncate text-base font-semibold text-primary lg:text-[20px] xl:text-[22px]">Perpustakaan MNC University</span>
             </a>
@@ -26,7 +26,7 @@
         @guest
             <div class="hidden items-center gap-1 lg:flex">
                 @foreach ($navigationItems as $navigationItem)
-                    <a href="{{ $navigationItem['href'] }}" class="rounded-lg px-3 py-2 text-[15px] text-ink-secondary transition-colors duration-150 hover:bg-[#F3F4F6] hover:text-primary">
+                    <a href="{{ $navigationItem['href'] }}" class="nav-link-animated rounded-lg px-3 py-2 text-[15px] text-ink-secondary transition-colors duration-150 hover:bg-[#F3F4F6] hover:text-primary">
                         {{ $navigationItem['label'] }}
                     </a>
                 @endforeach
@@ -36,12 +36,12 @@
         {{-- Kanan: Tombol Login & Daftar saat Guest / Profil & Dropdown saat Auth --}}
         <div class="flex items-center gap-2 lg:gap-3">
             @guest
-                <a href="{{ route('register') }}" class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-sm transition-all duration-150 hover:bg-subtle hover:border-gray-300 lg:h-11 lg:px-4 lg:text-sm">
-                    <i class="fa-solid fa-user-plus text-xs text-primary"></i>
+                <a href="{{ route('register') }}" class="group inline-flex h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-sm transition-all duration-150 hover:bg-subtle hover:border-gray-300 btn-press lg:h-11 lg:px-4 lg:text-sm">
+                    <i class="fa-solid fa-user-plus text-xs text-primary transition-transform duration-150 group-hover:scale-110"></i>
                     <span>Daftar</span>
                 </a>
-                <a href="{{ route('login') }}" class="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark lg:h-11 lg:px-4 lg:text-sm">
-                    <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+                <a href="{{ route('login') }}" class="group inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark btn-press btn-sheen lg:h-11 lg:px-4 lg:text-sm">
+                    <i class="fa-solid fa-arrow-right-to-bracket text-xs transition-transform duration-150 group-hover:translate-x-0.5"></i>
                     <span>Login</span>
                 </a>
             @else
