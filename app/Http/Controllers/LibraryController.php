@@ -102,6 +102,11 @@ class LibraryController extends Controller
             );
         }
 
+        $category = (string) $request->query('kategori', 'Semua');
+        $prodi = (string) $request->query('prodi', 'Semua');
+        $jenisFilter = (string) $request->query('jenis', 'Semua');
+        $selectedBookId = $request->query('buku');
+
         // 2. Alur Flowchart Fitur OPAC (Kategori Subjek, Koleksi Populer, Koleksi Baru & Diperbarui)
         $fitur = (string) $request->query('fitur', 'semua');
         $subjekId = trim((string) $request->query('subjek_id', ''));
@@ -261,35 +266,38 @@ class LibraryController extends Controller
             $filterLokasi,
             $filterJenis,
             $filterProdi,
-            $statusFilter
+            $statusFilter,
+            $category
+
         ): bool {
             // A. Search Bar Sederhana dengan Kriteria Tertentu
             $matchesQuery = true;
             if (! empty($query)) {
-                if ($kriteria === 'judul') {
-                    $matchesQuery = stripos($item['title'], $query) !== false;
-                } elseif ($kriteria === 'pengarang') {
-                    $matchesQuery = stripos($item['author'], $query) !== false;
-                } elseif ($kriteria === 'subjek') {
-                    $matchesQuery = collect($item['subjects'] ?? [])->contains(fn ($s) => stripos($s, $query) !== false);
-                } elseif ($kriteria === 'isbn') {
-                    $matchesQuery = stripos($item['isbn'] ?? '', $query) !== false;
-                } elseif ($kriteria === 'ddc') {
-                    $matchesQuery = stripos($item['call_number'] ?? '', $query) !== false ||
-                        collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false);
-                } else {
-                    // Semua kriteria / umum
-                    $matchesQuery = (
+                $subjectsText = implode(' ', $item['subjects'] ?? []);
+                $matchesQuery = match ($kriteria) {
+                    'judul' => stripos($item['title'], $query) !== false,
+                    'pengarang' => stripos($item['author'], $query) !== false,
+                    'penerbit' => stripos($item['publisher'], $query) !== false || stripos($item['publisher_city'] ?? '', $query) !== false,
+                    'subjek' => stripos($subjectsText, $query) !== false || stripos($item['category_name'] ?? '', $query) !== false,
+                    'nomor_panggil', 'ddc' => (
+                        stripos($item['call_number'] ?? '', $query) !== false ||
+                        collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false)
+                    ),
+                    'isbn' => stripos($item['isbn'] ?? '', $query) !== false,
+                    default => (
                         stripos($item['title'], $query) !== false ||
                         stripos($item['author'], $query) !== false ||
                         stripos($item['call_number'] ?? '', $query) !== false ||
                         stripos($item['isbn'] ?? '', $query) !== false ||
                         stripos($item['publisher'] ?? '', $query) !== false ||
                         stripos($item['description'] ?? '', $query) !== false ||
-                        collect($item['subjects'] ?? [])->contains(fn ($s) => stripos($s, $query) !== false)
-                    );
-                }
+                        stripos($subjectsText, $query) !== false ||
+                        collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false)
+                    ),
+                };
             }
+
+            $matchesCategory = $category === 'Semua' || $item['category'] === $category || ($item['category_name'] ?? '') === $category;
 
             // B. Filter Kategori Subjek (Flowchart Cabang 1)
             $matchesSubjek = true;
@@ -338,6 +346,7 @@ class LibraryController extends Controller
                 $matchesLokasi &&
                 $matchesJenis &&
                 $matchesProdi &&
+                $matchesCategory &&
                 $matchesStatus;
         });
 
@@ -422,6 +431,10 @@ class LibraryController extends Controller
             'filterLokasi' => $filterLokasi,
             'filterJenis' => $filterJenis,
             'filterProdi' => $filterProdi,
+            'category' => $category,
+            'prodi' => $prodi,
+            'jenisFilter' => $jenisFilter,
+            'selectedBookId' => $selectedBookId,
             'statusFilter' => $statusFilter,
             'activeFilterCount' => $activeFilterCount,
             'tahunList' => $tahunList,
@@ -432,6 +445,7 @@ class LibraryController extends Controller
             'totalKoleksi' => $totalKoleksi,
             'totalEksemplarFisik' => $totalEksemplarFisik,
             'totalEksemplarTersedia' => $totalEksemplarTersedia,
+            'selectedBookId' => $selectedBookId,
         ]);
     }
 

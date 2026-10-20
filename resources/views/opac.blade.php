@@ -30,7 +30,7 @@
                     <div class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2 shadow-xs">
                         <i class="fa-solid fa-book-bookmark text-primary text-xs"></i>
                         <span class="text-muted">Total Judul:</span>
-                        <strong class="font-bold text-primary">{{ $totalCount }} judul</strong>
+                        <strong class="font-bold text-primary" id="badge-total-judul">{{ $totalCount }} judul</strong>
                     </div>
                     <div class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2 shadow-xs">
                         <i class="fa-solid fa-boxes-stacked text-[#7C3AED] text-xs"></i>
@@ -246,9 +246,11 @@
                                 <option value="semua" @selected($kriteria === 'semua')>Semua Kriteria</option>
                                 <option value="judul" @selected($kriteria === 'judul')>Judul Buku</option>
                                 <option value="pengarang" @selected($kriteria === 'pengarang')>Pengarang</option>
+                                <option value="penerbit" @selected($kriteria === 'penerbit')>Penerbit</option>
                                 <option value="subjek" @selected($kriteria === 'subjek')>Subjek</option>
-                                <option value="isbn" @selected($kriteria === 'isbn')>Nomor ISBN</option>
+                                <option value="nomor_panggil" @selected($kriteria === 'nomor_panggil')>Nomor Panggil</option>
                                 <option value="ddc" @selected($kriteria === 'ddc')>Nomor Panggil (DDC)</option>
+                                <option value="isbn" @selected($kriteria === 'isbn')>Nomor ISBN</option>
                             </select>
                         </div>
 
@@ -259,11 +261,22 @@
                             </span>
                             <input
                                 type="text"
+                                id="opac-search-input"
                                 name="q"
                                 value="{{ $query }}"
                                 placeholder="Ketik kata kunci pencarian buku..."
-                                class="h-11 w-full rounded-xl border border-line bg-subtle/50 pr-4 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                                class="h-11 w-full rounded-xl border border-line bg-subtle/50 pr-10 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
                             >
+                            @if (! empty($query))
+                                <a
+                                    href="{{ route('opac', array_merge(request()->except('q'), ['fitur' => $fitur])) }}"
+                                    id="btn-clear-search"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 flex size-6 items-center justify-center rounded-md text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                                    title="Bersihkan Pencarian"
+                                >
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </a>
+                            @endif
                         </div>
                     </div>
 
@@ -533,17 +546,27 @@
                     <div class="flex size-14 items-center justify-center rounded-2xl bg-white text-muted shadow-sm">
                         <i class="fa-solid fa-book-open text-2xl text-muted/60"></i>
                     </div>
-                    <h3 class="mt-4 text-base font-bold text-ink">Koleksi Buku Tidak Ditemukan</h3>
+                    <h3 class="mt-4 text-base font-bold text-ink">Koleksi Tidak Ditemukan</h3>
                     <p class="mt-1 max-w-md text-xs text-muted leading-relaxed">
                         Tidak ada koleksi buku yang cocok dengan kriteria kata kunci atau kombinasi box filter yang Anda tentukan. Silakan gunakan kata kunci umum atau reset filter pencarian Anda.
                     </p>
-                    <a
-                        href="{{ route('opac', ['fitur' => 'semua']) }}"
-                        class="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors"
-                    >
-                        <i class="fa-solid fa-rotate-left text-xs"></i>
-                        <span>Lihat Semua Koleksi</span>
-                    </a>
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+                        <button
+                            type="button"
+                            onclick="focusToSearchBar()"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors"
+                        >
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>Coba Kata Kunci Lain</span>
+                        </button>
+                        <a
+                            href="{{ route('opac', ['fitur' => 'semua']) }}"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 text-xs font-medium text-ink hover:bg-subtle transition-colors"
+                        >
+                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                            <span>Lihat Semua Koleksi</span>
+                        </a>
+                    </div>
                 </div>
             @endif
         </section>
@@ -1089,8 +1112,27 @@
             }
         }
 
+        const allCatalogItems = @json($items);
+
+        function focusToSearchBar() {
+            const input = document.getElementById('opac-search-input');
+            if (input) {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                input.focus();
+                input.select();
+            }
+        }
+
+        function clearSearchInput() {
+            const input = document.getElementById('opac-search-input');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        }
+
         // =========================================================================
-        // 3. EVENT LISTENER KEYBOARD (ESCAPE) & CLICK OUTSIDE
+        // 3. EVENT LISTENER KEYBOARD (ESCAPE), CLICK OUTSIDE, & AUTO-OPEN MODAL
         // =========================================================================
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
@@ -1108,6 +1150,17 @@
         document.getElementById('book-detail-modal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeBookDetailModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetId = '{{ $selectedBookId ?? '' }}' || urlParams.get('buku');
+            if (targetId && Array.isArray(allCatalogItems) && allCatalogItems.length > 0) {
+                const foundItem = allCatalogItems.find(item => String(item.id) === String(targetId));
+                if (foundItem) {
+                    openBookDetailModal(foundItem);
+                }
             }
         });
     </script>

@@ -53,28 +53,32 @@ class VisitorLog extends Model
      */
     public static function recordVisit(): void
     {
-        $sessionId = session()->getId();
+        try {
+            $sessionId = session()->getId();
 
-        if (empty($sessionId)) {
-            return;
-        }
+            if (empty($sessionId)) {
+                return;
+            }
 
-        $todayStart = now()->startOfDay();
-        $todayEnd = now()->endOfDay();
+            $todayStart = now()->startOfDay();
+            $todayEnd = now()->endOfDay();
 
-        $alreadyLogged = static::query()
-            ->where('session_id', $sessionId)
-            ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
-            ->exists();
+            $alreadyLogged = static::query()
+                ->where('session_id', $sessionId)
+                ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
+                ->exists();
 
-        if (! $alreadyLogged) {
-            static::create([
-                'id_pengguna' => auth()->id(),
-                'waktu_kunjungan' => now(),
-                'session_id' => $sessionId,
-                'ip_address' => request()->ip(),
-                'user_agent' => substr((string) request()->userAgent(), 0, 500),
-            ]);
+            if (! $alreadyLogged) {
+                static::create([
+                    'id_pengguna' => auth()->id(),
+                    'waktu_kunjungan' => now(),
+                    'session_id' => $sessionId,
+                    'ip_address' => request()->ip(),
+                    'user_agent' => substr((string) request()->userAgent(), 0, 500),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
     }
 
@@ -85,24 +89,34 @@ class VisitorLog extends Model
      */
     public static function getStatistics(): array
     {
-        $todayStart = now()->startOfDay();
-        $todayEnd = now()->endOfDay();
-        $monthStart = now()->startOfMonth();
+        try {
+            $todayStart = now()->startOfDay();
+            $todayEnd = now()->endOfDay();
+            $monthStart = now()->startOfMonth();
 
-        $today = static::query()
-            ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
-            ->count();
+            $today = static::query()
+                ->whereBetween('waktu_kunjungan', [$todayStart, $todayEnd])
+                ->count();
 
-        $month = static::query()
-            ->where('waktu_kunjungan', '>=', $monthStart)
-            ->count();
+            $month = static::query()
+                ->where('waktu_kunjungan', '>=', $monthStart)
+                ->count();
 
-        $total = static::query()->count();
+            $total = static::query()->count();
 
-        return [
-            'today' => max($today, 0),
-            'month' => max($month, 0),
-            'total' => max($total, 0),
-        ];
+            return [
+                'today' => max($today, 0),
+                'month' => max($month, 0),
+                'total' => max($total, 0),
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'today' => 0,
+                'month' => 0,
+                'total' => 0,
+            ];
+        }
     }
 }
