@@ -17,7 +17,7 @@
             </button>
 
             <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2.5 rounded-lg transition-transform duration-150 hover:scale-[1.01] lg:gap-3">
-                <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-8 w-auto shrink-0 lg:h-9">
+                <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-8 max-w-[120px] w-auto shrink-0 object-contain lg:h-9" style="max-height: 36px; max-width: 120px;" width="120" height="36">
                 <span class="truncate text-base font-semibold text-primary lg:text-[20px] xl:text-[22px]">Perpustakaan MNC University</span>
             </a>
         </div>
@@ -57,9 +57,13 @@
                             <span class="block text-sm font-semibold text-primary leading-tight">{{ Auth::user()->nama_lengkap }}</span>
                             <span class="block text-xs text-muted">{{ Auth::user()->peran?->nama_peran ?? Auth::user()->nomor_identitas }}</span>
                         </div>
-                        <div class="flex size-10 items-center justify-center rounded-full border-2 border-line bg-primary/10 font-bold text-primary lg:size-11">
-                            {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
-                        </div>
+                        @if (Auth::user()->foto_profil)
+                            <img src="{{ asset('storage/'.Auth::user()->foto_profil) }}" alt="{{ Auth::user()->nama_lengkap }}" class="size-10 rounded-full border-2 border-line object-cover lg:size-11">
+                        @else
+                            <div class="flex size-10 items-center justify-center rounded-full border-2 border-line bg-primary/10 font-bold text-primary lg:size-11">
+                                {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
+                            </div>
+                        @endif
                         <svg class="size-4 text-muted transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m6 9 6 6 6-6"/>
                         </svg>
@@ -75,7 +79,7 @@
                             <p class="text-xs font-semibold text-ink">{{ Auth::user()->nama_lengkap }}</p>
                             <p class="truncate text-[11px] text-muted">{{ Auth::user()->email }}</p>
                             <span class="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                {{ Auth::user()->peran?->nama_peran }}
+                                {{ Auth::user()->peran?->nama_peran ?? ucfirst(Auth::user()->role) }}
                             </span>
                         </div>
 
@@ -103,8 +107,16 @@
                         @endif
 
                         <div class="py-1">
+                            <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                <i class="fa-solid fa-user-circle text-primary w-4"></i>
+                                <span>Profil Saya</span>
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                <i class="fa-solid fa-user-pen text-muted w-4"></i>
+                                <span>Edit Profil</span>
+                            </a>
                             <a href="{{ route('pustakawan') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
-                                <i class="fa-regular fa-user text-muted w-4"></i>
+                                <i class="fa-regular fa-id-badge text-muted w-4"></i>
                                 <span>Profil Pustakawan</span>
                             </a>
                             <a href="{{ route('chat') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">

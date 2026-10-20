@@ -9,6 +9,7 @@
     aria-hidden="true"
     inert
     class="fixed inset-y-0 left-0 z-50 flex h-dvh w-[88%] max-w-[340px] -translate-x-full flex-col bg-white shadow-drawer transition-transform duration-250 ease-out motion-reduce:transition-none md:w-[380px] lg:w-[400px]"
+    style="transform: translateX(-100%);"
 >
     {{-- Header Sidebar --}}
     <div class="relative px-6 pt-5 pb-5 text-center border-b border-line">
@@ -24,7 +25,7 @@
         </button>
 
         <a href="{{ url('/') }}" class="inline-block mt-2">
-            <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="mx-auto h-16 w-auto md:h-20">
+            <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="mx-auto h-12 max-w-[120px] w-auto object-contain md:h-14" style="max-height: 56px; max-width: 120px;" width="120" height="56">
             <p class="mt-2 text-base font-bold text-primary md:text-lg">Perpustakaan MNC University</p>
             <p class="text-[11px] text-muted">Portal Sivitas Akademika</p>
         </a>

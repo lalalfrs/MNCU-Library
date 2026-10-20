@@ -5,6 +5,7 @@
 <div
     id="mncu-loading-screen"
     class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md transition-all duration-300 ease-out"
+    style="position: fixed; inset: 0; z-index: 9999;"
     role="status"
     aria-live="polite"
     aria-label="Memuat halaman perpustakaan"
@@ -45,7 +46,7 @@
 
         {{-- Brand & Status Text --}}
         <div class="flex items-center gap-2.5">
-            <img src="{{ asset('images/Logo.png') }}" alt="" class="h-6 w-auto opacity-90 animate-pulse">
+            <img src="{{ asset('images/Logo.png') }}" alt="" class="h-6 max-w-[80px] w-auto object-contain opacity-90 animate-pulse" style="max-height: 24px; max-width: 80px;" width="80" height="24">
             <span class="text-sm font-semibold tracking-wide text-primary">MNC Library</span>
         </div>
 
@@ -59,3 +60,25 @@
         </p>
     </div>
 </div>
+
+<script>
+    (function () {
+        var dismiss = function () {
+            var ls = document.getElementById('mncu-loading-screen');
+            if (ls) {
+                ls.style.transition = 'opacity 0.25s ease-out';
+                ls.style.opacity = '0';
+                ls.style.pointerEvents = 'none';
+                setTimeout(function () {
+                    ls.style.display = 'none';
+                }, 260);
+            }
+        };
+        if (document.readyState === 'complete') {
+            dismiss();
+        } else {
+            window.addEventListener('load', dismiss);
+            setTimeout(dismiss, 1000);
+        }
+    })();
+</script>

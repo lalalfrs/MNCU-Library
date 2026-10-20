@@ -32,6 +32,14 @@ class Pengguna extends Authenticatable
         'email',
         'kata_sandi',
         'nomor_identitas',
+        'alamat_lengkap',
+        'no_wa',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'nik',
+        'nim',
+        'nidn',
+        'foto_profil',
     ];
 
     protected $hidden = [
@@ -43,7 +51,25 @@ class Pengguna extends Authenticatable
     {
         return [
             'kata_sandi' => 'hashed',
+            'tanggal_lahir' => 'date',
         ];
+    }
+
+    public function getRoleAttribute(): string
+    {
+        if ($this->isMahasiswa()) {
+            return 'mahasiswa';
+        }
+        if ($this->isDosen()) {
+            return 'dosen';
+        }
+
+        return 'admin';
+    }
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        return $this->foto_profil ? asset('storage/'.$this->foto_profil) : null;
     }
 
     public function getAuthPassword(): string

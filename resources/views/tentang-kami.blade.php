@@ -25,7 +25,7 @@
         <section aria-labelledby="judul-sejarah" class="rounded-2xl border border-line bg-white p-6 lg:p-8">
             <div class="grid items-center gap-8 md:grid-cols-[auto_1fr] lg:gap-12">
                 <div class="flex items-center justify-center rounded-2xl bg-subtle p-6 md:p-8">
-                    <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-36 w-auto sm:h-44 lg:h-52">
+                    <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-20 max-w-[200px] w-auto object-contain sm:h-24 sm:max-w-[240px] lg:h-28" style="max-height: 112px; max-width: 240px;" width="240" height="112">
                 </div>
                 <div>
                     <h2 id="judul-sejarah" class="text-lg font-medium text-ink lg:text-2xl">Sejarah Perpustakaan</h2>
