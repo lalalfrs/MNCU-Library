@@ -1,33 +1,47 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Profil Pengguna')
-@section('description', 'Perbarui data diri, informasi akademik sesuai peran, dan foto profil Anda di Perpustakaan MNC University.')
+@section('description', 'Perbarui data diri, nomor identitas peran, dan foto profil Anda di Perpustakaan MNC University.')
 
 @section('content')
 <div class="min-h-screen bg-slate-50/70 py-8 lg:py-12">
     <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-        {{-- Header & Breadcrumbs --}}
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {{-- Breadcrumbs --}}
+        <nav class="mb-4 flex items-center gap-2 text-xs font-medium text-muted sm:text-sm" aria-label="Breadcrumb">
+            <a href="{{ route('beranda') }}" class="inline-flex min-h-[44px] items-center text-muted transition-colors hover:text-primary">
+                <i class="fa-solid fa-house mr-1.5 text-xs text-slate-400"></i>
+                <span>Beranda</span>
+            </a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+            <a href="{{ route('profile.show') }}" class="inline-flex min-h-[44px] items-center text-muted transition-colors hover:text-primary">
+                <span>Profil Pengguna</span>
+            </a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+            <span class="inline-flex min-h-[44px] items-center font-semibold text-ink" aria-current="page">Edit Profil</span>
+        </nav>
+
+        {{-- Page Header & Sub Navigation Tabs --}}
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
             <div>
-                <nav class="flex items-center gap-2 text-xs text-muted" aria-label="Breadcrumb">
-                    <a href="{{ route('beranda') }}" class="hover:text-primary transition-colors">Beranda</a>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
-                    <a href="{{ route('profile.show') }}" class="hover:text-primary transition-colors">Profil Pengguna</a>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
-                    <span class="font-medium text-ink">Edit Profil</span>
-                </nav>
-                <h1 class="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Pengaturan Profil</h1>
-                <p class="text-xs text-muted sm:text-sm">Kelola informasi data diri, foto profil, dan kredensial peran perpustakaan Anda.</p>
+                <h1 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Pengaturan Profil</h1>
+                <p class="mt-1 text-xs text-muted sm:text-sm">Kelola informasi data diri, foto identitas anggota, dan kredensial peran perpustakaan Anda.</p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('profile.show') }}" class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-xs font-semibold text-ink shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    <span>Kembali ke Profil</span>
-                </a>
+                {{-- Segmented Navigation Tab --}}
+                <div class="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-medium">
+                    <a href="{{ route('profile.show') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-id-card text-xs"></i>
+                        <span>Ringkasan</span>
+                    </a>
+                    <span class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-white px-3.5 py-1.5 font-semibold text-primary shadow-sm">
+                        <i class="fa-solid fa-user-pen text-xs"></i>
+                        <span>Edit Profil</span>
+                    </span>
+                </div>
             </div>
         </div>
 
-        {{-- Form Edit Profil --}}
+        {{-- Form Pembaruan Profil --}}
         <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
@@ -35,68 +49,75 @@
 
             {{-- 1. Kartu Foto Profil & Identitas Peran --}}
             <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                <div class="border-b border-line bg-slate-50/50 px-6 py-4">
-                    <h2 class="text-sm font-bold text-ink sm:text-base flex items-center gap-2">
-                        <i class="fa-solid fa-camera text-primary"></i>
-                        <span>Foto Profil & Peran Pengguna</span>
-                    </h2>
-                    <p class="text-xs text-muted">Unggah foto resmi untuk identitas kartu anggota perpustakaan digital.</p>
+                <div class="border-b border-line bg-slate-50/70 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <i class="fa-solid fa-camera text-xs"></i>
+                            </span>
+                            <h2 class="text-sm font-bold text-ink sm:text-base">Foto Profil & Identitas Kartu</h2>
+                        </div>
+                        <div>
+                            @if ($role === 'mahasiswa')
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
+                                    <i class="fa-solid fa-graduation-cap"></i> Mahasiswa
+                                </span>
+                            @elseif ($role === 'dosen')
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800 border border-indigo-200">
+                                    <i class="fa-solid fa-chalkboard-user"></i> Dosen
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800 border border-slate-300">
+                                    <i class="fa-solid fa-shield-halved"></i> Administrator
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Foto ini ditampilkan pada kartu anggota perpustakaan digital dan verifikasi layanan pemustaka.</p>
                 </div>
 
                 <div class="p-6">
-                    <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+                    <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-8">
                         {{-- Wadah Foto & Preview --}}
                         <div class="relative shrink-0">
-                            <div class="relative size-28 overflow-hidden rounded-2xl border-2 border-line bg-slate-100 shadow-sm sm:size-32">
+                            <div class="relative size-28 overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-sm ring-1 ring-slate-200 sm:size-32">
                                 @if ($user->foto_profil)
                                     <img id="profile-preview" src="{{ asset('storage/' . $user->foto_profil) }}" alt="{{ $user->nama_lengkap }}" class="size-full object-cover">
                                 @else
-                                    <img id="profile-preview" src="" alt="Preview Foto" class="hidden size-full object-cover">
-                                    <div id="profile-avatar-fallback" class="flex size-full items-center justify-center bg-primary/10 text-3xl font-extrabold text-primary">
-                                        {{ strtoupper(substr($user->nama_lengkap ?? 'U', 0, 1)) }}
+                                    <img id="profile-preview" src="" alt="Pratinjau Foto" class="hidden size-full object-cover">
+                                    <div id="profile-avatar-fallback" class="flex size-full flex-col items-center justify-center bg-primary/10 text-primary">
+                                        <span class="text-3xl font-extrabold">{{ strtoupper(substr($user->nama_lengkap ?? 'U', 0, 1)) }}</span>
                                     </div>
-                                @endif
-                            </div>
-                            <div class="mt-2 text-center">
-                                @if ($role === 'mahasiswa')
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                                        <i class="fa-solid fa-graduation-cap"></i> Mahasiswa
-                                    </span>
-                                @elseif ($role === 'dosen')
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 border border-violet-200">
-                                        <i class="fa-solid fa-chalkboard-user"></i> Dosen
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 border border-amber-200">
-                                        <i class="fa-solid fa-shield-halved"></i> Administrator
-                                    </span>
                                 @endif
                             </div>
                         </div>
 
-                        {{-- Input Unggah Foto --}}
-                        <div class="flex-1 space-y-3">
+                        {{-- Input Unggah Foto & Panduan --}}
+                        <div class="flex-1 space-y-3 text-center sm:text-left">
                             <label for="foto_profil" class="block text-xs font-bold text-ink sm:text-sm">
-                                Pilih Berkas Foto Baru
+                                Unggah Berkas Foto Anggota
                             </label>
-                            <input
-                                type="file"
-                                name="foto_profil"
-                                id="foto_profil"
-                                accept=".jpg,.jpeg,.png"
-                                class="block w-full rounded-xl border border-line bg-white px-3 py-2 text-xs text-slate-700 shadow-sm file:mr-4 file:min-h-[38px] file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-primary/90 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                            <p class="text-xs text-muted flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-info text-primary"></i>
-                                <span>Ketentuan: Format <strong>.jpg, .jpeg, .png</strong> dengan ukuran maksimal <strong>200 KB</strong>.</span>
+                            <div>
+                                <input
+                                    type="file"
+                                    name="foto_profil"
+                                    id="foto_profil"
+                                    accept=".jpg,.jpeg,.png"
+                                    aria-describedby="foto-profil-desc file-size-warning @error('foto_profil') foto-profil-error @enderror"
+                                    class="block w-full cursor-pointer rounded-xl border border-line bg-white px-3 py-2 text-xs text-slate-700 shadow-sm file:mr-4 file:min-h-[40px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-primary/90 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                            </div>
+                            <p id="foto-profil-desc" class="text-xs text-muted flex items-center justify-center sm:justify-start gap-1.5">
+                                <i class="fa-solid fa-circle-info text-primary" aria-hidden="true"></i>
+                                <span>Format berkas: <strong>.jpg, .jpeg, .png</strong> dengan batas maksimal <strong>200 KB</strong>.</span>
                             </p>
-                            <p id="file-size-warning" class="hidden text-xs font-medium text-rose-600 flex items-center gap-1.5">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <span>Ukuran berkas yang Anda pilih melebihi batas maksimal 200 KB!</span>
+                            <p id="file-size-warning" class="hidden text-xs font-semibold text-rose-600 flex items-center justify-center sm:justify-start gap-1.5" role="alert">
+                                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                <span>Ukuran berkas yang dipilih melebihi batas 200 KB! Silakan pilih foto lain yang lebih ringkas.</span>
                             </p>
                             @error('foto_profil')
-                                <p class="text-xs font-medium text-rose-600 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                <p id="foto-profil-error" class="text-xs font-semibold text-rose-600 flex items-center justify-center sm:justify-start gap-1.5" role="alert">
+                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
                                     <span>{{ $message }}</span>
                                 </p>
                             @enderror
@@ -105,14 +126,16 @@
                 </div>
             </div>
 
-            {{-- 2. Data Khusus Sesuai Role (@if role) --}}
+            {{-- 2. Data Khusus Sesuai Peran --}}
             <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                <div class="border-b border-line bg-slate-50/50 px-6 py-4">
-                    <h2 class="text-sm font-bold text-ink sm:text-base flex items-center gap-2">
-                        <i class="fa-solid fa-id-card-clip text-primary"></i>
-                        <span>Informasi Khusus Peran: {{ ucfirst($role) }}</span>
-                    </h2>
-                    <p class="text-xs text-muted">Kolom identitas akademik yang disesuaikan dengan jenis peran Anda di universitas.</p>
+                <div class="border-b border-line bg-slate-50/70 px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <i class="fa-solid fa-id-card-clip text-xs"></i>
+                        </span>
+                        <h2 class="text-sm font-bold text-ink sm:text-base">Informasi Khusus Peran: {{ ucfirst($role) }}</h2>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Kolom identitas akademik atau administratif resmi di lingkungan MNC University.</p>
                 </div>
 
                 <div class="p-6">
@@ -120,10 +143,10 @@
                         {{-- Role Mahasiswa: Wajib NIM --}}
                         <div class="max-w-md space-y-1.5">
                             <label for="nim" class="block text-xs font-bold text-ink sm:text-sm">
-                                Nomor Induk Mahasiswa (NIM) <span class="text-rose-500">*</span>
+                                Nomor Induk Mahasiswa (NIM) <span class="text-rose-500" aria-hidden="true">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                     <i class="fa-solid fa-user-graduate"></i>
                                 </span>
                                 <input
@@ -133,13 +156,15 @@
                                     value="{{ old('nim', $user->nim ?? $user->nomor_identitas) }}"
                                     required
                                     placeholder="Contoh: 202401001"
+                                    aria-describedby="nim-desc @error('nim') nim-error @enderror"
+                                    @error('nim') aria-invalid="true" @enderror
                                     class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nim') border-rose-400 bg-rose-50/30 @enderror"
                                 >
                             </div>
-                            <p class="text-[11px] text-muted">Wajib diisi sesuai NIM resmi terdaftar di SIAKAD MNC University.</p>
+                            <p id="nim-desc" class="text-xs text-muted">Wajib diisi sesuai NIM resmi terdaftar di SIAKAD MNC University.</p>
                             @error('nim')
-                                <p class="text-xs font-medium text-rose-600 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                <p id="nim-error" class="text-xs font-semibold text-rose-600 flex items-center gap-1.5" role="alert">
+                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
                                     <span>{{ $message }}</span>
                                 </p>
                             @enderror
@@ -148,10 +173,10 @@
                         {{-- Role Dosen: Wajib NIDN --}}
                         <div class="max-w-md space-y-1.5">
                             <label for="nidn" class="block text-xs font-bold text-ink sm:text-sm">
-                                Nomor Induk Dosen Nasional (NIDN) <span class="text-rose-500">*</span>
+                                Nomor Induk Dosen Nasional (NIDN) <span class="text-rose-500" aria-hidden="true">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                     <i class="fa-solid fa-award"></i>
                                 </span>
                                 <input
@@ -161,45 +186,49 @@
                                     value="{{ old('nidn', $user->nidn ?? $user->nomor_identitas) }}"
                                     required
                                     placeholder="Contoh: 0312058001"
+                                    aria-describedby="nidn-desc @error('nidn') nidn-error @enderror"
+                                    @error('nidn') aria-invalid="true" @enderror
                                     class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nidn') border-rose-400 bg-rose-50/30 @enderror"
                                 >
                             </div>
-                            <p class="text-[11px] text-muted">Wajib diisi sesuai NIDN resmi yang tercatat pada PDDikti Kemendikbud.</p>
+                            <p id="nidn-desc" class="text-xs text-muted">Wajib diisi sesuai NIDN resmi yang tercatat pada PDDikti Kemendikbud.</p>
                             @error('nidn')
-                                <p class="text-xs font-medium text-rose-600 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                <p id="nidn-error" class="text-xs font-semibold text-rose-600 flex items-center gap-1.5" role="alert">
+                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
                                     <span>{{ $message }}</span>
                                 </p>
                             @enderror
                         </div>
                     @elseif ($role === 'admin')
-                        {{-- Role Admin: Tidak perlu input NIM/NIDN --}}
+                        {{-- Role Admin: Keterangan Administrator Sistem --}}
                         <div class="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 sm:text-sm">
-                            <i class="fa-solid fa-circle-info text-blue-600 text-lg"></i>
+                            <i class="fa-solid fa-circle-info text-blue-600 text-lg" aria-hidden="true"></i>
                             <div>
-                                <p class="font-semibold">Peran Administrator Sistem</p>
-                                <p class="text-xs text-blue-800">Sebagai administrator atau staf perpustakaan, Anda tidak memerlukan pengisian nomor identitas mahasiswa (NIM) maupun dosen (NIDN).</p>
+                                <p class="font-bold">Peran Administrator Sistem</p>
+                                <p class="mt-0.5 text-xs text-blue-800">Sebagai administrator atau pustakawan pengelola, Anda tidak memerlukan pengisian nomor identitas mahasiswa (NIM) maupun dosen (NIDN).</p>
                             </div>
                         </div>
                     @endif
                 </div>
             </div>
 
-            {{-- 3. Data Umum Pengguna --}}
+            {{-- 3. Data Pribadi & Kontak --}}
             <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                <div class="border-b border-line bg-slate-50/50 px-6 py-4">
-                    <h2 class="text-sm font-bold text-ink sm:text-base flex items-center gap-2">
-                        <i class="fa-solid fa-user text-primary"></i>
-                        <span>Data Umum Pengguna</span>
-                    </h2>
-                    <p class="text-xs text-muted">Informasi data diri umum yang digunakan untuk komunikasi dan pendataan perpustakaan.</p>
+                <div class="border-b border-line bg-slate-50/70 px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <i class="fa-solid fa-user text-xs"></i>
+                        </span>
+                        <h2 class="text-sm font-bold text-ink sm:text-base">Data Pribadi & Kontak Pemustaka</h2>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Informasi data diri yang digunakan untuk komunikasi, pemberitahuan peminjaman, dan pendataan anggota.</p>
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
                     {{-- Nama Lengkap --}}
                     <div class="space-y-1.5 sm:col-span-2">
                         <label for="nama_lengkap" class="block text-xs font-bold text-ink sm:text-sm">
-                            Nama Lengkap <span class="text-rose-500">*</span>
+                            Nama Lengkap <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <input
                             type="text"
@@ -208,20 +237,21 @@
                             value="{{ old('nama_lengkap', $user->nama_lengkap) }}"
                             required
                             placeholder="Nama lengkap beserta gelar (jika ada)"
+                            @error('nama_lengkap') aria-invalid="true" @enderror
                             class="block w-full min-h-[44px] rounded-xl border border-line px-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nama_lengkap') border-rose-400 bg-rose-50/30 @enderror"
                         >
                         @error('nama_lengkap')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Email --}}
+                    {{-- Alamat Email --}}
                     <div class="space-y-1.5">
                         <label for="email" class="block text-xs font-bold text-ink sm:text-sm">
-                            Alamat Email <span class="text-rose-500">*</span>
+                            Alamat Email Resmi <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                 <i class="fa-solid fa-envelope"></i>
                             </span>
                             <input
@@ -231,21 +261,22 @@
                                 value="{{ old('email', $user->email) }}"
                                 required
                                 placeholder="nama@mncu.ac.id"
+                                @error('email') aria-invalid="true" @enderror
                                 class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('email') border-rose-400 bg-rose-50/30 @enderror"
                             >
                         </div>
                         @error('email')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- No WhatsApp --}}
+                    {{-- Nomor WhatsApp --}}
                     <div class="space-y-1.5">
                         <label for="no_wa" class="block text-xs font-bold text-ink sm:text-sm">
-                            Nomor WhatsApp / Telepon <span class="text-rose-500">*</span>
+                            Nomor WhatsApp / Telepon <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                 <i class="fa-brands fa-whatsapp text-emerald-600"></i>
                             </span>
                             <input
@@ -255,21 +286,22 @@
                                 value="{{ old('no_wa', $user->no_wa) }}"
                                 required
                                 placeholder="081234567890"
+                                @error('no_wa') aria-invalid="true" @enderror
                                 class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('no_wa') border-rose-400 bg-rose-50/30 @enderror"
                             >
                         </div>
                         @error('no_wa')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- NIK --}}
+                    {{-- Nomor Induk Kependudukan (NIK) --}}
                     <div class="space-y-1.5">
                         <label for="nik" class="block text-xs font-bold text-ink sm:text-sm">
-                            Nomor Induk Kependudukan (NIK) <span class="text-rose-500">*</span>
+                            Nomor Induk Kependudukan (NIK) <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                 <i class="fa-solid fa-address-card"></i>
                             </span>
                             <input
@@ -280,21 +312,22 @@
                                 required
                                 maxlength="20"
                                 placeholder="16 digit NIK sesuai KTP"
+                                @error('nik') aria-invalid="true" @enderror
                                 class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nik') border-rose-400 bg-rose-50/30 @enderror"
                             >
                         </div>
                         @error('nik')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Tempat Lahir --}}
                     <div class="space-y-1.5">
                         <label for="tempat_lahir" class="block text-xs font-bold text-ink sm:text-sm">
-                            Tempat Lahir <span class="text-rose-500">*</span>
+                            Tempat Lahir <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                 <i class="fa-solid fa-location-dot"></i>
                             </span>
                             <input
@@ -303,22 +336,23 @@
                                 id="tempat_lahir"
                                 value="{{ old('tempat_lahir', $user->tempat_lahir) }}"
                                 required
-                                placeholder="Kota / Kabupaten kelahiran"
+                                placeholder="Kota atau kabupaten kelahiran"
+                                @error('tempat_lahir') aria-invalid="true" @enderror
                                 class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('tempat_lahir') border-rose-400 bg-rose-50/30 @enderror"
                             >
                         </div>
                         @error('tempat_lahir')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Tanggal Lahir --}}
                     <div class="space-y-1.5">
                         <label for="tanggal_lahir" class="block text-xs font-bold text-ink sm:text-sm">
-                            Tanggal Lahir <span class="text-rose-500">*</span>
+                            Tanggal Lahir <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted pointer-events-none" aria-hidden="true">
                                 <i class="fa-solid fa-calendar-day"></i>
                             </span>
                             <input
@@ -327,41 +361,43 @@
                                 id="tanggal_lahir"
                                 value="{{ old('tanggal_lahir', $user->tanggal_lahir ? $user->tanggal_lahir->format('Y-m-d') : '') }}"
                                 required
+                                @error('tanggal_lahir') aria-invalid="true" @enderror
                                 class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('tanggal_lahir') border-rose-400 bg-rose-50/30 @enderror"
                             >
                         </div>
                         @error('tanggal_lahir')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Alamat Lengkap --}}
+                    {{-- Alamat Domisili Lengkap --}}
                     <div class="space-y-1.5 sm:col-span-2">
                         <label for="alamat_lengkap" class="block text-xs font-bold text-ink sm:text-sm">
-                            Alamat Lengkap <span class="text-rose-500">*</span>
+                            Alamat Domisili Lengkap <span class="text-rose-500" aria-hidden="true">*</span>
                         </label>
                         <textarea
                             name="alamat_lengkap"
                             id="alamat_lengkap"
                             rows="3"
                             required
-                            placeholder="Alamat domisili lengkap (nama jalan, RT/RW, kelurahan, kecamatan, kota/kabupaten)"
+                            placeholder="Alamat domisili lengkap (nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten)"
+                            @error('alamat_lengkap') aria-invalid="true" @enderror
                             class="block w-full rounded-xl border border-line p-3 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('alamat_lengkap') border-rose-400 bg-rose-50/30 @enderror"
                         >{{ old('alamat_lengkap', $user->alamat_lengkap) }}</textarea>
                         @error('alamat_lengkap')
-                            <p class="text-xs font-medium text-rose-600">{{ $message }}</p>
+                            <p class="text-xs font-semibold text-rose-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
                 {{-- Aksi Formulir --}}
-                <div class="flex flex-col-reverse gap-3 border-t border-line bg-slate-50/50 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+                <div class="flex flex-col-reverse gap-3 border-t border-line bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
                     <a href="{{ route('profile.show') }}" class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-line bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:text-sm">
                         Batal
                     </a>
                     <button type="submit" class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm">
                         <i class="fa-solid fa-floppy-disk"></i>
-                        <span>Simpan Perubahan</span>
+                        <span>Simpan Pembaruan Profil</span>
                     </button>
                 </div>
             </div>
@@ -381,14 +417,14 @@
                 const file = event.target.files && event.target.files[0];
                 if (!file) return;
 
-                // Validasi ukuran klien: 200 KB = 200 * 1024 bytes = 204800 bytes
+                // Batas ukuran file 200 KB = 200 * 1024 bytes
                 if (file.size > 200 * 1024) {
                     if (warning) warning.classList.remove('hidden');
                 } else {
                     if (warning) warning.classList.add('hidden');
                 }
 
-                // Tampilkan preview foto langsung
+                // Render pratinjau gambar di klien
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     if (previewImg) {
