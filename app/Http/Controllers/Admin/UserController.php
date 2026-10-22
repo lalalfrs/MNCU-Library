@@ -155,6 +155,12 @@ class UserController extends Controller
      */
     public function resetPassword(Request $request, string $id): RedirectResponse
     {
+        /** @var Pengguna|null $currentUser */
+        $currentUser = Auth::user();
+        if (! $currentUser || ! $currentUser->isSuperAdmin()) {
+            abort(403, 'Akses terbatas: Anda tidak memiliki wewenang administrator untuk mereset kata sandi pengguna lain.');
+        }
+
         $user = Pengguna::with('peran')->findOrFail($id);
 
         if ($request->boolean('reset_to_default')) {
@@ -162,6 +168,9 @@ class UserController extends Controller
             $defaultPassword = 'Mncu#'.$suffix;
 
             $user->kata_sandi = Hash::make($defaultPassword);
+            if (isset($user->password) || in_array('password', $user->getFillable(), true)) {
+                $user->password = Hash::make($defaultPassword);
+            }
             $user->save();
 
             return back()->with(
@@ -180,6 +189,9 @@ class UserController extends Controller
         ]);
 
         $user->kata_sandi = Hash::make($validated['password_baru']);
+        if (isset($user->password) || in_array('password', $user->getFillable(), true)) {
+            $user->password = Hash::make($validated['password_baru']);
+        }
         $user->save();
 
         return back()->with(

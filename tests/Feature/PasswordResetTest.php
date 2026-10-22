@@ -42,28 +42,57 @@ class PasswordResetTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Ubah Kata Sandi');
-        $response->assertSee('Kata Sandi Saat Ini');
         $response->assertSee('Kata Sandi Baru');
         $response->assertSee('Konfirmasi Kata Sandi Baru');
         $response->assertSee($user->nama_lengkap);
     }
 
     /**
-     * Skenario 1: Gagal mengubah password jika kata sandi lama yang dimasukkan salah.
+     * Skenario 1: Pengguna dapat mereset kata sandi langsung tanpa memasukkan kata sandi lama (cukup 2x password baru).
      */
-    public function test_user_cannot_change_password_with_incorrect_old_password(): void
+    public function test_user_can_reset_password_directly_without_old_password(): void
     {
         $user = Pengguna::where('email', 'jovian@mncu.ac.id')->first()
             ?? Pengguna::whereHas('peran', fn ($q) => $q->where('nama_peran', 'Mahasiswa'))->first();
 
         $response = $this->actingAs($user)->put(route('password.update'), [
-            'password_lama' => 'PasswordSalah123!',
-            'password_baru' => 'PasswordBaru2026!',
-            'password_baru_confirmation' => 'PasswordBaru2026!',
+            'password_baru' => 'PasswordBaruMNCU2026!',
+            'password_baru_confirmation' => 'PasswordBaruMNCU2026!',
         ]);
 
-        $response->assertSessionHasErrors(['password_lama']);
-        $this->assertTrue(Hash::check('password123', $user->fresh()->kata_sandi));
+        $response->assertRedirect(route('password.edit'));
+        $response->assertSessionHas('success');
+
+        // Verifikasi kata sandi di database terenkripsi dengan aman
+        $this->assertTrue(Hash::check('PasswordBaruMNCU2026!', $user->fresh()->kata_sandi));
+
+        // Verifikasi pengguna dapat login dengan kata sandi baru
+        auth()->logout();
+
+        $loginResponse = $this->post('/login', [
+            'email' => $user->email,
+            'kata_sandi' => 'PasswordBaruMNCU2026!',
+        ]);
+
+        $loginResponse->assertRedirect(route('beranda'));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    /**
+     * Skenario 1: Pengguna dapat mereset kata sandi langsung dari halaman profil (profile.password.update).
+     */
+    public function test_user_can_reset_password_from_profile_page(): void
+    {
+        $user = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->first()
+            ?? Pengguna::whereHas('peran', fn ($q) => $q->where('nama_peran', 'Mahasiswa'))->first();
+
+        $response = $this->actingAs($user)->put(route('profile.password.update'), [
+            'password_baru' => 'FauziBaru2026#',
+            'password_baru_confirmation' => 'FauziBaru2026#',
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertTrue(Hash::check('FauziBaru2026#', $user->fresh()->kata_sandi));
     }
 
     /**
@@ -75,7 +104,6 @@ class PasswordResetTest extends TestCase
             ?? Pengguna::whereHas('peran', fn ($q) => $q->where('nama_peran', 'Mahasiswa'))->first();
 
         $response = $this->actingAs($user)->put(route('password.update'), [
-            'password_lama' => 'password123',
             'password_baru' => 'PasswordBaru2026!',
             'password_baru_confirmation' => 'PasswordBeda999!',
         ]);
@@ -84,52 +112,32 @@ class PasswordResetTest extends TestCase
     }
 
     /**
-     * Skenario 1: Gagal mengubah password jika kata sandi baru sama dengan kata sandi lama.
+     * Skenario 1: Gagal mengubah password jika panjang kata sandi baru kurang dari 6 karakter.
      */
-    public function test_user_cannot_reuse_identical_current_password(): void
+    public function test_user_cannot_set_password_shorter_than_6_characters(): void
     {
         $user = Pengguna::where('email', 'jovian@mncu.ac.id')->first()
             ?? Pengguna::whereHas('peran', fn ($q) => $q->where('nama_peran', 'Mahasiswa'))->first();
 
         $response = $this->actingAs($user)->put(route('password.update'), [
-            'password_lama' => 'password123',
-            'password_baru' => 'password123',
-            'password_baru_confirmation' => 'password123',
+            'password_baru' => '12345',
+            'password_baru_confirmation' => '12345',
         ]);
 
         $response->assertSessionHasErrors(['password_baru']);
     }
 
     /**
-     * Skenario 1: Sukses mengubah password saat kata sandi lama cocok dan konfirmasi valid.
+     * Skenario 1: Tamu tidak dapat mereset password melalui endpoint profil.
      */
-    public function test_user_can_successfully_update_password_and_login_with_new_password(): void
+    public function test_guest_cannot_reset_password_via_profile(): void
     {
-        $user = Pengguna::where('email', 'jovian@mncu.ac.id')->first()
-            ?? Pengguna::whereHas('peran', fn ($q) => $q->where('nama_peran', 'Mahasiswa'))->first();
-
-        $response = $this->actingAs($user)->put(route('password.update'), [
-            'password_lama' => 'password123',
-            'password_baru' => 'KatalaluanBaru2026!',
-            'password_baru_confirmation' => 'KatalaluanBaru2026!',
+        $response = $this->put(route('profile.password.update'), [
+            'password_baru' => 'GuestPassword2026!',
+            'password_baru_confirmation' => 'GuestPassword2026!',
         ]);
 
-        $response->assertRedirect(route('password.edit'));
-        $response->assertSessionHas('success');
-
-        // Verifikasi hash di database telah berubah
-        $this->assertTrue(Hash::check('KatalaluanBaru2026!', $user->fresh()->kata_sandi));
-
-        // Verifikasi user dapat melakukan login dengan password baru
-        auth()->logout();
-
-        $loginResponse = $this->post('/login', [
-            'email' => $user->email,
-            'kata_sandi' => 'KatalaluanBaru2026!',
-        ]);
-
-        $loginResponse->assertRedirect(route('beranda'));
-        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('login'));
     }
 
     /**

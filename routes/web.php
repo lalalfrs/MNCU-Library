@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/reset-password', [ProfileController::class, 'resetPassword'])->name('profile.password.update');
 });
 
 // Beranda Utama

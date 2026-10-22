@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -69,5 +70,31 @@ class ProfileController extends Controller
         $user->update($validated);
 
         return redirect()->route('profile.edit')->with('success', 'Profil Anda berhasil diperbarui.');
+    }
+
+    /**
+     * Reset kata sandi pengguna langsung dari profil masing-masing.
+     * Tidak memerlukan kata sandi lama, langsung memasukkan kata sandi baru sebanyak 2 kali.
+     */
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password_baru' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'password_baru.required' => 'Kata sandi baru wajib diisi.',
+            'password_baru.min' => 'Kata sandi baru minimal 6 karakter.',
+            'password_baru.confirmed' => 'Konfirmasi kata sandi baru tidak cocok. Pastikan kedua input kata sandi sama persis.',
+        ]);
+
+        $user = $request->user();
+
+        // Hashing aman menggunakan Bcrypt via Hash::make()
+        $user->kata_sandi = Hash::make($validated['password_baru']);
+        if (isset($user->password) || in_array('password', $user->getFillable(), true)) {
+            $user->password = Hash::make($validated['password_baru']);
+        }
+        $user->save();
+
+        return back()->with('success', 'Kata sandi akun Anda berhasil diperbarui! Silakan gunakan kata sandi baru untuk akses berikutnya.');
     }
 }

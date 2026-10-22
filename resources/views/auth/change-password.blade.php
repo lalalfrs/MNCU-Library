@@ -74,50 +74,16 @@
                         @csrf
                         @method('PUT')
 
-                        {{-- 1. Kata Sandi Lama (Wajib diverifikasi) --}}
-                        <div>
-                            <div class="flex items-center justify-between">
-                                <label for="password_lama" class="block text-xs font-semibold text-ink sm:text-sm">
-                                    Kata Sandi Saat Ini <span class="text-rose-600">*</span>
-                                </label>
-                                <span class="text-[11px] text-muted">Wajib verifikasi keamanan</span>
-                            </div>
-                            <div class="relative mt-1.5">
-                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-                                    <i class="fa-solid fa-shield-halved text-xs"></i>
-                                </span>
-                                <input
-                                    type="password"
-                                    name="password_lama"
-                                    id="password_lama"
-                                    required
-                                    autocomplete="current-password"
-                                    placeholder="Masukkan kata sandi lama Anda..."
-                                    class="h-11 w-full rounded-xl border {{ $errors->has('password_lama') ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500' : 'border-line bg-subtle/40 focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary' }} pr-10 pl-10 text-xs text-ink placeholder:text-muted/70 transition-all sm:text-sm"
-                                >
-                                <button
-                                    type="button"
-                                    onclick="togglePasswordVisibility('password_lama', 'btn-icon-old')"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted transition-colors hover:text-ink"
-                                    aria-label="Tampilkan atau sembunyikan kata sandi lama"
-                                >
-                                    <i id="btn-icon-old" class="fa-regular fa-eye text-xs"></i>
-                                </button>
-                            </div>
-                            @error('password_lama')
-                                <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-rose-600">
-                                    <i class="fa-solid fa-circle-exclamation text-[11px]"></i>
-                                    <span>{{ $message }}</span>
+                        {{-- Informasi Reset Password Langsung --}}
+                        <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/80 p-4 text-xs text-blue-900">
+                            <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 shrink-0"></i>
+                            <div class="space-y-1">
+                                <p class="font-bold text-blue-950">Reset Password Mandiri:</p>
+                                <p class="text-blue-800 leading-relaxed">
+                                    Anda tidak perlu memasukkan kata sandi lama. Cukup masukkan kata sandi baru Anda sebanyak <strong>2 kali</strong> pada kolom di bawah ini untuk verifikasi.
                                 </p>
-                            @else
-                                <p class="mt-1.5 text-[11px] text-muted">
-                                    Masukkan kata sandi yang saat ini digunakan untuk membuka akun Anda.
-                                </p>
-                            @enderror
+                            </div>
                         </div>
-
-                        {{-- Garis Pemisah Halus --}}
-                        <div class="pt-2 border-t border-line/60"></div>
 
                         {{-- 2. Kata Sandi Baru --}}
                         <div>

@@ -16,6 +16,35 @@
             <span class="inline-flex min-h-[44px] items-center font-semibold text-ink" aria-current="page">Profil Pengguna</span>
         </nav>
 
+        {{-- Alert Notifikasi Sukses / Feedback --}}
+        @if (session('success'))
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-xs sm:text-sm text-emerald-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                    <i class="fa-solid fa-circle-check text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-emerald-950">Berhasil!</p>
+                    <p class="mt-0.5 text-xs text-emerald-800 leading-relaxed">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs sm:text-sm text-rose-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white">
+                    <i class="fa-solid fa-triangle-exclamation text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-rose-950">Periksa Kembali Input Anda</p>
+                    <ul class="mt-1 list-disc list-inside space-y-0.5 text-xs text-rose-800">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         {{-- Page Header & Sub Navigation Tabs --}}
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
             <div>
@@ -33,6 +62,10 @@
                         <i class="fa-solid fa-user-pen text-xs" aria-hidden="true"></i>
                         <span>Edit Profil</span>
                     </a>
+                    <button type="button" onclick="openProfileResetModal()" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-key text-xs" aria-hidden="true"></i>
+                        <span>Reset Password</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -200,6 +233,13 @@
                             </span>
                             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
                         </a>
+                        <button type="button" onclick="openProfileResetModal()" class="flex min-h-[44px] w-full items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50 text-left">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-key text-primary" aria-hidden="true"></i>
+                                <span>Reset Kata Sandi Akun</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -339,4 +379,209 @@
         </div>
     </div>
 </div>
+
+{{-- ========================================================================= --}}
+{{-- MODAL RESET PASSWORD LANGSUNG (TANPA PASSWORD LAMA, 2X INPUT)             --}}
+{{-- ========================================================================= --}}
+<div
+    id="profile-reset-password-modal"
+    class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-reset-profile-title"
+>
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+            {{-- Header Modal --}}
+            <div class="flex items-center justify-between border-b border-line bg-slate-50/70 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <i class="fa-solid fa-key text-sm" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <h3 id="modal-reset-profile-title" class="text-sm font-bold text-ink sm:text-base">Reset Kata Sandi Akun</h3>
+                        <p class="text-xs text-muted">Perbarui kata sandi langsung tanpa perlu kata sandi lama.</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeProfileResetModal()"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    aria-label="Tutup jendela reset kata sandi"
+                >
+                    <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            {{-- Isi Formulir Modal --}}
+            <form action="{{ route('profile.password.update') }}" method="POST" class="p-6 space-y-5">
+                @csrf
+                @method('PUT')
+
+                {{-- Alert Info: Tanpa Password Lama --}}
+                <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/80 p-3.5 text-xs text-blue-900">
+                    <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 shrink-0" aria-hidden="true"></i>
+                    <p class="leading-relaxed">
+                        Anda dapat langsung membuat kata sandi baru. Masukkan kata sandi baru sebanyak <strong>2 kali</strong> pada kolom di bawah ini untuk verifikasi.
+                    </p>
+                </div>
+
+                {{-- 1. Kata Sandi Baru --}}
+                <div class="space-y-1.5">
+                    <label for="modal_password_baru" class="block text-xs font-bold text-ink sm:text-sm">
+                        Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                            <i class="fa-solid fa-lock text-xs" aria-hidden="true"></i>
+                        </span>
+                        <input
+                            type="password"
+                            name="password_baru"
+                            id="modal_password_baru"
+                            required
+                            minlength="6"
+                            placeholder="Minimal 6 karakter kombinasi..."
+                            class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                            oninput="checkModalPasswordMatch()"
+                        >
+                        <button
+                            type="button"
+                            onclick="toggleModalPassword('modal_password_baru', 'modal-eye-new')"
+                            class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                            aria-label="Tampilkan atau sembunyikan kata sandi baru"
+                        >
+                            <i id="modal-eye-new" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- 2. Konfirmasi Kata Sandi Baru --}}
+                <div class="space-y-1.5">
+                    <label for="modal_password_baru_confirmation" class="block text-xs font-bold text-ink sm:text-sm">
+                        Ulangi Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                            <i class="fa-solid fa-lock-open text-xs" aria-hidden="true"></i>
+                        </span>
+                        <input
+                            type="password"
+                            name="password_baru_confirmation"
+                            id="modal_password_baru_confirmation"
+                            required
+                            minlength="6"
+                            placeholder="Ketik ulang kata sandi baru yang sama..."
+                            class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                            oninput="checkModalPasswordMatch()"
+                        >
+                        <button
+                            type="button"
+                            onclick="toggleModalPassword('modal_password_baru_confirmation', 'modal-eye-confirm')"
+                            class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                            aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi"
+                        >
+                            <i id="modal-eye-confirm" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <p id="modal-match-feedback" class="text-[11px] font-medium text-muted mt-1 hidden"></p>
+                </div>
+
+                {{-- Info Keamanan Hashing --}}
+                <div class="rounded-xl bg-slate-50 p-3 border border-line/70 flex items-center gap-2 text-[11px] text-muted">
+                    <i class="fa-solid fa-shield-halved text-emerald-600" aria-hidden="true"></i>
+                    <span>Terenkripsi aman menggunakan standar hash Bcrypt Laravel.</span>
+                </div>
+
+                {{-- Footer Tombol Aksi --}}
+                <div class="flex flex-col-reverse gap-2.5 pt-3 sm:flex-row sm:items-center sm:justify-end border-t border-line/70">
+                    <button
+                        type="button"
+                        onclick="closeProfileResetModal()"
+                        class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-line bg-white px-5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        <span>Simpan Kata Sandi Baru</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openProfileResetModal() {
+        const modal = document.getElementById('profile-reset-password-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => {
+                document.getElementById('modal_password_baru')?.focus();
+            }, 100);
+        }
+    }
+
+    function closeProfileResetModal() {
+        const modal = document.getElementById('profile-reset-password-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function toggleModalPassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function checkModalPasswordMatch() {
+        const p1 = document.getElementById('modal_password_baru')?.value || '';
+        const p2 = document.getElementById('modal_password_baru_confirmation')?.value || '';
+        const feedback = document.getElementById('modal-match-feedback');
+        if (!feedback) return;
+
+        if (!p2) {
+            feedback.classList.add('hidden');
+            return;
+        }
+
+        feedback.classList.remove('hidden');
+        if (p1 === p2) {
+            feedback.className = 'text-[11px] font-medium text-emerald-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Kata sandi cocok!</span>';
+        } else {
+            feedback.className = 'text-[11px] font-medium text-rose-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Konfirmasi kata sandi belum sama.</span>';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeProfileResetModal();
+        }
+    });
+
+    document.getElementById('profile-reset-password-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeProfileResetModal();
+        }
+    });
+</script>
 @endsection

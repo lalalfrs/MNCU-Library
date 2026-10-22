@@ -20,6 +20,35 @@
             <span class="inline-flex min-h-[44px] items-center font-semibold text-ink" aria-current="page">Edit Profil</span>
         </nav>
 
+        {{-- Alert Notifikasi Sukses / Feedback --}}
+        @if (session('success'))
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-xs sm:text-sm text-emerald-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                    <i class="fa-solid fa-circle-check text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-emerald-950">Berhasil!</p>
+                    <p class="mt-0.5 text-xs text-emerald-800 leading-relaxed">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs sm:text-sm text-rose-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white">
+                    <i class="fa-solid fa-triangle-exclamation text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-rose-950">Periksa Kembali Input Anda</p>
+                    <ul class="mt-1 list-disc list-inside space-y-0.5 text-xs text-rose-800">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         {{-- Page Header & Sub Navigation Tabs --}}
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
             <div>
@@ -37,6 +66,10 @@
                         <i class="fa-solid fa-user-pen text-xs"></i>
                         <span>Edit Profil</span>
                     </span>
+                    <a href="#section-reset-password" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-key text-xs"></i>
+                        <span>Reset Password</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -402,6 +435,124 @@
                 </div>
             </div>
         </form>
+
+        {{-- ========================================================================= --}}
+        {{-- 3. KARTU KEAMANAN AKUN: RESET KATA SANDI LANGSUNG (TANPA PASSWORD LAMA)    --}}
+        {{-- ========================================================================= --}}
+        <div id="section-reset-password" class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card scroll-mt-6">
+            <div class="border-b border-line bg-slate-50/70 px-6 py-4">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <i class="fa-solid fa-key text-xs" aria-hidden="true"></i>
+                        </span>
+                        <div>
+                            <h2 class="text-sm font-bold text-ink sm:text-base">Reset Kata Sandi Akun</h2>
+                            <p class="text-xs text-muted">Perbarui kata sandi akun langsung tanpa perlu mengingat atau memasukkan kata sandi lama.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200 self-start sm:self-center">
+                        <i class="fa-solid fa-shield-halved text-[11px]" aria-hidden="true"></i>
+                        <span>Langsung Password Baru (2x)</span>
+                    </span>
+                </div>
+            </div>
+
+            <form action="{{ route('profile.password.update') }}" method="POST" class="p-6 space-y-6">
+                @csrf
+                @method('PUT')
+
+                {{-- Alert Info Verifikasi --}}
+                <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/80 p-4 text-xs text-blue-900">
+                    <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 shrink-0" aria-hidden="true"></i>
+                    <div class="space-y-1">
+                        <p class="font-bold text-blue-950">Petunjuk Pembaruan Kata Sandi Mandiri:</p>
+                        <p class="text-blue-800 leading-relaxed">
+                            Anda tidak perlu memasukkan kata sandi lama. Cukup masukkan kata sandi baru yang Anda inginkan sebanyak <strong>2 kali</strong> pada kolom di bawah ini (Kata Sandi Baru dan Konfirmasi Kata Sandi Baru).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    {{-- 1. Kata Sandi Baru --}}
+                    <div class="space-y-1.5">
+                        <label for="edit_password_baru" class="block text-xs font-bold text-ink sm:text-sm">
+                            Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                                <i class="fa-solid fa-lock text-xs" aria-hidden="true"></i>
+                            </span>
+                            <input
+                                type="password"
+                                name="password_baru"
+                                id="edit_password_baru"
+                                required
+                                minlength="6"
+                                placeholder="Minimal 6 karakter kombinasi..."
+                                class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                                oninput="checkEditPasswordMatch()"
+                            >
+                            <button
+                                type="button"
+                                onclick="toggleEditPassword('edit_password_baru', 'edit-eye-new')"
+                                class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                                aria-label="Tampilkan atau sembunyikan kata sandi baru"
+                            >
+                                <i id="edit-eye-new" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-muted">Gunakan minimal 6 karakter kombinasi huruf dan angka.</p>
+                    </div>
+
+                    {{-- 2. Konfirmasi Kata Sandi Baru --}}
+                    <div class="space-y-1.5">
+                        <label for="edit_password_baru_confirmation" class="block text-xs font-bold text-ink sm:text-sm">
+                            Ulangi Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                                <i class="fa-solid fa-lock-open text-xs" aria-hidden="true"></i>
+                            </span>
+                            <input
+                                type="password"
+                                name="password_baru_confirmation"
+                                id="edit_password_baru_confirmation"
+                                required
+                                minlength="6"
+                                placeholder="Ketik ulang kata sandi baru..."
+                                class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                                oninput="checkEditPasswordMatch()"
+                            >
+                            <button
+                                type="button"
+                                onclick="toggleEditPassword('edit_password_baru_confirmation', 'edit-eye-confirm')"
+                                class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                                aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi"
+                            >
+                                <i id="edit-eye-confirm" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p id="edit-match-feedback" class="text-[11px] font-medium text-muted mt-1 hidden"></p>
+                    </div>
+                </div>
+
+                {{-- Footer Tombol Aksi Reset Password --}}
+                <div class="flex flex-col-reverse gap-3 border-t border-line bg-slate-50/70 -mx-6 -mb-6 px-6 py-4 sm:flex-row sm:items-center sm:justify-between rounded-b-2xl">
+                    <div class="flex items-center gap-2 text-xs text-muted">
+                        <i class="fa-solid fa-shield-halved text-emerald-600" aria-hidden="true"></i>
+                        <span>Enkripsi Bcrypt aktif berstandar keamanan MNC University</span>
+                    </div>
+                    <button
+                        type="submit"
+                        class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                    >
+                        <i class="fa-solid fa-key" aria-hidden="true"></i>
+                        <span>Perbarui Kata Sandi Akun</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -417,14 +568,12 @@
                 const file = event.target.files && event.target.files[0];
                 if (!file) return;
 
-                // Batas ukuran file 200 KB = 200 * 1024 bytes
                 if (file.size > 200 * 1024) {
                     if (warning) warning.classList.remove('hidden');
                 } else {
                     if (warning) warning.classList.add('hidden');
                 }
 
-                // Render pratinjau gambar di klien
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     if (previewImg) {
@@ -439,5 +588,42 @@
             });
         }
     });
+
+    function toggleEditPassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function checkEditPasswordMatch() {
+        const p1 = document.getElementById('edit_password_baru')?.value || '';
+        const p2 = document.getElementById('edit_password_baru_confirmation')?.value || '';
+        const feedback = document.getElementById('edit-match-feedback');
+        if (!feedback) return;
+
+        if (!p2) {
+            feedback.classList.add('hidden');
+            return;
+        }
+
+        feedback.classList.remove('hidden');
+        if (p1 === p2) {
+            feedback.className = 'text-[11px] font-medium text-emerald-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Kata sandi cocok!</span>';
+        } else {
+            feedback.className = 'text-[11px] font-medium text-rose-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Konfirmasi kata sandi belum sama.</span>';
+        }
+    }
 </script>
 @endsection
