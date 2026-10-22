@@ -308,6 +308,19 @@ img[src*="logo"],
 }
 
 /* ==========================================================================
+   Penyesuaian Modal & Navbar Interaktif
+   Sembunyikan navbar secara halus saat modal dialog sedang terbuka
+   ========================================================================== */
+body.modal-open #main-header,
+body.modal-open header {
+    opacity: 0 !important;
+    transform: translateY(-100%) !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s !important;
+}
+
+/* ==========================================================================
    Aksesibilitas: Reduced Motion Support (R-19 & Craftsmanship Standard)
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {

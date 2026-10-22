@@ -414,6 +414,11 @@ class LibraryController extends Controller
 
         $prodiList = Prodi::orderBy('nama_prodi')->get();
 
+        $selectedBookItem = null;
+        if (! empty($selectedBookId)) {
+            $selectedBookItem = collect($catalogItems)->first(fn ($it) => (string) ($it['id'] ?? '') === (string) $selectedBookId);
+        }
+
         return view('opac', [
             'items' => $filteredItems,
             'fitur' => $fitur,
@@ -435,6 +440,7 @@ class LibraryController extends Controller
             'prodi' => $prodi,
             'jenisFilter' => $jenisFilter,
             'selectedBookId' => $selectedBookId,
+            'selectedBookItem' => $selectedBookItem,
             'statusFilter' => $statusFilter,
             'activeFilterCount' => $activeFilterCount,
             'tahunList' => $tahunList,
@@ -445,7 +451,6 @@ class LibraryController extends Controller
             'totalKoleksi' => $totalKoleksi,
             'totalEksemplarFisik' => $totalEksemplarFisik,
             'totalEksemplarTersedia' => $totalEksemplarTersedia,
-            'selectedBookId' => $selectedBookId,
         ]);
     }
 

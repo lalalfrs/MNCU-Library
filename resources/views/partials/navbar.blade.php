@@ -1,4 +1,4 @@
-<header class="sticky top-3 z-40 mx-3 mt-3 lg:top-4 lg:mx-6 lg:mt-4">
+<header id="main-header" class="sticky top-3 z-40 mx-3 mt-3 lg:top-4 lg:mx-6 lg:mt-4 transition-all duration-300 ease-in-out">
     <nav aria-label="Navigasi utama" class="mx-auto flex h-14 max-w-[1570px] items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-raised lg:h-[70px] lg:px-7">
         {{-- Kiri: Tombol Hamburger & Logo Perpustakaan --}}
         <div class="flex min-w-0 items-center gap-2 lg:gap-3">

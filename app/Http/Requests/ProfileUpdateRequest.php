@@ -59,6 +59,7 @@ class ProfileUpdateRequest extends FormRequest
             'nim' => ['nullable', 'required_if:role,mahasiswa', 'string', 'max:30'],
             'nidn' => ['nullable', 'required_if:role,dosen', 'string', 'max:30'],
             'foto_profil' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:200'],
+            'kata_sandi' => ['nullable', 'string', 'min:6', 'confirmed'],
         ];
     }
 
@@ -84,6 +85,8 @@ class ProfileUpdateRequest extends FormRequest
             'nidn.required_if' => 'NIDN wajib diisi untuk dosen.',
             'foto_profil.mimes' => 'Foto profil hanya boleh berformat .jpg, .jpeg, atau .png.',
             'foto_profil.max' => 'Ukuran foto profil maksimal 200 KB.',
+            'kata_sandi.min' => 'Kata sandi baru minimal 6 karakter.',
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi baru tidak sesuai.',
         ];
     }
 }

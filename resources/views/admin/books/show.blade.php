@@ -27,6 +27,17 @@
 
                 <div class="flex flex-wrap items-center gap-2.5">
                     <a
+                        href="{{ route('opac', ['buku' => $book->id_buku]) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 text-xs font-semibold text-emerald-800 shadow-xs hover:bg-emerald-100 transition-all sm:text-sm"
+                        title="Buka Tampilan Detail Buku di Katalog OPAC (Tab Baru)"
+                    >
+                        <i class="fa-solid fa-magnifying-glass text-xs text-emerald-700"></i>
+                        <span>Lihat di OPAC</span>
+                    </a>
+
+                    <a
                         href="{{ route('admin.books.edit', $book->id_buku) }}"
                         class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink shadow-xs hover:border-primary hover:text-primary transition-all sm:text-sm"
                     >

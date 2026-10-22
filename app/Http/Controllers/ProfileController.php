@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -61,6 +62,17 @@ class ProfileController extends Controller
             $validated['nim'] = null;
         }
 
+        // Penanganan ubah kata sandi opsional tanpa perlu password lama
+        if (! empty($validated['kata_sandi'])) {
+            $hashedPassword = Hash::make($validated['kata_sandi']);
+            $validated['kata_sandi'] = $hashedPassword;
+            if (in_array('password', $user->getFillable(), true) || array_key_exists('password', $user->getAttributes())) {
+                $validated['password'] = $hashedPassword;
+            }
+        } else {
+            unset($validated['kata_sandi']);
+        }
+
         // Sinkronisasi atribut name jika menggunakan tabel users standar
         if (isset($validated['nama_lengkap']) && (in_array('name', $user->getFillable(), true) || array_key_exists('name', $user->getAttributes()))) {
             $validated['name'] = $validated['nama_lengkap'];
@@ -69,5 +81,31 @@ class ProfileController extends Controller
         $user->update($validated);
 
         return redirect()->route('profile.edit')->with('success', 'Profil Anda berhasil diperbarui.');
+    }
+
+    /**
+     * Perbarui kata sandi mandiri pengguna atau staf tanpa harus memasukkan kata sandi lama.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'kata_sandi' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'kata_sandi.required' => 'Kata sandi baru wajib diisi.',
+            'kata_sandi.min' => 'Kata sandi baru minimal 6 karakter.',
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi baru tidak sesuai.',
+        ]);
+
+        $user = $request->user();
+        $hashed = Hash::make($validated['kata_sandi']);
+        $user->kata_sandi = $hashed;
+
+        if (in_array('password', $user->getFillable(), true) || array_key_exists('password', $user->getAttributes())) {
+            $user->password = $hashed;
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Kata sandi akun Anda berhasil diperbarui tanpa kendala.');
     }
 }

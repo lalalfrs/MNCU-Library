@@ -473,8 +473,8 @@
             </div>
 
             @if (count($items) > 0)
-                {{-- Container Katalog: Default Grid Responsif --}}
-                <div id="catalog-container" class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" data-view="grid">
+                {{-- Container Katalog: Default Grid Responsif Lebih Proporsional --}}
+                <div id="catalog-container" class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" data-view="grid">
                     @foreach ($items as $item)
                         @php
                             $available = $item['copies_available'] ?? 0;
@@ -484,7 +484,7 @@
                             tabindex="0"
                             onclick="openBookDetailModal({{ json_encode($item) }})"
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBookDetailModal({{ json_encode($item) }});}"
-                            class="catalog-book-card group relative flex flex-col justify-between rounded-2xl border border-line bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 overflow-hidden"
+                            class="catalog-book-card group relative flex flex-col justify-between rounded-xl border border-line bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 overflow-hidden"
                             aria-label="Lihat detail buku {{ $item['title'] }}"
                         >
                             <div class="card-inner-layout flex flex-col h-full">
@@ -501,43 +501,43 @@
                                     @endif
 
                                     {{-- Fallback Sampul Buku jika URL Kosong atau Gagal Dimuat --}}
-                                    <div class="card-cover-fallback {{ ! empty($item['cover_url']) ? 'hidden' : '' }} flex size-full flex-col justify-between bg-gradient-to-br from-[#0F2A6B] via-[#143A8F] to-[#0A1E4F] p-4 text-white">
+                                    <div class="card-cover-fallback {{ ! empty($item['cover_url']) ? 'hidden' : '' }} flex size-full flex-col justify-between bg-gradient-to-br from-[#0F2A6B] via-[#143A8F] to-[#0A1E4F] p-3 text-white">
                                         <div class="flex items-center justify-between opacity-80">
-                                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-200">MNC University</span>
-                                            <i class="fa-solid fa-book-bookmark text-sm text-blue-200" aria-hidden="true"></i>
+                                            <span class="text-[9px] font-bold uppercase tracking-wider text-blue-200">MNC University</span>
+                                            <i class="fa-solid fa-book-bookmark text-xs text-blue-200" aria-hidden="true"></i>
                                         </div>
-                                        <div class="my-auto py-2">
-                                            <h4 class="text-xs font-bold leading-tight line-clamp-3 text-white sm:text-sm">
+                                        <div class="my-auto py-1">
+                                            <h4 class="text-xs font-bold leading-tight line-clamp-3 text-white">
                                                 {{ $item['title'] }}
                                             </h4>
-                                            <p class="mt-1 text-[11px] text-blue-200 line-clamp-1">
+                                            <p class="mt-1 text-[10px] text-blue-200 line-clamp-1">
                                                 {{ $item['author'] }}
                                             </p>
                                         </div>
-                                        <div class="flex items-center justify-between border-t border-white/20 pt-2 text-[10px] text-blue-200">
-                                            <span>{{ $item['category'] ?? 'Buku Cetak' }}</span>
+                                        <div class="flex items-center justify-between border-t border-white/20 pt-1.5 text-[9px] text-blue-200">
+                                            <span class="truncate max-w-[60%]">{{ $item['category'] ?? 'Buku Cetak' }}</span>
                                             <span>{{ $item['year'] ?? 2024 }}</span>
                                         </div>
                                     </div>
 
                                     {{-- Floating Badges pada Mode Grid --}}
-                                    <div class="grid-only-badge pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-2.5">
-                                        <span class="inline-flex items-center gap-1 rounded-md bg-black/75 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300 backdrop-blur-xs shadow-xs">
-                                            <i class="fa-solid fa-bookmark text-[9px]" aria-hidden="true"></i>
-                                            <span>{{ $item['call_number'] ?? '000.00 MNC' }}</span>
+                                    <div class="grid-only-badge pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-2">
+                                        <span class="inline-flex items-center gap-1 rounded bg-black/75 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-300 backdrop-blur-xs shadow-xs">
+                                            <i class="fa-solid fa-bookmark text-[8px]" aria-hidden="true"></i>
+                                            <span class="truncate max-w-[65px]">{{ $item['call_number'] ?? '000.00' }}</span>
                                         </span>
 
                                         @if ($total === 0)
-                                            <span class="inline-flex items-center rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-semibold text-slate-200 backdrop-blur-xs">
+                                            <span class="inline-flex items-center rounded bg-slate-900/80 px-1.5 py-0.5 text-[9px] font-semibold text-slate-200 backdrop-blur-xs">
                                                 Digital
                                             </span>
                                         @elseif ($available > 0)
-                                            <span class="inline-flex items-center gap-1 rounded-md bg-emerald-700/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs shadow-xs">
+                                            <span class="inline-flex items-center gap-1 rounded bg-emerald-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
                                                 <span class="size-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
                                                 <span>{{ $available }}/{{ $total }} Eks</span>
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center gap-1 rounded-md bg-amber-700/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs shadow-xs">
+                                            <span class="inline-flex items-center gap-1 rounded bg-amber-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
                                                 <span>Dipinjam</span>
                                             </span>
                                         @endif
@@ -545,7 +545,7 @@
                                 </div>
 
                                 {{-- 2. Wadah Rincian Informasi Buku --}}
-                                <div class="card-details-wrapper p-4 flex flex-col flex-1 justify-between gap-3">
+                                <div class="card-details-wrapper p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-2">
                                     <div>
                                         {{-- Baris Header Khusus Tampilan Row / Baris --}}
                                         <div class="row-only-header hidden items-center justify-between gap-2 border-b border-line/60 pb-2 mb-2">
@@ -572,19 +572,19 @@
                                         </div>
 
                                         {{-- Judul Buku --}}
-                                        <h3 class="text-sm sm:text-base font-bold text-ink transition-colors group-hover:text-primary leading-snug line-clamp-2">
+                                        <h3 class="text-xs sm:text-sm font-bold text-ink transition-colors group-hover:text-primary leading-snug line-clamp-2">
                                             {{ $item['title'] }}
                                         </h3>
 
                                         {{-- Penulis & Penerbit --}}
-                                        <p class="mt-1.5 text-xs text-ink-secondary flex items-start gap-1.5 leading-relaxed">
-                                            <i class="fa-regular fa-user text-muted shrink-0 mt-0.5 text-[11px]" aria-hidden="true"></i>
+                                        <p class="mt-1 text-[11px] text-ink-secondary flex items-start gap-1 leading-tight">
+                                            <i class="fa-regular fa-user text-muted shrink-0 mt-0.5 text-[10px]" aria-hidden="true"></i>
                                             <span class="truncate">
                                                 oleh <strong class="font-semibold text-ink">{{ $item['author'] }}</strong>
                                             </span>
                                         </p>
 
-                                        <p class="mt-0.5 text-[11px] text-muted truncate">
+                                        <p class="mt-0.5 text-[10px] text-muted truncate">
                                             {{ $item['publisher'] }} &bull; {{ $item['year'] }}
                                         </p>
 
@@ -594,21 +594,21 @@
                                         </p>
 
                                         {{-- Tag Lokasi & Kategori --}}
-                                        <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px]">
-                                            <span class="inline-flex items-center gap-1 rounded-lg bg-subtle px-2 py-0.5 text-muted">
-                                                <i class="fa-solid fa-location-dot text-primary text-[10px]" aria-hidden="true"></i>
-                                                <span>{{ $item['location'] }}</span>
+                                        <div class="mt-2 flex flex-wrap items-center gap-1 text-[10px]">
+                                            <span class="inline-flex items-center gap-1 rounded-md bg-subtle px-1.5 py-0.5 text-muted truncate max-w-full">
+                                                <i class="fa-solid fa-location-dot text-primary text-[9px] shrink-0" aria-hidden="true"></i>
+                                                <span class="truncate">{{ $item['location'] }}</span>
                                             </span>
 
                                             @if (! empty($item['category']))
-                                                <span class="rounded-lg bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                                                <span class="rounded-md bg-primary/10 px-1.5 py-0.5 font-semibold text-primary truncate max-w-[80px]">
                                                     {{ $item['category'] }}
                                                 </span>
                                             @endif
 
                                             @if (($item['visits'] ?? 0) > 0)
-                                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-amber-800 border border-amber-200">
-                                                    <i class="fa-solid fa-eye text-[10px]" aria-hidden="true"></i>
+                                                <span class="inline-flex items-center gap-0.5 rounded-md bg-amber-50 px-1.5 py-0.5 text-amber-800 border border-amber-200">
+                                                    <i class="fa-solid fa-eye text-[9px]" aria-hidden="true"></i>
                                                     <span>{{ $item['visits'] }}x</span>
                                                 </span>
                                             @endif
@@ -616,14 +616,14 @@
                                     </div>
 
                                     {{-- Footer Kartu: ID & Tombol Aksi --}}
-                                    <div class="mt-3 flex items-center justify-between border-t border-line/70 pt-2.5 text-xs">
-                                        <span class="font-mono text-[10px] sm:text-[11px] text-muted">ID: {{ $item['id'] }}</span>
+                                    <div class="mt-2.5 flex items-center justify-between border-t border-line/70 pt-2 text-[11px]">
+                                        <span class="font-mono text-[10px] text-muted truncate max-w-[70px]">ID: {{ $item['id'] }}</span>
                                         <button
                                             type="button"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs group-hover:bg-primary-dark transition-colors"
+                                            class="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs group-hover:bg-primary-dark transition-colors"
                                         >
-                                            <i class="fa-solid fa-circle-info text-[11px]" aria-hidden="true"></i>
-                                            <span>Detail Buku</span>
+                                            <i class="fa-solid fa-circle-info text-[10px]" aria-hidden="true"></i>
+                                            <span>Detail</span>
                                         </button>
                                     </div>
                                 </div>
@@ -667,15 +667,15 @@
     {{-- ========================================================================= --}}
     <div
         id="search-filter-modal"
-        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+        class="fixed inset-0 z-[99999] hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-filter-title"
     >
-        <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
-            <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-6 py-6 sm:py-10">
+            <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all my-auto flex flex-col max-h-[90vh]">
                 {{-- Header Box Filter: Icon Slider Ungu + Judul "Filter Pencarian" + Tombol X --}}
-                <div class="flex items-center justify-between border-b border-line bg-white px-6 py-4">
+                <div class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-line bg-white px-6 py-4">
                     <div class="flex items-center gap-2.5">
                         <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <i class="fa-solid fa-sliders text-sm"></i>
@@ -845,21 +845,28 @@
     {{-- ========================================================================= --}}
     <div
         id="book-detail-modal"
-        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+        class="fixed inset-0 z-[99999] hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-book-title"
     >
-        <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
-            <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-6 py-6 sm:py-10">
+            <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all my-auto flex flex-col max-h-[88vh]">
                 {{-- Header Detail Buku --}}
-                <div class="flex items-center justify-between border-b border-line bg-slate-50/80 px-6 py-4">
+                <div class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-line bg-slate-50/95 backdrop-blur-xs px-5 py-4 sm:px-6">
                     <div class="flex items-center gap-2.5">
                         <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <i class="fa-solid fa-book-open text-sm"></i>
                         </span>
                         <div>
-                            <h3 class="text-sm font-bold text-ink">Detail Informasi Buku &amp; Ketersediaan Stok</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-ink">Detail Informasi Buku &amp; Ketersediaan Stok</h3>
+                                @if (Auth::check() && Auth::user()->isSuperAdmin())
+                                    <span class="inline-flex items-center gap-1 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
+                                        <i class="fa-solid fa-shield-halved text-[9px]"></i> Mode Admin
+                                    </span>
+                                @endif
+                            </div>
                             <p class="text-[11px] text-muted">Informasi bibliografi dan nomor panggil rak Perpustakaan MNC University</p>
                         </div>
                     </div>
@@ -874,7 +881,7 @@
                 </div>
 
                 {{-- Body Detail Buku --}}
-                <div class="max-h-[78vh] overflow-y-auto p-6 space-y-6">
+                <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
                     {{-- Baris Metadata Bibliografi --}}
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
                         {{-- Cover Image --}}
@@ -992,7 +999,7 @@
                 </div>
 
                 {{-- Modal Footer --}}
-                <div class="flex items-center justify-between border-t border-line bg-slate-50/80 px-6 py-3.5">
+                <div class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2.5 border-t border-line bg-slate-50/95 backdrop-blur-xs px-5 py-3.5 sm:px-6">
                     <button
                         type="button"
                         onclick="closeBookDetailModal()"
@@ -1001,14 +1008,40 @@
                         Tutup
                     </button>
 
-                    <a
-                        id="modal-chat-link"
-                        href="{{ route('chat') }}"
-                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                        <i class="fa-solid fa-headset text-xs"></i>
-                        <span>Tanya Pustakawan</span>
-                    </a>
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (Auth::check() && Auth::user()->isSuperAdmin())
+                            {{-- Aksi Tambahan Khusus Administrator --}}
+                            <a
+                                id="modal-admin-manage-link"
+                                href="#"
+                                class="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink hover:bg-subtle hover:text-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+                                title="Kelola Eksemplar & Stok Fisik di Panel Admin"
+                            >
+                                <i class="fa-solid fa-boxes-stacked text-xs text-primary"></i>
+                                <span>Kelola Stok</span>
+                            </a>
+                            <a
+                                id="modal-admin-edit-link"
+                                href="#"
+                                class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-amber-600 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                title="Ubah Data Buku di Panel Admin"
+                            >
+                                <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                <span>Ubah Buku</span>
+                            </a>
+                        @endif
+
+                        <a
+                            id="modal-chat-link"
+                            href="{{ route('chat') }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs hover:bg-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <i class="fa-solid fa-headset text-xs"></i>
+                            <span>Tanya Pustakawan</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1016,14 +1049,32 @@
 
     {{-- SCRIPT INTERAKTIVITAS: BOX FILTER PENCARIAN & MODAL DETAIL BUKU --}}
     <script>
+        // Pindahkan modal langsung ke <body> agar terbebas dari pembatas layout CSS/transform
+        function ensureModalsInBody() {
+            const detailModal = document.getElementById('book-detail-modal');
+            if (detailModal && detailModal.parentElement !== document.body) {
+                document.body.appendChild(detailModal);
+            }
+            const filterModal = document.getElementById('search-filter-modal');
+            if (filterModal && filterModal.parentElement !== document.body) {
+                document.body.appendChild(filterModal);
+            }
+        }
+
         // =========================================================================
         // 1. KONTROL BOX FILTER PENCARIAN (MODAL SEPERTI GAMBAR 2)
         // =========================================================================
         function openFilterModal() {
+            ensureModalsInBody();
             const modal = document.getElementById('search-filter-modal');
             if (modal) {
                 modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                document.body.classList.add('overflow-hidden', 'modal-open');
+                const mainHeader = document.getElementById('main-header') || document.querySelector('header');
+                if (mainHeader) {
+                    mainHeader.classList.add('opacity-0', 'pointer-events-none', '-translate-y-full', 'invisible');
+                }
+                modal.scrollTop = 0;
                 document.getElementById('modal-input-pengarang')?.focus();
             }
         }
@@ -1032,7 +1083,11 @@
             const modal = document.getElementById('search-filter-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
+                document.body.classList.remove('overflow-hidden', 'modal-open');
+                const mainHeader = document.getElementById('main-header') || document.querySelector('header');
+                if (mainHeader) {
+                    mainHeader.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-full', 'invisible');
+                }
             }
         }
 
@@ -1084,6 +1139,7 @@
         // 2. KONTROL MODAL DETAIL BUKU & PENCATATAN KUNJUNGAN REAL-TIME
         // =========================================================================
         function openBookDetailModal(item) {
+            ensureModalsInBody();
             const modal = document.getElementById('book-detail-modal');
             if (!modal || !item) return;
 
@@ -1138,10 +1194,22 @@
                 placeholder.classList.add('flex');
             }
 
-            // Chat link
+            // Chat link (buka di tab baru sesuai preferensi pemustaka)
             const chatLink = document.getElementById('modal-chat-link');
             if (chatLink) {
                 chatLink.href = '{{ route("chat") }}?q=' + encodeURIComponent('Halo Pustakawan, saya ingin reservasi/cek buku: ' + item.title);
+                chatLink.target = '_blank';
+                chatLink.rel = 'noopener noreferrer';
+            }
+
+            // Tombol khusus admin jika ada di DOM
+            const adminManageLink = document.getElementById('modal-admin-manage-link');
+            if (adminManageLink && item.id) {
+                adminManageLink.href = '{{ url("/admin/buku") }}/' + encodeURIComponent(item.id);
+            }
+            const adminEditLink = document.getElementById('modal-admin-edit-link');
+            if (adminEditLink && item.id) {
+                adminEditLink.href = '{{ url("/admin/buku") }}/' + encodeURIComponent(item.id) + '/edit';
             }
 
             // Exemplar table (Nomor Induk, Call Number, Lokasi, Status)
@@ -1179,7 +1247,18 @@
             }
 
             modal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
+            document.body.classList.add('overflow-hidden', 'modal-open');
+            const mainHeader = document.getElementById('main-header') || document.querySelector('header');
+            if (mainHeader) {
+                mainHeader.classList.add('opacity-0', 'pointer-events-none', '-translate-y-full', 'invisible');
+            }
+
+            // Reset scroll modal ke atas agar judul & sampul selalu terlihat pertama kali
+            modal.scrollTop = 0;
+            const scrollArea = modal.querySelector('.overflow-y-auto');
+            if (scrollArea) {
+                scrollArea.scrollTop = 0;
+            }
 
             // Catat kunjungan penelusuran buku secara otomatis via AJAX
             if (item.id) {
@@ -1198,7 +1277,11 @@
             const modal = document.getElementById('book-detail-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
+                document.body.classList.remove('overflow-hidden', 'modal-open');
+                const mainHeader = document.getElementById('main-header') || document.querySelector('header');
+                if (mainHeader) {
+                    mainHeader.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-full', 'invisible');
+                }
             }
         }
 
@@ -1276,7 +1359,7 @@
 
                 localStorage.setItem('mncu_opac_view', 'row');
             } else {
-                container.className = 'grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+                container.className = 'grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
 
                 document.querySelectorAll('.card-inner-layout').forEach(el => {
                     el.className = 'card-inner-layout flex flex-col h-full';
@@ -1285,7 +1368,7 @@
                     el.className = 'card-cover-wrapper relative w-full aspect-[3/4] shrink-0 overflow-hidden bg-slate-100 border-b border-line/60';
                 });
                 document.querySelectorAll('.card-details-wrapper').forEach(el => {
-                    el.className = 'card-details-wrapper p-4 flex flex-col flex-1 justify-between gap-3';
+                    el.className = 'card-details-wrapper p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-2';
                 });
                 document.querySelectorAll('.row-only-header').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.row-only-desc').forEach(el => el.classList.add('hidden'));
@@ -1299,18 +1382,26 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Pastikan elemen modal berada di root body
+            ensureModalsInBody();
+
             // Inisialisasi tampilan katalog dengan default 'grid'
             const savedView = localStorage.getItem('mncu_opac_view') || 'grid';
             setCatalogView(savedView);
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const targetId = '{{ $selectedBookId ?? '' }}' || urlParams.get('buku');
-            if (targetId && Array.isArray(allCatalogItems) && allCatalogItems.length > 0) {
-                const foundItem = allCatalogItems.find(item => String(item.id) === String(targetId));
-                if (foundItem) {
-                    openBookDetailModal(foundItem);
+            // Buka modal secara otomatis jika ada buku terpilih dari controller atau query parameter
+            @if (!empty($selectedBookItem))
+                openBookDetailModal(@json($selectedBookItem));
+            @else
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetId = '{{ $selectedBookId ?? '' }}' || urlParams.get('buku');
+                if (targetId && Array.isArray(allCatalogItems) && allCatalogItems.length > 0) {
+                    const foundItem = allCatalogItems.find(item => String(item.id) === String(targetId));
+                    if (foundItem) {
+                        openBookDetailModal(foundItem);
+                    }
                 }
-            }
+            @endif
         });
     </script>
 @endsection

@@ -402,10 +402,126 @@
                 </div>
             </div>
         </form>
+
+        {{-- Form Pembaruan Kata Sandi Mandiri (Tanpa Password Lama) --}}
+        <form action="{{ route('profile.password.update') }}" method="POST" id="ubah-password" class="mt-8 space-y-6">
+            @csrf
+            @method('PUT')
+
+            <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+                <div class="border-b border-line bg-slate-50/70 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+                            <i class="fa-solid fa-key text-xs"></i>
+                        </span>
+                        <div>
+                            <h2 class="text-sm font-bold text-ink sm:text-base">Keamanan Akun &amp; Ubah Kata Sandi</h2>
+                            <p class="mt-0.5 text-xs text-muted">Perbarui kata sandi akun Anda untuk menjaga keamanan akses perpustakaan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    @if (session('success'))
+                        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        {{-- Kata Sandi Baru --}}
+                        <div>
+                            <label for="input_kata_sandi" class="block text-xs font-semibold text-ink sm:text-sm">
+                                Kata Sandi Baru <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative mt-1.5">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                                    <i class="fa-solid fa-lock text-xs"></i>
+                                </span>
+                                <input
+                                    type="password"
+                                    name="kata_sandi"
+                                    id="input_kata_sandi"
+                                    required
+                                    minlength="6"
+                                    placeholder="Minimal 6 karakter"
+                                    class="block h-11 w-full rounded-xl border border-line bg-white pr-10 pl-10 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('kata_sandi') border-rose-400 bg-rose-50/30 @enderror"
+                                >
+                                <button
+                                    type="button"
+                                    onclick="togglePasswordVisibility('input_kata_sandi', this)"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                                    aria-label="Tampilkan atau sembunyikan kata sandi"
+                                >
+                                    <i class="fa-regular fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                            @error('kata_sandi')
+                                <p class="mt-1 text-xs font-semibold text-rose-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-[11px] text-muted">Gunakan minimal 6 karakter kombinasi huruf dan angka.</p>
+                        </div>
+
+                        {{-- Konfirmasi Kata Sandi Baru --}}
+                        <div>
+                            <label for="input_kata_sandi_confirmation" class="block text-xs font-semibold text-ink sm:text-sm">
+                                Konfirmasi Kata Sandi Baru <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative mt-1.5">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                                    <i class="fa-solid fa-lock-open text-xs"></i>
+                                </span>
+                                <input
+                                    type="password"
+                                    name="kata_sandi_confirmation"
+                                    id="input_kata_sandi_confirmation"
+                                    required
+                                    minlength="6"
+                                    placeholder="Ulangi kata sandi baru"
+                                    class="block h-11 w-full rounded-xl border border-line bg-white pr-10 pl-10 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                                >
+                                <button
+                                    type="button"
+                                    onclick="togglePasswordVisibility('input_kata_sandi_confirmation', this)"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                                    aria-label="Tampilkan atau sembunyikan kata sandi"
+                                >
+                                    <i class="fa-regular fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Aksi Formulir Kata Sandi --}}
+                <div class="flex items-center justify-end border-t border-line bg-slate-50/70 px-6 py-4">
+                    <button type="submit" class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-amber-600 px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 sm:text-sm">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Perbarui Kata Sandi</span>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (!input || !icon) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const fileInput = document.getElementById('foto_profil');
         const previewImg = document.getElementById('profile-preview');
