@@ -10,7 +10,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable([
+    'name',
+    'nama_lengkap',
+    'role',
+    'email',
+    'password',
+    'alamat_lengkap',
+    'no_wa',
+    'tempat_lahir',
+    'tanggal_lahir',
+    'nik',
+    'nim',
+    'nidn',
+    'foto_profil',
+])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +41,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tanggal_lahir' => 'date',
         ];
+    }
+
+    public function getNamaLengkapAttribute(?string $value): string
+    {
+        return $value ?: ($this->attributes['name'] ?? '');
+    }
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        return $this->foto_profil ? asset('storage/'.$this->foto_profil) : null;
     }
 }

@@ -62,29 +62,12 @@
         ];
 
         /**
-         * Placeholder tampilan. TODO (integrasi): ganti dengan data berita dari controller.
-         * Jika kosong, blok @empty di bawah yang tampil.
+         * Koleksi berita & agenda acara dari database. Jika kosong, blok @empty yang tampil.
          *
          * @var array<int, array{title: string, excerpt: string, date: string}> $latestNews
          */
-        $latestNews = $latestNews ?? array_fill(0, 3, [
-            'title' => '[Judul berita]',
-            'excerpt' => '[Ringkasan berita, maksimal dua baris]',
-            'date' => '[Tanggal]',
-            'slug' => '#',
-        ]);
-
-        $upcomingEvents = $upcomingEvents ?? array_fill(0, 3, [
-            'title' => '[Nama acara]',
-            'excerpt' => '[Ringkasan acara, maksimal dua baris]',
-            'date' => '[Tanggal]',
-            'day' => '--',
-            'month' => 'Bln',
-            'time' => '[Waktu]',
-            'place' => '[Tempat]',
-            'category' => 'Agenda Kampus',
-            'slug' => '#',
-        ]);
+        $latestNews = $latestNews ?? [];
+        $upcomingEvents = $upcomingEvents ?? [];
 
         $visitorStats = $visitorStats ?? [
             'today' => 0,
@@ -101,7 +84,7 @@
                 <div class="max-w-3xl pt-0.5">
                     {{-- Logo MNC University di atas Header dan subtext --}}
                     <div class="mb-3 inline-flex items-center sm:mb-4">
-                        <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-16 w-auto sm:h-20 lg:h-24">
+                        <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-12 max-w-[200px] w-auto object-contain sm:h-16 sm:max-w-[240px] lg:h-20" style="max-height: 80px; max-width: 240px;" width="240" height="80">
                     </div>
 
                     @auth
@@ -844,9 +827,12 @@
                     </ul>
                 @endif
             @empty
-                <div class="mt-5 rounded-lg border border-line bg-subtle p-6 text-center">
-                    <p class="text-base text-ink">Belum ada berita yang diterbitkan.</p>
-                    <p class="mt-1 text-[13px] text-muted">Berita baru dari perpustakaan akan muncul di sini.</p>
+                <div class="mt-5 rounded-2xl border border-dashed border-line bg-subtle/70 p-8 text-center">
+                    <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <i class="fa-solid fa-newspaper text-xl"></i>
+                    </div>
+                    <h3 class="mt-3 text-sm font-semibold text-ink sm:text-base">Belum Ada Berita yang Diterbitkan</h3>
+                    <p class="mt-1 text-xs text-muted sm:text-sm">Rilis informasi dan kabar terbaru perpustakaan akan tampil di sini begitu dipublikasikan.</p>
                 </div>
             @endforelse
 
@@ -936,9 +922,12 @@
                     </ul>
                 @endif
             @empty
-                <div class="mt-5 rounded-lg border border-line bg-subtle p-6 text-center">
-                    <p class="text-base text-ink">Belum ada acara terjadwal.</p>
-                    <p class="mt-1 text-[13px] text-muted">Jadwal kegiatan perpustakaan akan diumumkan di sini.</p>
+                <div class="mt-5 rounded-2xl border border-dashed border-line bg-subtle/70 p-8 text-center">
+                    <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <i class="fa-solid fa-calendar-days text-xl"></i>
+                    </div>
+                    <h3 class="mt-3 text-sm font-semibold text-ink sm:text-base">Belum Ada Agenda Acara Mendatang</h3>
+                    <p class="mt-1 text-xs text-muted sm:text-sm">Jadwal webinar, workshop, dan kegiatan literasi perpustakaan akan diumumkan di sini.</p>
                 </div>
             @endforelse
 

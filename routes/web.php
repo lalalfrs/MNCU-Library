@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Otentikasi Pemustaka & Pustakawan (Sanctum / Laravel Auth)
@@ -26,6 +27,13 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/ubah-password', [AuthController::class, 'showChangePasswordForm'])->name('password.edit');
     Route::put('/ubah-password', [AuthController::class, 'updatePassword'])->name('password.update');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Profil Pengguna (Khusus Pengguna Terautentikasi)
+Route::middleware('auth')->group(function (): void {
+    Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 // Beranda Utama
