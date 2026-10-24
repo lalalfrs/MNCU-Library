@@ -240,10 +240,17 @@
                     </dl>
 
                     <div class="mt-4 flex items-center justify-between border-t border-line pt-3 text-[11px] text-muted">
-                        <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
-                            Pembaruan otomatis
-                        </span>
+                        @if (isset($isDbConnected) && ! $isDbConnected)
+                            <span class="flex items-center gap-1.5 text-amber-600 font-medium">
+                                <i class="fa-solid fa-circle-exclamation text-amber-500 text-xs" aria-hidden="true"></i>
+                                Database offline
+                            </span>
+                        @else
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
+                                Pembaruan otomatis
+                            </span>
+                        @endif
                         <span class="font-medium text-primary flex items-center gap-1">
                             <i class="fa-solid fa-building-columns text-xs" aria-hidden="true"></i>
                             MNC University Library

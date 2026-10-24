@@ -422,12 +422,7 @@
                 </div>
 
                 <div class="p-6 space-y-5">
-                    @if (session('success'))
-                        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800">
-                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                            <span>{{ session('success') }}</span>
-                        </div>
-                    @endif
+
 
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         {{-- Kata Sandi Baru --}}

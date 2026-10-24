@@ -56,18 +56,7 @@
             </div>
         </div>
 
-        {{-- Flash Notification --}}
-        @if (session('success'))
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-        @endif
+
 
         {{-- Grid 2 Kolom: Kiri Profil Bibliografi, Kanan Metrik Stok & Manajemen Eksemplar --}}
         <div class="grid gap-6 lg:grid-cols-12">
