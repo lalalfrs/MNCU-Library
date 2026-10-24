@@ -52,7 +52,7 @@ class BookStockAndOpacTest extends TestCase
         $response->assertSee('Koleksi Populer');
         $response->assertSee('Koleksi Baru');
         $response->assertSee('Filter Pencarian');
-        $response->assertSee('Detail Buku');
+        $response->assertSee('Detail Informasi Buku');
     }
 
     /**

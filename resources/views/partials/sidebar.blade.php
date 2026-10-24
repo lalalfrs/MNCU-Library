@@ -115,6 +115,18 @@
                         <span class="rounded bg-[#059669]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#059669]">CRUD</span>
                     </a>
                 </li>
+
+                {{-- Manajemen Peminjaman & Keterlambatan --}}
+                <li>
+                    <a
+                        href="{{ route('admin.peminjaman.index') }}"
+                        class="flex h-[44px] items-center gap-3.5 border-l-[3px] {{ request()->routeIs('admin.peminjaman.*') ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-transparent text-ink hover:bg-[#F3F4F6] hover:text-primary' }} px-6 text-sm transition-colors"
+                    >
+                        <i class="fa-solid fa-arrows-rotate text-primary w-5 text-center"></i>
+                        <span class="flex-1">Peminjaman &amp; Sirkulasi</span>
+                        <span class="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">CRUD</span>
+                    </a>
+                </li>
             @endif
 
             {{-- 3. Layanan Perpustakaan --}}

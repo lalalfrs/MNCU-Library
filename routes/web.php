@@ -4,6 +4,7 @@ use App\Http\Controllers\AcaraController;
 use App\Http\Controllers\Admin\AcaraAdminController;
 use App\Http\Controllers\Admin\BeritaAdminController;
 use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\PeminjamanAdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
@@ -75,4 +76,9 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
 
     // 4. Manajemen Berita
     Route::resource('berita', BeritaAdminController::class)->names('berita');
+
+    // 5. Manajemen Peminjaman & Keterlambatan Sirkulasi Buku
+    Route::resource('peminjaman', PeminjamanAdminController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('peminjaman/{peminjaman}/kembalikan', [PeminjamanAdminController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+    Route::post('peminjaman/{peminjaman}/kirim-peringatan', [PeminjamanAdminController::class, 'kirimPeringatan'])->name('peminjaman.kirim-peringatan');
 });

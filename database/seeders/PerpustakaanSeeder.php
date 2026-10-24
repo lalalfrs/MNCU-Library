@@ -12,6 +12,7 @@ use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
 use App\Models\Kontak;
 use App\Models\KunjunganBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
 use App\Models\Pengguna;
 use App\Models\Penulis;
@@ -129,6 +130,16 @@ class PerpustakaanSeeder extends Seeder
                 'email' => 'hendra.gunawan@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
                 'nomor_identitas' => 'NIDN-0312048501',
+            ],
+            [
+                'id_pengguna' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_peran' => 'MNCU00003',
+                'id_prodi' => 'MNCU00001',
+                'nama_lengkap' => 'Nabila Putri Ramadhani',
+                'email' => 'nabila.mhs@mncu.ac.id',
+                'kata_sandi' => Hash::make('password123'),
+                'nomor_identitas' => '2024010045',
             ],
         ];
 
@@ -561,5 +572,45 @@ class PerpustakaanSeeder extends Seeder
                 ]
             );
         }
+
+        // 15. Table: peminjaman_buku (Simulasi sirkulasi & kalkulasi keterlambatan tanpa sanksi denda)
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00001'],
+            [
+                'id_peminjaman' => 'PJ00001',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00004',
+                'id_buku' => 'MNCU00001',
+                'id_eksemplar' => 'MNCU00002',
+                'tanggal_pinjam' => now()->subDays(19)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->subDays(5)->toDateString(),
+                'tanggal_kembali' => null,
+                'status' => 'Terlambat',
+                'hari_keterlambatan' => 5,
+                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 14 hari tanpa sanksi denda.',
+                'notifikasi_peringatan_dikirim' => true,
+                'tanggal_notifikasi' => now()->subDays(4),
+            ]
+        );
+        EksemplarBuku::where('id_eksemplar', 'MNCU00002')->update(['status' => 'Dipinjam']);
+
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00002'],
+            [
+                'id_peminjaman' => 'PJ00002',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00006',
+                'id_buku' => 'MNCU00002',
+                'id_eksemplar' => 'MNCU00004',
+                'tanggal_pinjam' => now()->subDays(10)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays(4)->toDateString(),
+                'tanggal_kembali' => now()->subDays(1)->toDateString(),
+                'status' => 'Kembali',
+                'hari_keterlambatan' => 0,
+                'catatan_keterlambatan' => 'Buku kembali dalam kondisi fisik baik dan rapi.',
+                'notifikasi_peringatan_dikirim' => false,
+                'tanggal_notifikasi' => null,
+            ]
+        );
     }
 }

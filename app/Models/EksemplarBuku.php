@@ -38,4 +38,9 @@ class EksemplarBuku extends Model
     {
         return $this->belongsTo(Buku::class, 'id_buku', 'id_buku');
     }
+
+    public function peminjaman(): HasMany
+    {
+        return $this->hasMany(PeminjamanBuku::class, 'id_eksemplar', 'id_eksemplar');
+    }
 }

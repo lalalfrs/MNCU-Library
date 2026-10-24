@@ -148,4 +148,20 @@ class Pengguna extends Authenticatable
     {
         return $this->hasMany(VisitorLog::class, 'id_pengguna', 'id_pengguna');
     }
+
+    public function peminjaman(): HasMany
+    {
+        return $this->hasMany(PeminjamanBuku::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    /**
+     * Cek apakah pengguna memiliki tanggungan peminjaman buku yang belum dikembalikan.
+     */
+    public function memilikiTanggunganPinjaman(): bool
+    {
+        return $this->peminjaman()
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat'])
+            ->exists();
+    }
 }

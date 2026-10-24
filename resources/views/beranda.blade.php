@@ -76,7 +76,7 @@
         ];
     @endphp
 
-    <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
+    <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-8 lg:gap-16 lg:px-6 lg:pt-12">
 
         {{-- Page header / Hero --}}
         <section aria-labelledby="judul-beranda" class="flex flex-col justify-between px-1 lg:px-[26px]">
@@ -253,7 +253,7 @@
             </div>
 
             {{-- Garis biru di bawah hero dengan ruang kosong / gap yang lega sebelum layanan --}}
-            <div class="mt-auto pt-10 pb-4 lg:pt-16 lg:pb-6">
+            <div class="mt-6 pt-10 pb-4 lg:mt-8 lg:pt-16 lg:pb-6">
                 <div class="h-0.5 bg-primary"></div>
             </div>
         </section>

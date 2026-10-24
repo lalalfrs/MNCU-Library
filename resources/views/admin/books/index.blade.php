@@ -375,103 +375,104 @@
                     </div>
                 </div>
             @else
-                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                     @foreach ($books as $book)
                         @php
                             $totalEk = $book->eksemplar->count();
                             $readyEk = $book->eksemplar->where('status', 'Tersedia')->count();
                             $firstCopy = $book->eksemplar->first();
                         @endphp
-                        <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                        <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-line bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md">
                             {{-- Sampul Buku --}}
-                            <div class="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-subtle to-slate-100">
+                            <div class="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-slate-100 border-b border-line/60">
                                 @if ($book->sampul_buku)
                                     <img
                                         src="{{ $book->sampul_buku }}"
                                         alt="{{ $book->judul_buku }}"
-                                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
                                     >
                                 @else
-                                    <div class="flex h-full w-full flex-col items-center justify-center p-4 text-center text-muted">
-                                        <div class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                                            <i class="fa-solid fa-book text-2xl"></i>
+                                    <div class="flex size-full flex-col items-center justify-center p-3 text-center text-muted">
+                                        <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                            <i class="fa-solid fa-book text-lg"></i>
                                         </div>
-                                        <span class="mt-2 text-xs font-medium text-ink/70">Tanpa Sampul</span>
+                                        <span class="mt-1.5 text-[10px] font-medium text-ink/70">Tanpa Sampul</span>
                                     </div>
                                 @endif
 
                                 {{-- Badges Melayang di Atas Gambar --}}
-                                <div class="absolute inset-x-2.5 top-2.5 flex items-center justify-between gap-1.5">
-                                    <span class="inline-flex items-center rounded-md border border-line/60 bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-xs backdrop-blur">
+                                <div class="absolute inset-x-2 top-2 flex items-center justify-between gap-1 pointer-events-none">
+                                    <span class="inline-flex items-center rounded bg-white/95 px-1.5 py-0.5 text-[9px] font-semibold text-primary shadow-xs backdrop-blur border border-line/60 truncate max-w-[65%]">
                                         {{ $book->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak' }}
                                     </span>
-                                    <span class="inline-flex items-center rounded-md bg-slate-900/80 px-2 py-0.5 font-mono text-[10px] font-medium text-white shadow-xs backdrop-blur">
-                                        {{ $book->id_buku }}
+                                    <span class="inline-flex items-center rounded bg-slate-900/80 px-1.5 py-0.5 font-mono text-[9px] font-medium text-white shadow-xs backdrop-blur shrink-0">
+                                        #{{ $book->id_buku }}
                                     </span>
                                 </div>
 
                                 {{-- Badge Stok di Pojok Bawah Gambar --}}
-                                <div class="absolute inset-x-2.5 bottom-2.5">
+                                <div class="absolute inset-x-2 bottom-2 pointer-events-none">
                                     @if ($totalEk === 0)
-                                        <span class="inline-flex items-center gap-1 rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-medium text-slate-200 backdrop-blur">
-                                            0 Eksemplar
+                                        <span class="inline-flex items-center gap-1 rounded bg-slate-900/80 px-1.5 py-0.5 text-[9px] font-semibold text-slate-200 backdrop-blur-xs">
+                                            Digital
                                         </span>
                                     @elseif ($readyEk > 0)
-                                        <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-900/90 px-2 py-0.5 text-[10px] font-semibold text-emerald-200 backdrop-blur">
-                                            <span class="size-1.5 rounded-full bg-emerald-400"></span>
-                                            Stok: {{ $readyEk }} / {{ $totalEk }} Tersedia
+                                        <span class="inline-flex items-center gap-1 rounded bg-emerald-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
+                                            <span class="size-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                                            <span>{{ $readyEk }}/{{ $totalEk }} Eks</span>
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 rounded-md bg-amber-900/90 px-2 py-0.5 text-[10px] font-semibold text-amber-200 backdrop-blur">
-                                            <span class="size-1.5 rounded-full bg-amber-400"></span>
-                                            Dipinjam Semua ({{ $totalEk }})
+                                        <span class="inline-flex items-center gap-1 rounded bg-amber-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
+                                            <span>Dipinjam</span>
                                         </span>
                                     @endif
                                 </div>
                             </div>
 
                             {{-- Isi Rincian Kartu --}}
-                            <div class="flex flex-1 flex-col p-4">
-                                {{-- Kategori --}}
-                                <div class="flex items-center justify-between text-[11px] text-muted">
-                                    <span class="font-medium text-primary">{{ $book->kategoriBuku?->nama_kategori ?? 'Umum' }}</span>
-                                    <span>{{ $book->tahun_terbit ?? '-' }}</span>
-                                </div>
+                            <div class="flex flex-1 flex-col justify-between p-3">
+                                <div>
+                                    {{-- Kategori & Tahun --}}
+                                    <div class="flex items-center justify-between text-[10px] text-muted">
+                                        <span class="font-medium text-primary truncate max-w-[65%]">{{ $book->kategoriBuku?->nama_kategori ?? 'Umum' }}</span>
+                                        <span>{{ $book->tahun_terbit ?? '-' }}</span>
+                                    </div>
 
-                                {{-- Judul Buku --}}
-                                <a href="{{ route('admin.books.show', $book->id_buku) }}">
-                                    <h3 class="mt-1.5 line-clamp-2 text-sm font-bold text-ink transition-colors group-hover:text-primary">
-                                        {{ $book->judul_buku }}
-                                    </h3>
-                                </a>
+                                    {{-- Judul Buku --}}
+                                    <a href="{{ route('admin.books.show', $book->id_buku) }}">
+                                        <h3 class="mt-1 text-xs sm:text-sm font-bold text-ink transition-colors group-hover:text-primary leading-snug line-clamp-2" title="{{ $book->judul_buku }}">
+                                            {{ $book->judul_buku }}
+                                        </h3>
+                                    </a>
 
-                                {{-- Pengarang & Penerbit --}}
-                                <div class="mt-2 space-y-1 text-xs text-muted">
-                                    <p class="truncate" title="Penulis">
-                                        <i class="fa-solid fa-user-pen mr-1.5 text-[10px] text-primary/70"></i>
-                                        {{ $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan' }}
-                                    </p>
-                                    <p class="truncate" title="Penerbit">
-                                        <i class="fa-solid fa-building-columns mr-1.5 text-[10px] text-primary/70"></i>
-                                        {{ $book->penerbit?->nama_penerbit ?? 'Penerbit MNCU' }}
-                                    </p>
-                                    @if ($firstCopy?->lokasi_rak)
-                                        <p class="truncate text-[11px] text-ink-secondary" title="Lokasi Rak">
-                                            <i class="fa-solid fa-location-dot mr-1.5 text-[10px] text-primary/70"></i>
-                                            {{ $firstCopy->lokasi_rak }}
+                                    {{-- Pengarang & Penerbit --}}
+                                    <div class="mt-1.5 space-y-0.5 text-[10px] text-muted">
+                                        <p class="truncate" title="Penulis">
+                                            <i class="fa-solid fa-user-pen mr-1 text-[9px] text-primary/70"></i>
+                                            {{ $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan' }}
                                         </p>
-                                    @endif
+                                        <p class="truncate" title="Penerbit">
+                                            <i class="fa-solid fa-building-columns mr-1 text-[9px] text-primary/70"></i>
+                                            {{ $book->penerbit?->nama_penerbit ?? 'Penerbit MNCU' }}
+                                        </p>
+                                        @if ($firstCopy?->lokasi_rak)
+                                            <p class="truncate text-[10px] text-ink-secondary" title="Lokasi Rak">
+                                                <i class="fa-solid fa-location-dot mr-1 text-[9px] text-primary/70"></i>
+                                                {{ $firstCopy->lokasi_rak }}
+                                            </p>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 {{-- Action Bar di Bagian Bawah Kartu --}}
-                                <div class="mt-auto flex items-center gap-1.5 pt-4 border-t border-line">
+                                <div class="mt-3 flex items-center gap-1 pt-2.5 border-t border-line">
                                     <a
                                         href="{{ route('admin.books.show', $book->id_buku) }}"
-                                        class="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-xl bg-primary/10 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                                        class="inline-flex h-7.5 flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
                                         title="Detail & Kelola Eksemplar"
                                     >
-                                        <i class="fa-solid fa-boxes-stacked text-[11px]"></i>
+                                        <i class="fa-solid fa-boxes-stacked text-[10px]"></i>
                                         <span>Stok</span>
                                     </a>
 
@@ -479,33 +480,34 @@
                                         href="{{ route('opac', ['buku' => $book->id_buku]) }}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="inline-flex size-9 items-center justify-center rounded-xl border border-line bg-subtle/40 text-xs font-semibold text-emerald-600 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700"
+                                        class="inline-flex size-7.5 items-center justify-center rounded-lg border border-line bg-subtle/40 text-[11px] font-semibold text-emerald-600 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700"
                                         title="Lihat Detail Buku di Katalog OPAC (Tab Baru)"
                                     >
-                                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                        <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
                                     </a>
 
                                     <a
                                         href="{{ route('admin.books.edit', $book->id_buku) }}"
-                                        class="inline-flex size-9 items-center justify-center rounded-xl border border-line bg-subtle/40 text-xs font-semibold text-ink transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                                        class="inline-flex size-7.5 items-center justify-center rounded-lg border border-line bg-subtle/40 text-[11px] font-semibold text-ink transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
                                         title="Ubah Buku"
                                     >
-                                        <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                        <i class="fa-regular fa-pen-to-square text-[10px]"></i>
                                     </a>
 
                                     <form
                                         action="{{ route('admin.books.destroy', $book->id_buku) }}"
                                         method="POST"
                                         onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplarnya?')"
+                                        class="inline-block"
                                     >
                                         @csrf
                                         @method('DELETE')
                                         <button
                                             type="submit"
-                                            class="inline-flex size-9 items-center justify-center rounded-xl border border-red-200 text-red-600 transition-colors hover:bg-red-50"
+                                            class="inline-flex size-7.5 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
                                             title="Hapus Buku"
                                         >
-                                            <i class="fa-regular fa-trash-can text-xs"></i>
+                                            <i class="fa-regular fa-trash-can text-[10px]"></i>
                                         </button>
                                     </form>
                                 </div>

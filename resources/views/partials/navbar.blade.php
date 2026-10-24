@@ -103,6 +103,10 @@
                                     <i class="fa-solid fa-newspaper text-[#059669] w-4"></i>
                                     <span>Manajemen Berita</span>
                                 </a>
+                                <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                    <i class="fa-solid fa-arrows-rotate text-primary w-4"></i>
+                                    <span>Peminjaman &amp; Sirkulasi</span>
+                                </a>
                             </div>
                         @endif
 

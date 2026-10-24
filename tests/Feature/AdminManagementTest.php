@@ -32,6 +32,7 @@ class AdminManagementTest extends TestCase
         $this->get('/admin/buku')->assertRedirect(route('login'));
         $this->get('/admin/acara')->assertRedirect(route('login'));
         $this->get('/admin/berita')->assertRedirect(route('login'));
+        $this->get('/admin/peminjaman')->assertRedirect(route('login'));
     }
 
     /**
@@ -49,6 +50,7 @@ class AdminManagementTest extends TestCase
         $response->assertSee('Manajemen Buku');
         $response->assertSee('Manajemen Acara');
         $response->assertSee('Manajemen Berita');
+        $response->assertSee('Peminjaman');
         $response->assertSee('Buka Menu Sidebar');
     }
 
@@ -63,6 +65,7 @@ class AdminManagementTest extends TestCase
         $this->actingAs($admin)->get(route('admin.books.index'))->assertStatus(200)->assertSee('Manajemen Katalog Koleksi Buku');
         $this->actingAs($admin)->get(route('admin.acara.index'))->assertStatus(200)->assertSee('Manajemen Acara');
         $this->actingAs($admin)->get(route('admin.berita.index'))->assertStatus(200)->assertSee('Manajemen Berita');
+        $this->actingAs($admin)->get(route('admin.peminjaman.index'))->assertStatus(200)->assertSee('Sirkulasi Peminjaman');
     }
 
     /**
