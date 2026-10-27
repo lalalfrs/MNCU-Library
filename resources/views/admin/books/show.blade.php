@@ -283,7 +283,7 @@
                                         </td>
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
                                             {{-- Form Ganti Status Cepat --}}
-                                            <form action="{{ route('admin.books.eksemplar.update', [$book->id_buku, $ek->id_eksemplar]) }}" method="POST" class="inline-flex items-center">
+                                            <form action="{{ route('admin.books.eksemplar.update', [$book->id_buku, $ek->id_eksemplar]) }}" method="POST" class="inline-flex flex-col items-center">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="kode_inventaris" value="{{ $ek->kode_inventaris }}">
@@ -292,7 +292,8 @@
 
                                                 <select
                                                     name="status"
-                                                    onchange="this.form.submit()"
+                                                    data-current-status="{{ $ek->status }}"
+                                                    onchange="handleExemplarStatusSelect(this, {{ json_encode($ek) }})"
                                                     class="h-8 rounded-lg border text-xs font-semibold px-2 py-0.5 focus:outline-none transition-colors cursor-pointer {{ $ek->status === 'Tersedia' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : ($ek->status === 'Dipinjam' ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-rose-300 bg-rose-50 text-rose-800') }}"
                                                     title="Ubah status eksemplar ini langsung"
                                                 >
@@ -302,6 +303,13 @@
                                                     <option value="Perbaikan" @selected($ek->status === 'Perbaikan')>Perbaikan</option>
                                                     <option value="Hilang" @selected($ek->status === 'Hilang')>Hilang</option>
                                                 </select>
+
+                                                @if ($ek->status === 'Dipinjam' && $ek->peminjamanAktif)
+                                                    <div class="mt-1 flex items-center justify-center gap-1 text-[10px] text-amber-900 bg-amber-50 rounded-md px-1.5 py-0.5 border border-amber-200" title="Dipinjam oleh {{ $ek->peminjamanAktif->pengguna?->nama_lengkap }} (Batas: {{ $ek->peminjamanAktif->tanggal_jatuh_tempo?->format('d/m/Y') }})">
+                                                        <i class="fa-solid fa-user-clock text-amber-600 text-[9px]"></i>
+                                                        <span class="font-medium truncate max-w-[110px]">{{ $ek->peminjamanAktif->pengguna?->nama_lengkap }}</span>
+                                                    </div>
+                                                @endif
                                             </form>
                                         </td>
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
@@ -451,12 +459,198 @@
         </div>
     </div>
 
+    {{-- Modal Peminjaman Eksemplar Fisik oleh Admin (Alur Flowchart Sirkulasi & Validasi Eligibilitas) --}}
+    <div
+        id="modal-pinjam-eksemplar"
+        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-pinjam-title"
+    >
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all my-auto animate-in fade-in zoom-in-95 duration-200">
+            {{-- Modal Header --}}
+            <div class="flex items-center justify-between border-b border-line bg-slate-50 px-5 py-3.5">
+                <div class="flex items-center gap-2.5">
+                    <div class="flex size-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <i class="fa-solid fa-hand-holding-hand text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-pinjam-title" class="text-sm font-bold text-ink">
+                            Peminjaman Eksemplar Fisik
+                        </h3>
+                        <p id="modal-pinjam-subtitle" class="text-[11px] text-muted">
+                            Pilih data mahasiswa peminjam sesuai alur sirkulasi perpustakaan
+                        </p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeLoanModal()"
+                    class="rounded-lg p-1 text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                >
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            {{-- Modal Form --}}
+            <form id="form-pinjam-eksemplar" method="POST" action="" class="p-5 space-y-4">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="status" value="Dipinjam">
+                <input type="hidden" name="kode_inventaris" id="modal_pinjam_kode_inventaris" value="">
+                <input type="hidden" name="nomor_panggil" id="modal_pinjam_nomor_panggil" value="">
+                <input type="hidden" name="lokasi_rak" id="modal_pinjam_lokasi_rak" value="">
+
+                {{-- Detail Eksemplar Terpilih --}}
+                <div class="rounded-xl border border-line bg-slate-50 p-3 text-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-muted block text-[10px]">Eksemplar Fisik:</span>
+                        <strong id="display_kode_inventaris" class="font-mono text-ink text-xs font-bold">-</strong>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-muted block text-[10px]">Lokasi Rak:</span>
+                        <span id="display_lokasi_rak" class="text-primary font-medium">-</span>
+                    </div>
+                </div>
+
+                {{-- Input Mahasiswa / Pemustaka --}}
+                <div>
+                    <label for="modal_pinjam_id_pengguna" class="block text-xs font-semibold text-ink mb-1">
+                        Pilih Mahasiswa / User Peminjam <span class="text-rose-500">*</span>
+                    </label>
+                    <select
+                        name="id_pengguna"
+                        id="modal_pinjam_id_pengguna"
+                        required
+                        onchange="handleLoanUserSelection(this.value)"
+                        class="w-full rounded-xl border border-line bg-white px-3 py-2 text-xs text-ink focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    >
+                        <option value="">-- Cari / Pilih Mahasiswa atau User --</option>
+                        @foreach ($users as $u)
+                            <option
+                                value="{{ $u->id_pengguna }}"
+                                data-name="{{ $u->nama_lengkap }}"
+                                data-role="{{ $u->peran?->nama_peran ?: 'Pemustaka' }}"
+                                data-nim="{{ $u->nim ?: ($u->nidn ?: ($u->nomor_identitas ?: '-')) }}"
+                                data-member="{{ $u->isMember() ? '1' : '0' }}"
+                            >
+                                {{ $u->nama_lengkap }} ({{ $u->nim ?: ($u->nidn ?: ($u->nomor_identitas ?: '-')) }} &bull; {{ $u->peran?->nama_peran ?: 'Pemustaka' }}){{ $u->isMember() ? ' [Member]' : ' [Bukan Member]' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Box Validasi Eligibilitas Mahasiswa --}}
+                <div id="loan-eligibility-box" class="space-y-2">
+                    {{-- State Loading --}}
+                    <div id="loan-eligibility-loading" class="hidden rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-muted flex items-center gap-2">
+                        <i class="fa-solid fa-circle-notch fa-spin text-emerald-600"></i>
+                        <span>Memeriksa eligibilitas dan riwayat pinjaman aktif mahasiswa...</span>
+                    </div>
+
+                    {{-- State Blocked: User Tidak Bisa Meminjam Buku --}}
+                    <div id="loan-eligibility-blocked" class="hidden rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-950 space-y-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-xmark text-rose-600 text-sm mt-0.5 shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-rose-900 text-xs">User Tidak Bisa Meminjam Buku!</h4>
+                                <p id="loan-eligibility-blocked-msg" class="text-[11px] text-rose-800 leading-relaxed font-medium mt-0.5"></p>
+                            </div>
+                        </div>
+
+                        {{-- Daftar Buku Belum Dikembalikan --}}
+                        <div id="loan-unreturned-container" class="rounded-lg border border-amber-200 bg-white p-2.5 text-[11px] space-y-1.5 hidden">
+                            <span class="font-bold text-amber-950 block">Buku Pinjaman yang Belum Dikembalikan:</span>
+                            <div id="loan-unreturned-list" class="space-y-1 text-muted"></div>
+                        </div>
+                    </div>
+
+                    {{-- State Eligible --}}
+                    <div id="loan-eligibility-eligible" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950 flex items-start gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5 shrink-0"></i>
+                        <div>
+                            <span class="font-bold text-emerald-900 block">Mahasiswa Memenuhi Syarat (Eligible)</span>
+                            <span class="text-[11px] text-emerald-800">Tidak ada tanggungan buku pinjaman aktif. Peminjaman dapat dicatat ke sistem.</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Tanggal Pengambilan & Pengembalian --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-ink mb-1">
+                            Tanggal Pengambilan
+                        </label>
+                        <div class="flex items-center justify-between rounded-xl border border-line bg-slate-50 px-3 py-2 text-xs">
+                            <span class="font-medium text-ink">{{ now()->translatedFormat('d M Y') }}</span>
+                            <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">Hari Ini</span>
+                        </div>
+                        <input type="hidden" name="tanggal_pinjam" value="{{ now()->toDateString() }}">
+                    </div>
+
+                    <div>
+                        <label for="modal_pinjam_tanggal_jatuh_tempo" class="block text-[11px] font-semibold text-ink mb-1">
+                            Tanggal Pengembalian <span class="text-rose-500">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            name="tanggal_jatuh_tempo"
+                            id="modal_pinjam_tanggal_jatuh_tempo"
+                            required
+                            min="{{ now()->toDateString() }}"
+                            value="{{ now()->addDays(14)->toDateString() }}"
+                            class="w-full rounded-xl border border-line bg-white px-3 py-1.5 text-xs text-ink focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        >
+                        <span class="text-[10px] text-muted">Default 14 hari kerja.</span>
+                    </div>
+                </div>
+
+                {{-- Catatan Peminjaman --}}
+                <div>
+                    <label for="modal_pinjam_catatan" class="block text-[11px] font-semibold text-ink mb-1">
+                        Catatan Peminjaman (Opsional)
+                    </label>
+                    <textarea
+                        name="catatan"
+                        id="modal_pinjam_catatan"
+                        rows="2"
+                        placeholder="Catatan keperluan peminjaman..."
+                        class="w-full rounded-xl border border-line bg-white px-3 py-2 text-xs text-ink focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    ></textarea>
+                </div>
+
+                {{-- Tombol Aksi Modal --}}
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+                    <button
+                        type="button"
+                        onclick="closeLoanModal()"
+                        class="inline-flex h-9 items-center justify-center rounded-xl border border-line px-4 text-xs font-medium text-muted hover:bg-subtle transition-colors"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        id="modal-pinjam-submit-btn"
+                        disabled
+                        class="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fa-solid fa-check text-xs"></i>
+                        <span>Simpan & Ubah Status Dipinjam</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        let currentEditingEksemplar = null;
+
         function openEditEksemplarModal(ek) {
             const modal = document.getElementById('modal-edit-eksemplar');
             const form = document.getElementById('form-edit-eksemplar');
             if (!modal || !form || !ek) return;
 
+            currentEditingEksemplar = ek;
             form.action = "{{ route('admin.books.eksemplar.update', [$book->id_buku, ':id']) }}".replace(':id', ek.id_eksemplar);
             document.getElementById('edit_kode_inventaris').value = ek.kode_inventaris || '';
             document.getElementById('edit_nomor_panggil').value = ek.nomor_panggil || '';
@@ -469,10 +663,161 @@
         function closeEditEksemplarModal() {
             const modal = document.getElementById('modal-edit-eksemplar');
             if (modal) modal.classList.add('hidden');
+            currentEditingEksemplar = null;
+        }
+
+        // Jika admin memilih 'Dipinjam' di modal edit eksemplar, arahkan ke alur peminjaman
+        document.getElementById('edit_status')?.addEventListener('change', function () {
+            if (this.value === 'Dipinjam' && currentEditingEksemplar && currentEditingEksemplar.status !== 'Dipinjam') {
+                const targetEk = { ...currentEditingEksemplar };
+                targetEk.kode_inventaris = document.getElementById('edit_kode_inventaris').value || targetEk.kode_inventaris;
+                targetEk.nomor_panggil = document.getElementById('edit_nomor_panggil').value || targetEk.nomor_panggil;
+                targetEk.lokasi_rak = document.getElementById('edit_lokasi_rak').value || targetEk.lokasi_rak;
+
+                closeEditEksemplarModal();
+                openLoanModalForExemplar(targetEk);
+            }
+        });
+
+        // Intercept dropdown status cepat di tabel daftar eksemplar
+        function handleExemplarStatusSelect(selectEl, ek) {
+            const newStatus = selectEl.value;
+            const currentStatus = selectEl.getAttribute('data-current-status') || ek.status;
+
+            if (newStatus === 'Dipinjam' && currentStatus !== 'Dipinjam') {
+                // Revert status pada dropdown sementara waktu sebelum form loan disubmit
+                selectEl.value = currentStatus;
+                openLoanModalForExemplar(ek);
+                return;
+            }
+
+            if (newStatus === 'Tersedia' && currentStatus === 'Dipinjam') {
+                const confirmed = confirm('Eksemplar ini sedang berstatus Dipinjam. Mengubah status menjadi Tersedia akan mencatat bahwa buku telah dikembalikan oleh peminjam. Lanjutkan pengembalian buku?');
+                if (confirmed) {
+                    selectEl.form.submit();
+                } else {
+                    selectEl.value = 'Dipinjam';
+                }
+                return;
+            }
+
+            // Status lainnya langsung disubmit
+            selectEl.form.submit();
+        }
+
+        function openLoanModalForExemplar(ek) {
+            const modal = document.getElementById('modal-pinjam-eksemplar');
+            const form = document.getElementById('form-pinjam-eksemplar');
+            if (!modal || !form || !ek) return;
+
+            form.action = "{{ route('admin.books.eksemplar.update', [$book->id_buku, ':id']) }}".replace(':id', ek.id_eksemplar);
+            document.getElementById('modal_pinjam_kode_inventaris').value = ek.kode_inventaris || '';
+            document.getElementById('modal_pinjam_nomor_panggil').value = ek.nomor_panggil || '';
+            document.getElementById('modal_pinjam_lokasi_rak').value = ek.lokasi_rak || '';
+            document.getElementById('display_kode_inventaris').textContent = ek.kode_inventaris || '-';
+            document.getElementById('display_lokasi_rak').textContent = ek.lokasi_rak || 'Lantai 2, Rak Koleksi';
+
+            // Reset pilihan user & kotak eligibilitas
+            const userSelect = document.getElementById('modal_pinjam_id_pengguna');
+            userSelect.value = '';
+
+            document.getElementById('loan-eligibility-loading').classList.add('hidden');
+            document.getElementById('loan-eligibility-blocked').classList.add('hidden');
+            document.getElementById('loan-eligibility-eligible').classList.add('hidden');
+            document.getElementById('modal-pinjam-submit-btn').disabled = true;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeLoanModal() {
+            const modal = document.getElementById('modal-pinjam-eksemplar');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function handleLoanUserSelection(userId) {
+            const loadingBox = document.getElementById('loan-eligibility-loading');
+            const blockedBox = document.getElementById('loan-eligibility-blocked');
+            const eligibleBox = document.getElementById('loan-eligibility-eligible');
+            const submitBtn = document.getElementById('modal-pinjam-submit-btn');
+
+            if (!userId) {
+                loadingBox.classList.add('hidden');
+                blockedBox.classList.add('hidden');
+                eligibleBox.classList.add('hidden');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            loadingBox.classList.remove('hidden');
+            blockedBox.classList.add('hidden');
+            eligibleBox.classList.add('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch("{{ url('admin/peminjaman/cek-eligibilitas') }}/" + encodeURIComponent(userId), {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const json = await response.json();
+                loadingBox.classList.add('hidden');
+
+                const data = json.data || {};
+                if (data.eligible) {
+                    eligibleBox.classList.remove('hidden');
+                    blockedBox.classList.add('hidden');
+                    submitBtn.disabled = false;
+                } else {
+                    blockedBox.classList.remove('hidden');
+                    eligibleBox.classList.add('hidden');
+                    submitBtn.disabled = true;
+
+                    const msgEl = document.getElementById('loan-eligibility-blocked-msg');
+                    if (msgEl) {
+                        msgEl.textContent = data.message || 'User tidak bisa meminjam buku karena masih memiliki tanggungan peminjaman aktif.';
+                    }
+
+                    const unreturnedContainer = document.getElementById('loan-unreturned-container');
+                    const unreturnedList = document.getElementById('loan-unreturned-list');
+                    const loans = data.active_loans || [];
+
+                    if (unreturnedContainer && unreturnedList) {
+                        if (loans.length > 0) {
+                            unreturnedContainer.classList.remove('hidden');
+                            unreturnedList.innerHTML = loans.map(l => `
+                                <div class="rounded border border-line bg-slate-50 p-1.5 flex items-center justify-between text-[10px]">
+                                    <span class="font-bold text-ink">${l.buku ? l.buku.judul_buku : 'Buku'}</span>
+                                    <span class="text-rose-700 font-medium">Batas: ${l.tanggal_jatuh_tempo || '-'}</span>
+                                </div>
+                            `).join('');
+                        } else {
+                            unreturnedContainer.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (err) {
+                loadingBox.classList.add('hidden');
+                blockedBox.classList.remove('hidden');
+                document.getElementById('loan-eligibility-blocked-msg').textContent = 'Terjadi kesalahan jaringan saat memvalidasi eligibilitas user.';
+                submitBtn.disabled = true;
+            }
         }
 
         document.getElementById('modal-edit-eksemplar')?.addEventListener('click', function (e) {
             if (e.target === this) closeEditEksemplarModal();
+        });
+
+        document.getElementById('modal-pinjam-eksemplar')?.addEventListener('click', function (e) {
+            if (e.target === this) closeLoanModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeEditEksemplarModal();
+                closeLoanModal();
+            }
         });
     </script>
 @endsection

@@ -338,3 +338,139 @@ body.modal-open header {
         transform: none !important;
     }
 }
+
+/* ==========================================================================
+   Horizontal Carousel & Drag-to-Scroll Support
+   ========================================================================== */
+.carousel-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-track.is-dragging {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+    cursor: grabbing !important;
+    user-select: none;
+}
+
+.carousel-track.is-dragging * {
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Exact 3-card preview on desktop (lg/xl), 2 on tablet (sm), 1 + peek on mobile, 4 on ultrawide (2xl) */
+.carousel-item-3 {
+    flex: 0 0 85%;
+    width: 85%;
+    max-width: 85%;
+    scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+    .carousel-item-3 {
+        flex: 0 0 calc((100% - 1.25rem) / 2);
+        width: calc((100% - 1.25rem) / 2);
+        max-width: calc((100% - 1.25rem) / 2);
+    }
+}
+
+@media (min-width: 1024px) {
+    .carousel-item-3 {
+        flex: 0 0 calc((100% - 2.5rem) / 3);
+        width: calc((100% - 2.5rem) / 3);
+        max-width: calc((100% - 2.5rem) / 3);
+    }
+}
+
+/* Responsive Layout Refinement: Breakpoints, Fluid Containers, and High-DPI Scaling */
+.responsive-desktop-container {
+    width: 100%;
+    min-width: 0;
+    max-width: 1570px;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+    /* 1024px - 1279px (Laptops 1366x768 / 1080p scaled at 150% / Small Desktop) */
+    .responsive-desktop-container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+    /* 1280px - 1535px (Standard Laptops & Desktops 1440x900, 1080p at 125%) */
+    .responsive-desktop-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+@media (min-width: 1536px) {
+    /* 1536px+ (Full HD 1080p at 100%, 2K, 4K, Ultrawide screens) */
+    .responsive-desktop-container {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+}
+
+/* Ensure all modal containers are scroll-safe on short desktop heights (e.g. 768px, 800px) */
+.modal-dialog-responsive {
+    max-height: calc(100dvh - 2rem);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-dialog-responsive .modal-scrollable-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Pagination indicator dots */
+.carousel-dot {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-dot.is-active {
+    width: 1.75rem;
+    background-color: var(--color-primary, #004282);
+}
+
+/* Catalog Grid responsive specification: 6 columns on all desktop/laptop viewports (>=992px) even at 100% scale */
+.opac-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .opac-catalog-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 768px) {
+    .opac-catalog-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 992px) {
+    .opac-catalog-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 0.875rem;
+    }
+}
+
+
+

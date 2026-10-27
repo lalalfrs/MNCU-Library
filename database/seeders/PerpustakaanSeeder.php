@@ -116,6 +116,9 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_peran' => 'MNCU00003',
                 'id_prodi' => 'MNCU00002',
+                'is_member' => true,
+                'member_sejak' => '2026-09-01 08:00:00',
+                'nomor_anggota' => 'MNCU00004',
                 'nama_lengkap' => 'Ahmad Fauzi Rahman',
                 'email' => 'fauzi.mhs@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
@@ -126,6 +129,9 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_peran' => 'MNCU00004',
                 'id_prodi' => 'MNCU00005',
+                'is_member' => false,
+                'member_sejak' => null,
+                'nomor_anggota' => null,
                 'nama_lengkap' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
                 'email' => 'hendra.gunawan@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
@@ -136,6 +142,9 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_peran' => 'MNCU00003',
                 'id_prodi' => 'MNCU00001',
+                'is_member' => true,
+                'member_sejak' => '2026-09-01 08:30:00',
+                'nomor_anggota' => 'MNCU00006',
                 'nama_lengkap' => 'Nabila Putri Ramadhani',
                 'email' => 'nabila.mhs@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
@@ -419,10 +428,16 @@ class PerpustakaanSeeder extends Seeder
 
             // Eksemplar
             foreach ($copies as $copy) {
-                $nextEk = EksemplarBuku::count() + 1;
-                EksemplarBuku::updateOrCreate(
-                    ['kode_inventaris' => $copy['kode']],
-                    [
+                $existing = EksemplarBuku::where('kode_inventaris', $copy['kode'])->first();
+                if ($existing) {
+                    $existing->update([
+                        'nomor_panggil' => $copy['panggil'],
+                        'lokasi_rak' => $copy['rak'],
+                        'status' => $copy['status'],
+                    ]);
+                } else {
+                    $nextEk = EksemplarBuku::count() + 1;
+                    EksemplarBuku::create([
                         'id_eksemplar' => sprintf('MNCU%05d', $nextEk),
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
@@ -430,21 +445,23 @@ class PerpustakaanSeeder extends Seeder
                         'nomor_panggil' => $copy['panggil'],
                         'lokasi_rak' => $copy['rak'],
                         'status' => $copy['status'],
-                    ]
-                );
+                    ]);
+                }
             }
 
             // Kunjungan buku
-            $nextKjb = KunjunganBuku::count() + 1;
-            KunjunganBuku::updateOrCreate(
-                ['id_buku' => $buku->id_buku],
-                [
+            $existingKjb = KunjunganBuku::where('id_buku', $buku->id_buku)->first();
+            if ($existingKjb) {
+                $existingKjb->update(['jumlah_kunjungan' => $visits]);
+            } else {
+                $nextKjb = KunjunganBuku::count() + 1;
+                KunjunganBuku::create([
                     'id_kunjungan_buku' => sprintf('MNCU%05d', $nextKjb),
                     'uuid' => (string) Str::uuid(),
                     'id_buku' => $buku->id_buku,
                     'jumlah_kunjungan' => $visits,
-                ]
-            );
+                ]);
+            }
         }
 
         // 11. Table: berita
@@ -488,6 +505,58 @@ class PerpustakaanSeeder extends Seeder
                 'tanggal_publikasi' => now()->subDays(8)->toDateString(),
                 'views_count' => 205,
             ],
+            [
+                'id_berita' => 'MNCU00004',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'judul_berita' => 'Kolaborasi MNC University Library dengan Perpustakaan Nasional RI',
+                'slug' => 'kolaborasi-mncu-library-dengan-perpustakaan-nasional-ri',
+                'kategori_berita' => 'Kerjasama',
+                'deskripsi_berita' => 'Sivitas MNC University kini dapat mengakses jutaan koleksi e-resources nasional secara terintegrasi melalui SSO kampus.',
+                'isi_berita' => 'Perpustakaan MNC University menjalin kemitraan strategis dengan Perpustakaan Nasional Republik Indonesia (Perpusnas) untuk memperluas akses ke repositori jurnal ilmiah internasional dan database penelitian global.',
+                'gambar_berita' => 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=800&q=80',
+                'tanggal_publikasi' => now()->subDays(11)->toDateString(),
+                'views_count' => 176,
+            ],
+            [
+                'id_berita' => 'MNCU00005',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00002',
+                'judul_berita' => 'Jam Operasional Khusus Selama Pekan Ujian Akhir Semester',
+                'slug' => 'jam-operasional-khusus-selama-pekan-ujian-akhir-semester',
+                'kategori_berita' => 'Pengumuman',
+                'deskripsi_berita' => 'Ruang baca utama dan area diskusi lantai 2 memperpanjang jam layanan hingga pukul 21.00 WIB untuk mendukung persiapan mahasiswa.',
+                'isi_berita' => 'Menyambut pekan ujian akhir semester, perpustakaan memberlakukan perpanjangan jam operasional layanan ruang baca hingga malam hari disertai fasilitas jaringan internet berkecepatan tinggi.',
+                'gambar_berita' => 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
+                'tanggal_publikasi' => now()->subDays(14)->toDateString(),
+                'views_count' => 312,
+            ],
+            [
+                'id_berita' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'judul_berita' => 'Penganugerahan Pemustaka Teraktif & Duta Baca Kampus Tahun 2026',
+                'slug' => 'penganugerahan-pemustaka-teraktif-dan-duta-baca-kampus-2026',
+                'kategori_berita' => 'Prestasi',
+                'deskripsi_berita' => 'Selamat kepada para mahasiswa dan dosen dengan frekuensi peminjaman dan kunjungan riset tertinggi periode semester ganjil.',
+                'isi_berita' => 'Program apresiasi tahunan ini diberikan kepada pemustaka yang aktif memanfaatkan katalog buku dan fasilitas referensi digital perpustakaan dalam menunjang karya akademik.',
+                'gambar_berita' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+                'tanggal_publikasi' => now()->subDays(18)->toDateString(),
+                'views_count' => 189,
+            ],
+            [
+                'id_berita' => 'MNCU00007',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'judul_berita' => 'Tips Sukses Menembus Jurnal Internasional Bereputasi Scopus & WoS',
+                'slug' => 'tips-sukses-menembus-jurnal-internasional-bereputasi-scopus-dan-wos',
+                'kategori_berita' => 'Tips Riset',
+                'deskripsi_berita' => 'Panduan memilih jurnal target yang tepat, menyusun manuskrip saintifik, dan merespons masukan peer reviewer.',
+                'isi_berita' => 'Artikel panduan praktis dari tim pustakawan e-resources tentang alur penyiapan artikel penelitian berstandar internasional serta pemanfaatan database Scopus secara optimal.',
+                'gambar_berita' => 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80',
+                'tanggal_publikasi' => now()->subDays(22)->toDateString(),
+                'views_count' => 245,
+            ],
         ];
 
         foreach ($beritaList as $item) {
@@ -530,6 +599,96 @@ class PerpustakaanSeeder extends Seeder
                 'lokasi_acara' => 'Ruang Multimedia Perpustakaan MNC University',
                 'tautan_pendaftaran' => 'https://bit.ly/bedah-buku-mncu',
                 'kuota' => 80,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00003',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'nama_acara' => 'Workshop: Prompt Engineering & AI Research Tools for Thesis',
+                'slug' => 'workshop-prompt-engineering-ai-research-tools-thesis',
+                'kategori_acara' => 'Workshop',
+                'ringkasan_acara' => 'Praktik etis pemanfaatan asisten AI dalam perumusan tinjauan pustaka dan pengolahan data penelitian skripsi.',
+                'deskripsi_acara' => 'Pelatihan intensif pemanfaatan generative AI secara saintifik, etika pengutipan sumber data, dan teknik verifikasi literatur rujukan.',
+                'gambar_acara' => 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
+                'narasumber' => 'Dr. Rian Hidayat, M.Kom.',
+                'tanggal_mulai' => now()->addDays(10)->setTime(10, 0),
+                'tanggal_selesai' => now()->addDays(10)->setTime(12, 30),
+                'lokasi_acara' => 'Lab Komputer 2 & Streaming Zoom',
+                'tautan_pendaftaran' => 'https://bit.ly/workshop-ai-mncu',
+                'kuota' => 100,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00004',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'nama_acara' => 'Seminar Nasional: Tren Desain UI/UX & Interaksi Manusia Komputer',
+                'slug' => 'seminar-nasional-tren-desain-ui-ux-interaksi-manusia-komputer',
+                'kategori_acara' => 'Seminar',
+                'ringkasan_acara' => 'Membangun produk digital yang intuitif dan berpusat pada pengguna bersama praktisi industri teknologi terkemuka.',
+                'deskripsi_acara' => 'Seminar industri membahas metodologi riset pengguna, design system berskala besar, dan tren visual antarmuka modern.',
+                'gambar_acara' => 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
+                'narasumber' => 'Siti Nurhaliza, M.Ds. & Lead UI/UX MNC Group',
+                'tanggal_mulai' => now()->addDays(18)->setTime(9, 30),
+                'tanggal_selesai' => now()->addDays(18)->setTime(15, 0),
+                'lokasi_acara' => 'Auditorium Utama Kampus MNC University',
+                'tautan_pendaftaran' => 'https://bit.ly/seminar-uiux-mncu',
+                'kuota' => 200,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00005',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00002',
+                'nama_acara' => 'Kelas Literasi Keuangan & Investasi Cerdas untuk Generasi Muda',
+                'slug' => 'kelas-literasi-keuangan-investasi-cerdas-generasi-muda',
+                'kategori_acara' => 'Kelas Literasi',
+                'ringkasan_acara' => 'Pengelolaan keuangan personal, analisis fundamental saham, dan kesiapan finansial pasca kelulusan sarjana.',
+                'deskripsi_acara' => 'Kelas edukasi finansial terapan untuk membekali mahasiswa dengan wawasan pengelolaan portofolio dan literasi perbankan syariah.',
+                'gambar_acara' => 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+                'narasumber' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+                'tanggal_mulai' => now()->addDays(24)->setTime(14, 0),
+                'tanggal_selesai' => now()->addDays(24)->setTime(16, 30),
+                'lokasi_acara' => 'Ruang Diskusi Terbuka Lantai 2 Perpustakaan',
+                'tautan_pendaftaran' => 'https://bit.ly/literasi-keuangan-mncu',
+                'kuota' => 60,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'nama_acara' => 'Bincang Penulis: Mengabadikan Sejarah Melalui Karya Sastra',
+                'slug' => 'bincang-penulis-mengabadikan-sejarah-melalui-karya-sastra',
+                'kategori_acara' => 'Bincang Buku',
+                'ringkasan_acara' => 'Diskusi mendalam mengenai narasi budaya nusantara, teknik kepengarangan, dan daya kritis dalam sastra kontemporer.',
+                'deskripsi_acara' => 'Sesi bincang intim bersama sastrawan dan kurator novel sejarah mengenai proses kreatif di balik riset penulisan fiksi sejarah.',
+                'gambar_acara' => 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80',
+                'narasumber' => 'Penulis Tamu Komunitas Sastra Indonesia',
+                'tanggal_mulai' => now()->addDays(28)->setTime(13, 0),
+                'tanggal_selesai' => now()->addDays(28)->setTime(15, 30),
+                'lokasi_acara' => 'Ruang Multimedia Perpustakaan MNC University',
+                'tautan_pendaftaran' => 'https://bit.ly/bincang-sastra-mncu',
+                'kuota' => 75,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00007',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'nama_acara' => 'Sosialisasi Pemanfaatan Portal E-Journal Scopus & ScienceDirect',
+                'slug' => 'sosialisasi-pemanfaatan-portal-e-journal-scopus-sciencedirect',
+                'kategori_acara' => 'Pelatihan',
+                'ringkasan_acara' => 'Panduan praktis pencarian artikel jurnal internasional bereputasi tinggi bagi dosen dan mahasiswa tingkat akhir.',
+                'deskripsi_acara' => 'Sesi sosialisasi dan tutorial langsung penelusuran artikel ilmiah, penggunaan boolean operators, dan ekspor citation meta.',
+                'gambar_acara' => 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+                'narasumber' => 'Tim Pustakawan E-Resources MNCU',
+                'tanggal_mulai' => now()->addDays(32)->setTime(10, 0),
+                'tanggal_selesai' => now()->addDays(32)->setTime(11, 30),
+                'lokasi_acara' => 'Hybrid (Ruang Teater Perpustakaan & Zoom)',
+                'tautan_pendaftaran' => 'https://bit.ly/sosialisasi-scopus-mncu',
+                'kuota' => 150,
                 'is_active' => true,
             ],
         ];

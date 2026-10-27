@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\HasApiTokens;
 
 class Pengguna extends Authenticatable
@@ -27,6 +28,9 @@ class Pengguna extends Authenticatable
         'id_pengguna',
         'uuid',
         'id_peran',
+        'is_member',
+        'member_sejak',
+        'nomor_anggota',
         'id_prodi',
         'nama_lengkap',
         'email',
@@ -52,7 +56,66 @@ class Pengguna extends Authenticatable
         return [
             'kata_sandi' => 'hashed',
             'tanggal_lahir' => 'date',
+            'is_member' => 'boolean',
+            'member_sejak' => 'datetime',
         ];
+    }
+
+    /**
+     * Cek apakah pengguna berstatus sebagai member resmi perpustakaan.
+     */
+    public function isMember(): bool
+    {
+        return (bool) $this->is_member;
+    }
+
+    /**
+     * Generate format nomor anggota baru (MBR-YYYY-XXXXX).
+     */
+    public static function generateNomorAnggota(?self $user = null): string
+    {
+        if ($user && ! empty($user->id_pengguna)) {
+            return $user->id_pengguna;
+        }
+
+        return 'MNCU'.str_pad((string) (static::count() + 1), 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Promote pengguna (mahasiswa / dosen) menjadi member perpustakaan.
+     */
+    public function promoteToMember(?string $nomorAnggota = null): void
+    {
+        $nomorFinal = $nomorAnggota ?: ($this->id_pengguna ?: static::generateNomorAnggota($this));
+
+        $this->update([
+            'is_member' => true,
+            'member_sejak' => now(),
+            'nomor_anggota' => $nomorFinal,
+        ]);
+    }
+
+    /**
+     * Cabut / hapus status keanggotaan member jika tidak ada buku pinjaman aktif.
+     */
+    public function demoteFromMember(): void
+    {
+        if ($this->memilikiTanggunganPinjaman()) {
+            $count = $this->peminjaman()
+                ->whereNull('tanggal_kembali')
+                ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+                ->count();
+
+            throw ValidationException::withMessages([
+                'error' => "Member {$this->nama_lengkap} masih memiliki {$count} buku yang sedang dipinjam dan belum dikembalikan. Status member tidak dapat dihapus sebelum semua buku dikembalikan.",
+            ]);
+        }
+
+        $this->update([
+            'is_member' => false,
+            'member_sejak' => null,
+            'nomor_anggota' => null,
+        ]);
     }
 
     public function getRoleAttribute(): string
@@ -85,6 +148,14 @@ class Pengguna extends Authenticatable
     public function peran(): BelongsTo
     {
         return $this->belongsTo(Peran::class, 'id_peran', 'id_peran');
+    }
+
+    /**
+     * Cek apakah pengguna memiliki hak akses administratif perpustakaan (Kepala Perpustakaan, Super Admin, atau Pustakawan).
+     */
+    public function isAdmin(): bool
+    {
+        return $this->isSuperAdmin() || $this->isPustakawan();
     }
 
     /**
@@ -161,7 +232,7 @@ class Pengguna extends Authenticatable
     {
         return $this->peminjaman()
             ->whereNull('tanggal_kembali')
-            ->whereIn('status', ['Dipinjam', 'Terlambat'])
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
             ->exists();
     }
 }

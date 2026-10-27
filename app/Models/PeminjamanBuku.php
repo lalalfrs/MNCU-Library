@@ -30,9 +30,14 @@ class PeminjamanBuku extends Model
         'tanggal_pinjam',
         'tanggal_jatuh_tempo',
         'tanggal_kembali',
+        'tanggal_pengajuan_kembali',
+        'catatan_pengajuan_kembali',
         'status',
         'hari_keterlambatan',
         'catatan_keterlambatan',
+        'sanksi',
+        'status_sanksi',
+        'tanggal_sanksi',
         'notifikasi_peringatan_dikirim',
         'tanggal_notifikasi',
     ];
@@ -43,7 +48,9 @@ class PeminjamanBuku extends Model
             'tanggal_pinjam' => 'date',
             'tanggal_jatuh_tempo' => 'date',
             'tanggal_kembali' => 'date',
+            'tanggal_pengajuan_kembali' => 'datetime',
             'hari_keterlambatan' => 'integer',
+            'tanggal_sanksi' => 'datetime',
             'notifikasi_peringatan_dikirim' => 'boolean',
             'tanggal_notifikasi' => 'datetime',
         ];
@@ -103,12 +110,29 @@ class PeminjamanBuku extends Model
     }
 
     /**
+     * Apakah peminjaman ini sedang menunggu verifikasi/persetujuan pengembalian dari admin?
+     */
+    public function isMenungguVerifikasi(): bool
+    {
+        return $this->status === 'Menunggu Verifikasi' && $this->tanggal_kembali === null;
+    }
+
+    /**
      * Scope untuk peminjaman aktif yang belum dikembalikan.
      */
     public function scopeAktif(Builder $query): Builder
     {
         return $query->whereNull('tanggal_kembali')
-            ->whereIn('status', ['Dipinjam', 'Terlambat']);
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi']);
+    }
+
+    /**
+     * Scope untuk peminjaman yang menunggu verifikasi pengembalian dari admin.
+     */
+    public function scopeMenungguVerifikasi(Builder $query): Builder
+    {
+        return $query->whereNull('tanggal_kembali')
+            ->where('status', 'Menunggu Verifikasi');
     }
 
     /**

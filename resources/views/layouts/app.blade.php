@@ -35,7 +35,7 @@
         @include('partials.navbar')
         @include('partials.sidebar')
 
-        <main id="konten" class="flex flex-1 flex-col page-transition-wrapper">
+        <main id="konten" class="flex w-full min-w-0 max-w-full flex-1 flex-col page-transition-wrapper">
             @php
                 $databaseAlert = session('database_error') ?? ($dbErrorMessage ?? null);
                 if (! $databaseAlert && request()->query('db_error')) {

@@ -134,20 +134,51 @@ class PeminjamanApiController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'id_pengguna' => 'required|string|exists:pengguna,id_pengguna',
-            'id_eksemplar' => 'required|string|exists:eksemplar_buku,id_eksemplar',
+            'id_pengguna' => 'nullable|string|exists:pengguna,id_pengguna',
+            'id_buku' => 'nullable|string|exists:buku,id_buku',
+            'id_eksemplar' => 'nullable|string|exists:eksemplar_buku,id_eksemplar',
             'tanggal_pinjam' => 'nullable|date',
             'tanggal_jatuh_tempo' => 'nullable|date|after_or_equal:tanggal_pinjam',
             'catatan' => 'nullable|string|max:500',
         ]);
+
+        $idPengguna = $validated['id_pengguna'] ?? $request->user()?->id_pengguna;
+        if (! $idPengguna) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ID pengguna tidak terautentikasi.',
+            ], 401);
+        }
+
+        $idEksemplar = $validated['id_eksemplar'] ?? null;
+        if (! $idEksemplar && ! empty($validated['id_buku'])) {
+            $availableExemplar = EksemplarBuku::where('id_buku', $validated['id_buku'])
+                ->where('status', 'Tersedia')
+                ->first();
+
+            if (! $availableExemplar) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Maaf, seluruh eksemplar fisik buku ini sedang dipinjam atau tidak tersedia di rak.',
+                ], 422);
+            }
+            $idEksemplar = $availableExemplar->id_eksemplar;
+        }
+
+        if (! $idEksemplar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter id_eksemplar atau id_buku wajib disertakan.',
+            ], 422);
+        }
 
         $tanggalPinjam = $validated['tanggal_pinjam'] ?? Carbon::now()->toDateString();
         $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? Carbon::now()->addDays(14)->toDateString();
 
         try {
             $peminjaman = $this->peminjamanService->buatPeminjaman(
-                $validated['id_pengguna'],
-                $validated['id_eksemplar'],
+                $idPengguna,
+                $idEksemplar,
                 $tanggalPinjam,
                 $tanggalJatuhTempo,
                 $validated['catatan'] ?? null

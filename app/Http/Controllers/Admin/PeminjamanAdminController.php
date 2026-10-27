@@ -9,6 +9,7 @@ use App\Models\PeminjamanBuku;
 use App\Models\Pengguna;
 use App\Services\PeminjamanService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +36,7 @@ class PeminjamanAdminController extends Controller
         $totalPinjaman = PeminjamanBuku::count();
         $totalAktif = PeminjamanBuku::where('status', 'Dipinjam')->whereNull('tanggal_kembali')->count();
         $totalTerlambat = PeminjamanBuku::terlambat()->count();
+        $totalMenungguVerifikasi = PeminjamanBuku::where('status', 'Menunggu Verifikasi')->whereNull('tanggal_kembali')->count();
         $totalKembali = PeminjamanBuku::whereNotNull('tanggal_kembali')->count();
 
         // 3. Query daftar peminjaman
@@ -63,6 +65,8 @@ class PeminjamanAdminController extends Controller
             $query->where('status', 'Dipinjam')->whereNull('tanggal_kembali');
         } elseif ($status === 'terlambat') {
             $query->terlambat();
+        } elseif ($status === 'menunggu-verifikasi') {
+            $query->where('status', 'Menunggu Verifikasi')->whereNull('tanggal_kembali');
         } elseif ($status === 'kembali') {
             $query->whereNotNull('tanggal_kembali');
         }
@@ -76,6 +80,7 @@ class PeminjamanAdminController extends Controller
             'totalPinjaman',
             'totalAktif',
             'totalTerlambat',
+            'totalMenungguVerifikasi',
             'totalKembali'
         ));
     }
@@ -202,6 +207,27 @@ class PeminjamanAdminController extends Controller
     }
 
     /**
+     * Tolak pengajuan pengembalian buku dari mahasiswa (misal fisik belum diserahkan ke meja sirkulasi).
+     */
+    public function tolakPengembalian(Request $request, string $id): RedirectResponse
+    {
+        $request->validate([
+            'alasan' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $loan = $this->peminjamanService->tolakPengajuanPengembalian(
+                $id,
+                $request->input('alasan')
+            );
+
+            return redirect()->route('admin.peminjaman.index')->with('success', "Pengajuan pengembalian buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} telah ditolak. Status transaksi dikembalikan menjadi {$loan->status}.");
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+    }
+
+    /**
      * Kirim notifikasi peringatan bahwa batas waktu peminjaman telah lewat.
      */
     public function kirimPeringatan(string $id): RedirectResponse
@@ -213,5 +239,43 @@ class PeminjamanAdminController extends Controller
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
+    }
+
+    /**
+     * Admin menginput / mencatat data keterlambatan dan sanksi untuk peminjam yang belum mengembalikan buku (sesuai flowchart).
+     */
+    public function inputKeterlambatan(Request $request, string $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sanksi' => 'required|string|max:100',
+            'catatan_keterlambatan' => 'nullable|string|max:500',
+        ], [
+            'sanksi.required' => 'Pilih atau tentukan bentuk sanksi keterlambatan bagi peminjam.',
+        ]);
+
+        try {
+            $loan = $this->peminjamanService->inputKeterlambatanDanSanksi(
+                $id,
+                $validated['sanksi'],
+                $validated['catatan_keterlambatan'] ?? null
+            );
+
+            return back()->with('success', "Data keterlambatan & sanksi \"{$loan->sanksi}\" berhasil dicatat ke sistem untuk peminjam {$loan->pengguna->nama_lengkap}.");
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+    }
+
+    /**
+     * Cek eligibilitas mahasiswa / pemustaka via AJAX untuk modal peminjaman buku.
+     */
+    public function cekEligibilitasUser(string $idPengguna): JsonResponse
+    {
+        $hasil = $this->peminjamanService->cekEligibilitas($idPengguna);
+
+        return response()->json([
+            'success' => true,
+            'data' => $hasil,
+        ], 200);
     }
 }

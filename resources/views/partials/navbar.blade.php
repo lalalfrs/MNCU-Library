@@ -1,32 +1,32 @@
-<header id="main-header" class="sticky top-3 z-40 mx-3 mt-3 lg:top-4 lg:mx-6 lg:mt-4 transition-all duration-300 ease-in-out">
-    <nav aria-label="Navigasi utama" class="mx-auto flex h-14 max-w-[1570px] items-center justify-between gap-4 rounded-2xl bg-white px-4 shadow-raised lg:h-[70px] lg:px-7">
+<header id="main-header" class="sticky top-2 sm:top-3 z-40 mx-2 sm:mx-3 lg:top-4 lg:mx-6 xl:mx-8 lg:mt-4 transition-all duration-300 ease-in-out">
+    <nav aria-label="Navigasi utama" class="mx-auto flex h-14 max-w-[1570px] items-center justify-between gap-2 sm:gap-3 lg:gap-4 rounded-2xl bg-white px-2.5 sm:px-4 shadow-raised lg:h-[70px] lg:px-6 xl:px-7">
         {{-- Kiri: Tombol Hamburger & Logo Perpustakaan --}}
-        <div class="flex min-w-0 items-center gap-2 lg:gap-3">
+        <div class="flex min-w-0 items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3">
             <button
                 type="button"
                 id="sidebar-open"
-                class="-ml-2 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-primary hover:bg-[#F3F4F6] btn-press @guest lg:hidden @else flex @endguest"
+                class="-ml-1 sm:-ml-2 inline-flex size-9 sm:size-10 lg:size-11 shrink-0 items-center justify-center rounded-xl text-primary hover:bg-[#F3F4F6] btn-press @guest lg:hidden @else flex @endguest"
                 aria-label="Buka menu navigasi & panel manajemen"
                 aria-expanded="false"
                 aria-controls="sidebar"
                 title="Buka Menu & Panel Manajemen"
             >
-                <svg class="size-6 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <svg class="size-5 sm:size-6 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
 
-            <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2.5 rounded-lg transition-transform duration-150 hover:scale-[1.01] lg:gap-3">
-                <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-8 max-w-[120px] w-auto shrink-0 object-contain lg:h-9" style="max-height: 36px; max-width: 120px;" width="120" height="36">
-                <span class="truncate text-base font-semibold text-primary lg:text-[20px] xl:text-[22px]">Perpustakaan MNC University</span>
+            <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3 rounded-lg transition-transform duration-150 hover:scale-[1.01]">
+                <img src="{{ asset('images/Logo.png') }}" alt="Logo MNC Library" class="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] w-auto shrink-0 object-contain lg:h-9" style="max-height: 36px; max-width: 120px;" width="120" height="36">
+                <span class="truncate text-xs sm:text-base font-semibold text-primary lg:text-[17px] xl:text-[20px] 2xl:text-[22px]">Perpustakaan MNC University</span>
             </a>
         </div>
 
         {{-- Tengah: Navigasi Menu (Hanya tampil untuk pengunjung yang belum login) --}}
         @guest
-            <div class="hidden items-center gap-1 lg:flex">
+            <div class="hidden items-center gap-0.5 lg:flex xl:gap-1.5 2xl:gap-2">
                 @foreach ($navigationItems as $navigationItem)
-                    <a href="{{ $navigationItem['href'] }}" class="nav-link-animated rounded-lg px-3 py-2 text-[15px] text-ink-secondary transition-colors duration-150 hover:bg-[#F3F4F6] hover:text-primary">
+                    <a href="{{ $navigationItem['href'] }}" class="nav-link-animated rounded-lg px-2 xl:px-3 py-1.5 xl:py-2 text-xs xl:text-[14px] 2xl:text-[15px] font-medium text-ink-secondary transition-colors duration-150 hover:bg-[#F3F4F6] hover:text-primary whitespace-nowrap">
                         {{ $navigationItem['label'] }}
                     </a>
                 @endforeach
@@ -34,13 +34,13 @@
         @endguest
 
         {{-- Kanan: Tombol Login & Daftar saat Guest / Profil & Dropdown saat Auth --}}
-        <div class="flex items-center gap-2 lg:gap-3">
+        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3">
             @guest
-                <a href="{{ route('register') }}" class="group inline-flex h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-sm transition-all duration-150 hover:bg-subtle hover:border-gray-300 btn-press lg:h-11 lg:px-4 lg:text-sm">
+                <a href="{{ route('register') }}" class="group inline-flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-2.5 sm:px-3.5 text-xs font-semibold text-ink shadow-sm transition-all duration-150 hover:bg-subtle hover:border-gray-300 btn-press lg:h-10 xl:h-11 lg:px-3.5 xl:px-4 lg:text-xs xl:text-sm">
                     <i class="fa-solid fa-user-plus text-xs text-primary transition-transform duration-150 group-hover:scale-110"></i>
                     <span>Daftar</span>
                 </a>
-                <a href="{{ route('login') }}" class="group inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark btn-press btn-sheen lg:h-11 lg:px-4 lg:text-sm">
+                <a href="{{ route('login') }}" class="group inline-flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-xl bg-primary px-3 sm:px-3.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark btn-press btn-sheen lg:h-10 xl:h-11 lg:px-3.5 xl:px-4 lg:text-xs xl:text-sm">
                     <i class="fa-solid fa-arrow-right-to-bracket text-xs transition-transform duration-150 group-hover:translate-x-0.5"></i>
                     <span>Login</span>
                 </a>
@@ -49,22 +49,22 @@
                     <button
                         type="button"
                         id="user-menu-button"
-                        class="flex items-center gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-subtle focus:outline-none"
+                        class="flex items-center gap-2 lg:gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-subtle focus:outline-none"
                         aria-expanded="false"
                         aria-haspopup="true"
                     >
-                        <div class="hidden text-right lg:block">
-                            <span class="block text-sm font-semibold text-primary leading-tight">{{ Auth::user()->nama_lengkap }}</span>
-                            <span class="block text-xs text-muted">{{ Auth::user()->peran?->nama_peran ?? Auth::user()->nomor_identitas }}</span>
+                        <div class="hidden text-right lg:block max-w-[130px] xl:max-w-[200px] 2xl:max-w-[260px]">
+                            <span class="block truncate text-xs xl:text-sm font-semibold text-primary leading-tight">{{ Auth::user()->nama_lengkap }}</span>
+                            <span class="block truncate text-[10px] xl:text-xs text-muted">{{ Auth::user()->peran?->nama_peran ?? Auth::user()->nomor_identitas }}</span>
                         </div>
                         @if (Auth::user()->foto_profil)
-                            <img src="{{ asset('storage/'.Auth::user()->foto_profil) }}" alt="{{ Auth::user()->nama_lengkap }}" class="size-10 rounded-full border-2 border-line object-cover lg:size-11">
+                            <img src="{{ asset('storage/'.Auth::user()->foto_profil) }}" alt="{{ Auth::user()->nama_lengkap }}" class="size-9 sm:size-10 rounded-full border-2 border-line object-cover lg:size-10 xl:size-11 shrink-0">
                         @else
-                            <div class="flex size-10 items-center justify-center rounded-full border-2 border-line bg-primary/10 font-bold text-primary lg:size-11">
+                            <div class="flex size-9 sm:size-10 items-center justify-center rounded-full border-2 border-line bg-primary/10 font-bold text-primary lg:size-10 xl:size-11 shrink-0 text-xs sm:text-sm">
                                 {{ strtoupper(substr(Auth::user()->nama_lengkap, 0, 1)) }}
                             </div>
                         @endif
-                        <svg class="size-4 text-muted transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="size-4 text-muted transition-transform duration-150 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m6 9 6 6 6-6"/>
                         </svg>
                     </button>

@@ -269,4 +269,26 @@ class PeminjamanTest extends TestCase
         // Status eksemplar harus kembali Tersedia
         $this->assertEquals('Tersedia', $this->availableExemplar->fresh()->status);
     }
+
+    /**
+     * Admin dapat menginput data keterlambatan dan sanksi pemustaka yang belum mengembalikan buku.
+     */
+    public function test_admin_can_record_keterlambatan_and_sanksi_for_overdue_loan(): void
+    {
+        $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+
+        $response = $this->actingAs($this->admin)->post(route('admin.peminjaman.input-keterlambatan', $overdueLoan->id_peminjaman), [
+            'sanksi' => 'Penangguhan Peminjaman 1 Bulan',
+            'status_sanksi' => 'Aktif',
+            'catatan_admin' => 'Pemustaka belum mengembalikan buku tepat waktu setelah dikirim notifikasi.',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $overdueLoan->refresh();
+        $this->assertEquals('Penangguhan Peminjaman 1 Bulan', $overdueLoan->sanksi);
+        $this->assertEquals('Aktif', $overdueLoan->status_sanksi);
+        $this->assertNotNull($overdueLoan->tanggal_sanksi);
+    }
 }

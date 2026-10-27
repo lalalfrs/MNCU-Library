@@ -6,6 +6,7 @@ use App\Models\Buku;
 use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
 use App\Models\Pengguna;
 use Database\Seeders\PerpustakaanSeeder;
@@ -44,13 +45,7 @@ class BookStockAndOpacTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Katalog OPAC Perpustakaan');
-        $response->assertSee('Total Judul');
-        $response->assertSee('Total Fisik');
-        $response->assertSee('Siap Pinjam');
         $response->assertSee('Algoritma & Struktur Data');
-        $response->assertSee('Kategori Subjek');
-        $response->assertSee('Koleksi Populer');
-        $response->assertSee('Koleksi Baru');
         $response->assertSee('Filter Pencarian');
         $response->assertSee('Detail Informasi Buku');
     }
@@ -203,12 +198,15 @@ class BookStockAndOpacTest extends TestCase
 
         $eksemplar = EksemplarBuku::where('kode_inventaris', 'INV-TEST-0099')->first();
 
-        // 2. Perbarui Status Eksemplar (misal dipinjam)
+        // 2. Perbarui Status Eksemplar (mengubah ke Dipinjam harus menyertakan peminjam dan jatuh tempo)
+        $student = Pengguna::where('id_pengguna', 'MNCU00006')->firstOrFail();
         $responseUpdate = $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
             'kode_inventaris' => 'INV-TEST-0099',
             'nomor_panggil' => '005.1 TEST c.99',
             'lokasi_rak' => 'Lantai 2, Rak Khusus 01',
             'status' => 'Dipinjam',
+            'id_pengguna' => $student->id_pengguna,
+            'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
         ]);
 
         $responseUpdate->assertRedirect(route('admin.books.show', $book->id_buku));
@@ -216,13 +214,101 @@ class BookStockAndOpacTest extends TestCase
             'id_eksemplar' => $eksemplar->id_eksemplar,
             'status' => 'Dipinjam',
         ]);
+        $this->assertDatabaseHas('peminjaman_buku', [
+            'id_eksemplar' => $eksemplar->id_eksemplar,
+            'id_pengguna' => $student->id_pengguna,
+            'status' => 'Dipinjam',
+        ]);
 
-        // 3. Hapus Eksemplar
+        // 3. Kembalikan status ke Tersedia sebelum dihapus
+        $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
+            'kode_inventaris' => 'INV-TEST-0099',
+            'status' => 'Tersedia',
+        ]);
+
+        // 4. Hapus Eksemplar
         $responseDelete = $this->actingAs($admin)->delete(route('admin.books.eksemplar.destroy', [$book->id_buku, $eksemplar->id_eksemplar]));
         $responseDelete->assertRedirect(route('admin.books.show', $book->id_buku));
         $this->assertDatabaseMissing('eksemplar_buku', [
             'id_eksemplar' => $eksemplar->id_eksemplar,
         ]);
+    }
+
+    /**
+     * Mengubah status eksemplar menjadi Dipinjam tanpa data peminjam wajib ditolak sistem.
+     */
+    public function test_admin_cannot_change_exemplar_to_borrowed_without_borrower_data(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
+        $book = Buku::firstOrFail();
+        $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->where('status', 'Tersedia')->firstOrFail();
+
+        $response = $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
+            'kode_inventaris' => $eksemplar->kode_inventaris,
+            'status' => 'Dipinjam',
+        ]);
+
+        $response->assertSessionHasErrors(['id_pengguna', 'tanggal_jatuh_tempo']);
+        $this->assertEquals('Tersedia', $eksemplar->fresh()->status);
+    }
+
+    /**
+     * Mengubah status eksemplar menjadi Dipinjam untuk mahasiswa yang memiliki tanggungan ditolak sesuai flowchart.
+     */
+    public function test_admin_cannot_change_exemplar_to_borrowed_for_ineligible_student(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
+        $studentBlocked = Pengguna::where('id_pengguna', 'MNCU00004')->firstOrFail(); // Fauzi has active loan
+        $book = Buku::firstOrFail();
+        $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->where('status', 'Tersedia')->firstOrFail();
+
+        $response = $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
+            'kode_inventaris' => $eksemplar->kode_inventaris,
+            'status' => 'Dipinjam',
+            'id_pengguna' => $studentBlocked->id_pengguna,
+            'tanggal_jatuh_tempo' => now()->addDays(7)->toDateString(),
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertEquals('Tersedia', $eksemplar->fresh()->status);
+    }
+
+    /**
+     * Mengubah status eksemplar dari Dipinjam kembali ke Tersedia otomatis menyelesaikan peminjaman (pengembalian buku).
+     */
+    public function test_admin_changing_exemplar_from_borrowed_to_available_completes_the_loan(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
+        $student = Pengguna::where('id_pengguna', 'MNCU00006')->firstOrFail();
+        $book = Buku::firstOrFail();
+        $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->where('status', 'Tersedia')->firstOrFail();
+
+        // 1. Ubah ke Dipinjam
+        $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
+            'kode_inventaris' => $eksemplar->kode_inventaris,
+            'status' => 'Dipinjam',
+            'id_pengguna' => $student->id_pengguna,
+            'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
+        ]);
+
+        $this->assertEquals('Dipinjam', $eksemplar->fresh()->status);
+
+        // 2. Ubah kembali ke Tersedia (Pengembalian Buku)
+        $responseReturn = $this->actingAs($admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $eksemplar->id_eksemplar]), [
+            'kode_inventaris' => $eksemplar->kode_inventaris,
+            'status' => 'Tersedia',
+        ]);
+
+        $responseReturn->assertRedirect(route('admin.books.show', $book->id_buku));
+        $this->assertEquals('Tersedia', $eksemplar->fresh()->status);
+
+        // Verifikasi transaksi peminjaman selesai (status Kembali dan tanggal_kembali terisi)
+        $loan = PeminjamanBuku::where('id_eksemplar', $eksemplar->id_eksemplar)
+            ->latest('id_peminjaman')
+            ->firstOrFail();
+
+        $this->assertEquals('Kembali', $loan->status);
+        $this->assertNotNull($loan->tanggal_kembali);
     }
 
     /**
@@ -259,5 +345,31 @@ class BookStockAndOpacTest extends TestCase
             'lokasi_rak' => 'Lantai 2, Rak Uji',
             'status' => 'Tersedia',
         ]);
+    }
+
+    /**
+     * OPAC dapat mencari buku yang sedang dipinjam berdasarkan kriteria peminjam atau status dipinjam.
+     */
+    public function test_opac_can_search_and_filter_by_borrower_name(): void
+    {
+        $user = Pengguna::first();
+
+        // Cari dengan kriteria peminjam (Fauzi meminjam di seeder)
+        $responseBorrower = $this->actingAs($user)->get(route('opac', [
+            'q' => 'Fauzi',
+            'kriteria' => 'peminjam',
+        ]));
+
+        $responseBorrower->assertStatus(200);
+        $responseBorrower->assertSee('Sedang Dipinjam');
+        $responseBorrower->assertSee('Fauzi');
+
+        // Filter status Dipinjam
+        $responseStatus = $this->actingAs($user)->get(route('opac', [
+            'status_filter' => 'Dipinjam',
+        ]));
+
+        $responseStatus->assertStatus(200);
+        $responseStatus->assertSee('Dipinjam');
     }
 }

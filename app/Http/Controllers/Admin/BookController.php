@@ -8,10 +8,14 @@ use App\Models\BukuPenulis;
 use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
+use App\Models\Pengguna;
 use App\Models\Penulis;
+use App\Services\PeminjamanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -164,14 +168,26 @@ class BookController extends Controller
      */
     public function show(string $id): View
     {
-        $book = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar', 'subjek'])->findOrFail($id);
+        $book = Buku::with([
+            'penulis',
+            'jenisBuku',
+            'kategoriBuku',
+            'penerbit',
+            'eksemplar.peminjamanAktif.pengguna.peran',
+            'subjek',
+        ])->findOrFail($id);
 
         $totalCopies = $book->eksemplar->count();
         $availableCopies = $book->eksemplar->where('status', 'Tersedia')->count();
         $borrowedCopies = $book->eksemplar->where('status', 'Dipinjam')->count();
         $otherCopies = $book->eksemplar->whereNotIn('status', ['Tersedia', 'Dipinjam'])->count();
 
-        return view('admin.books.show', compact('book', 'totalCopies', 'availableCopies', 'borrowedCopies', 'otherCopies'));
+        // Ambil daftar seluruh mahasiswa & pemustaka untuk modal peminjaman eksemplar
+        $users = Pengguna::with('peran')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('admin.books.show', compact('book', 'totalCopies', 'availableCopies', 'borrowedCopies', 'otherCopies', 'users'));
     }
 
     /**
@@ -265,6 +281,79 @@ class BookController extends Controller
         $book = Buku::findOrFail($id);
         $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->findOrFail($idEksemplar);
 
+        $targetStatus = $request->input('status');
+        $oldStatus = $eksemplar->status;
+
+        // Alur 1: Jika admin mengubah status menjadi 'Dipinjam'
+        if ($targetStatus === 'Dipinjam' && $oldStatus !== 'Dipinjam') {
+            $validatedLoan = $request->validate([
+                'id_pengguna' => ['required', 'string', 'exists:pengguna,id_pengguna'],
+                'tanggal_jatuh_tempo' => ['required', 'date', 'after_or_equal:today'],
+                'tanggal_pinjam' => ['nullable', 'date'],
+                'catatan' => ['nullable', 'string', 'max:500'],
+            ], [
+                'id_pengguna.required' => 'Pilih mahasiswa atau user yang meminjam buku.',
+                'id_pengguna.exists' => 'Data mahasiswa peminjam tidak valid.',
+                'tanggal_jatuh_tempo.required' => 'Tanggal batas pengembalian (jatuh tempo) wajib ditentukan.',
+                'tanggal_jatuh_tempo.after_or_equal' => 'Tanggal pengembalian tidak boleh sebelum hari ini.',
+            ]);
+
+            // Update metadata eksemplar jika diubah
+            $eksemplar->update([
+                'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
+                'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
+            ]);
+
+            $peminjamanService = app(PeminjamanService::class);
+            $tanggalPinjam = $validatedLoan['tanggal_pinjam'] ?? now()->toDateString();
+            $tanggalJatuhTempo = $validatedLoan['tanggal_jatuh_tempo'];
+
+            try {
+                $peminjaman = $peminjamanService->buatPeminjaman(
+                    $validatedLoan['id_pengguna'],
+                    $eksemplar->id_eksemplar,
+                    $tanggalPinjam,
+                    $tanggalJatuhTempo,
+                    $validatedLoan['catatan'] ?? 'Peminjaman dicatat oleh admin melalui menu eksemplar'
+                );
+
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->with('success', "Eksemplar \"{$eksemplar->kode_inventaris}\" berhasil dipinjamkan kepada {$peminjaman->pengguna->nama_lengkap}. Status diubah menjadi Dipinjam.");
+            } catch (ValidationException $e) {
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->withErrors($e->errors())
+                    ->with('error', $e->getMessage());
+            }
+        }
+
+        // Alur 2: Jika admin mengubah status dari 'Dipinjam' menjadi 'Tersedia' (Pengembalian Buku)
+        if ($oldStatus === 'Dipinjam' && $targetStatus === 'Tersedia') {
+            $activeLoan = PeminjamanBuku::where('id_eksemplar', $eksemplar->id_eksemplar)
+                ->whereNull('tanggal_kembali')
+                ->latest('id_peminjaman')
+                ->first();
+
+            if ($activeLoan) {
+                $peminjamanService = app(PeminjamanService::class);
+                $peminjamanService->prosesPengembalian(
+                    $activeLoan->id_peminjaman,
+                    'Buku dikembalikan melalui pembaruan status eksemplar di admin panel'
+                );
+
+                // Update metadata eksemplar jika diubah
+                $eksemplar->update([
+                    'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                    'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
+                    'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
+                ]);
+
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->with('success', "Buku berhasil dikembalikan oleh {$activeLoan->pengguna->nama_lengkap}. Status eksemplar \"{$eksemplar->kode_inventaris}\" kembali Tersedia di rak.");
+            }
+        }
+
+        // Perubahan status umum selain meminjam baru
         $validated = $request->validate([
             'kode_inventaris' => ['required', 'string', 'max:50', 'unique:eksemplar_buku,kode_inventaris,'.$eksemplar->id_eksemplar.',id_eksemplar'],
             'nomor_panggil' => ['nullable', 'string', 'max:50'],
@@ -290,6 +379,13 @@ class BookController extends Controller
         $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->findOrFail($idEksemplar);
         $kode = $eksemplar->kode_inventaris;
 
+        if ($eksemplar->status === 'Dipinjam') {
+            return redirect()->route('admin.books.show', $book->id_buku)
+                ->with('error', "Eksemplar \"{$kode}\" sedang dipinjam dan tidak dapat dihapus sebelum dikembalikan.");
+        }
+
+        // Bersihkan data peminjaman terkait agar tidak memicu constraint violation
+        $eksemplar->peminjaman()->delete();
         $eksemplar->delete();
 
         return redirect()->route('admin.books.show', $book->id_buku)

@@ -4,7 +4,7 @@
 @section('description', 'Koleksi buku elektronik resmi Perpustakaan MNC University. Baca buku teks perkuliahan dan referensi digital dari berbagai perangkat kapan saja.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 lg:px-6 lg:py-10">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 sm:px-4 lg:px-6 xl:px-8 lg:py-10 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
@@ -89,12 +89,12 @@
             <h2 id="daftar-koleksi-ebook" class="sr-only">Daftar Buku Elektronik</h2>
 
             @if (count($books) > 0)
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
                     @foreach ($books as $book)
                         <article class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#FECDD3] hover:shadow-raised">
                             <div>
                                 {{-- Cover Image & Badge Digital --}}
-                                <div class="relative h-48 sm:h-56 w-full overflow-hidden bg-slate-100">
+                                <div class="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[3/4] w-full overflow-hidden bg-slate-100">
                                     <img
                                         src="{{ $book['cover_url'] }}"
                                         alt="{{ $book['title'] }}"

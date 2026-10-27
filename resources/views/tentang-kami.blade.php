@@ -4,7 +4,7 @@
 @section('description', 'Informasi tentang Perpustakaan MNC University: sejarah, visi-misi, dan fasilitas yang tersedia.')
 
 @section('content')
-    <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
+    <div class="mx-auto flex max-w-[1570px] flex-col gap-10 sm:gap-12 px-3 sm:px-4 pt-4 lg:gap-14 xl:gap-16 lg:px-6 xl:px-8 lg:pt-6 responsive-desktop-container">
 
         {{-- Page header --}}
         <section aria-labelledby="judul-tentang" class="px-1 lg:px-[26px]">
@@ -126,7 +126,7 @@
                 ];
             @endphp
 
-            <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:gap-6">
+            <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:grid-cols-2 xl:grid-cols-4 lg:gap-5 xl:gap-6">
                 @foreach ($facilities as $facility)
                     <li class="flex gap-4 rounded-xl border border-line bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                         <span class="flex size-[52px] shrink-0 items-center justify-center rounded-xl {{ $facility['iconBox'] }}">

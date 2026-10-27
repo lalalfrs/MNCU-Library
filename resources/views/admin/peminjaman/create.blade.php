@@ -54,16 +54,18 @@
                             @foreach ($users as $user)
                                 @php
                                     $hasUnreturned = $user->memilikiTanggunganPinjaman();
+                                    $isMember = $user->isMember();
                                 @endphp
                                 <option
                                     value="{{ $user->id_pengguna }}"
                                     data-role="{{ $user->peran?->nama_peran ?? $user->role }}"
                                     data-nim="{{ $user->nim ?? $user->nomor_identitas ?? '-' }}"
                                     data-email="{{ $user->email }}"
+                                    data-is-member="{{ $isMember ? '1' : '0' }}"
                                     data-unreturned="{{ $hasUnreturned ? '1' : '0' }}"
                                     @selected(old('id_pengguna', $selectedUserId) == $user->id_pengguna)
                                 >
-                                    {{ $user->nama_lengkap }} ({{ $user->nim ? 'NIM: '.$user->nim : $user->email }}) [{{ $user->peran?->nama_peran ?? 'Pemustaka' }}] {{ $hasUnreturned ? '⚠️ Ada Tanggungan' : '✓ Siap Pinjam' }}
+                                    {{ $user->nama_lengkap }} ({{ $user->nim ? 'NIM: '.$user->nim : $user->email }}) [{{ $user->peran?->nama_peran ?? 'Pemustaka' }}] {{ ! $isMember ? '⛔ Bukan Member' : ($hasUnreturned ? '⚠️ Ada Tanggungan Pinjaman' : '✓ Member Aktif - Siap Pinjam') }}
                                 </option>
                             @endforeach
                         </select>
@@ -76,11 +78,11 @@
                     <div id="eligibility-box" class="hidden rounded-xl p-4 text-xs transition-all">
                         <div id="eligibility-blocked" class="hidden space-y-2">
                             <div class="flex items-center gap-2 font-bold text-rose-800 sm:text-sm">
-                                <i class="fa-solid fa-circle-xmark text-base text-rose-600"></i>
-                                <span>User Tidak Bisa Meminjam Buku!</span>
+                                <i class="fa-solid fa-circle-xmark text-base text-rose-600" aria-hidden="true"></i>
+                                <span id="eligibility-error-title">User Tidak Bisa Meminjam Buku!</span>
                             </div>
-                            <p class="text-rose-700">
-                                Mahasiswa ini terdeteksi masih memiliki koleksi buku fisik yang <strong>belum dikembalikan</strong> ke perpustakaan. Sesuai aturan flowchart sirkulasi, peminjaman baru tidak dapat dilanjutkan sebelum buku sebelumnya dikembalikan.
+                            <p id="eligibility-error-desc" class="text-rose-700">
+                                Mahasiswa ini belum memenuhi syarat untuk meminjam buku perpustakaan.
                             </p>
                             <div id="blocked-loans-list" class="mt-2 rounded-lg bg-white/80 p-2.5 text-[11px] text-rose-900 border border-rose-200">
                                 Sedang memuat riwayat tanggungan buku...
@@ -89,11 +91,11 @@
 
                         <div id="eligibility-passed" class="hidden space-y-1">
                             <div class="flex items-center gap-2 font-bold text-emerald-800 sm:text-sm">
-                                <i class="fa-solid fa-circle-check text-base text-emerald-600"></i>
-                                <span>Mahasiswa Memenuhi Syarat (Eligible)</span>
+                                <i class="fa-solid fa-circle-check text-base text-emerald-600" aria-hidden="true"></i>
+                                <span>Member Memenuhi Syarat (Eligible)</span>
                             </div>
                             <p class="text-emerald-700">
-                                Tidak ada tanggungan buku yang belum dikembalikan. Mahasiswa berhak meminjam koleksi buku perpustakaan.
+                                Pengguna terdaftar sebagai member aktif dan tidak ada tanggungan buku yang belum dikembalikan. Berhak meminjam koleksi buku perpustakaan.
                             </p>
                         </div>
                     </div>
@@ -289,32 +291,47 @@
                     btnSubmit.disabled = false;
                     btnSubmit.title = '';
                 } else {
-                    // Blocked (Ada buku belum dikembalikan)
+                    // Blocked (Bukan member ATAU Ada buku belum dikembalikan)
                     box.className = 'rounded-xl border border-rose-300 bg-rose-50/90 p-4 text-xs transition-all';
                     passed.classList.add('hidden');
                     blocked.classList.remove('hidden');
                     btnSubmit.disabled = true;
-                    btnSubmit.title = 'User tidak dapat meminjam buku karena masih memiliki tanggungan peminjaman aktif';
+                    btnSubmit.title = data.message || 'User tidak memenuhi syarat untuk meminjam buku';
+
+                    const errDesc = document.getElementById('eligibility-error-desc');
+                    errDesc.textContent = data.message || 'Pengguna belum memenuhi syarat untuk meminjam buku.';
 
                     if (data.data && Array.isArray(data.data.active_loans) && data.data.active_loans.length > 0) {
                         loansList.innerHTML = '<strong>Daftar Buku Belum Dikembalikan:</strong><ul class="mt-1 list-disc list-inside space-y-0.5">' +
                             data.data.active_loans.map(l => `<li>${l.buku ? l.buku.judul_buku : 'Buku'} (${l.eksemplar ? l.eksemplar.kode_inventaris : '-'}) &bull; Tempo: ${l.tanggal_jatuh_tempo}</li>`).join('') +
                             '</ul>';
+                    } else if (data.message && data.message.includes('member')) {
+                        loansList.innerHTML = `<div class="flex items-center justify-between gap-2 flex-wrap"><span>Pengguna belum dipromosikan menjadi member perpustakaan oleh super admin.</span><a href="{{ route('admin.users.index') }}" target="_blank" class="inline-flex items-center gap-1 font-bold text-primary hover:underline">Buka Manajemen User &rarr;</a></div>`;
                     } else {
-                        loansList.innerHTML = 'Mahasiswa memiliki catatan peminjaman aktif yang belum diselesaikan di loket sirkulasi.';
+                        loansList.innerHTML = 'Pemustaka memiliki catatan transaksi yang belum memenuhi syarat peminjaman sirkulasi.';
                     }
                 }
             } catch (err) {
-                // Fallback cek data-unreturned atribut lokal bila API gagal
+                // Fallback cek atribut lokal bila API gagal
                 const select = document.getElementById('select-user');
                 const selectedOpt = select.options[select.selectedIndex];
+                const isMember = selectedOpt.getAttribute('data-is-member') === '1';
                 const hasUnreturned = selectedOpt.getAttribute('data-unreturned') === '1';
 
-                if (hasUnreturned) {
+                if (!isMember) {
                     box.className = 'rounded-xl border border-rose-300 bg-rose-50/90 p-4 text-xs transition-all';
                     passed.classList.add('hidden');
                     blocked.classList.remove('hidden');
                     btnSubmit.disabled = true;
+                    document.getElementById('eligibility-error-desc').textContent = 'Pengguna belum terdaftar sebagai member resmi perpustakaan. Harus dipromote oleh Super Admin terlebih dahulu.';
+                    loansList.innerHTML = `<a href="{{ route('admin.users.index') }}" target="_blank" class="font-bold text-primary hover:underline">Promote di Manajemen User &rarr;</a>`;
+                } else if (hasUnreturned) {
+                    box.className = 'rounded-xl border border-rose-300 bg-rose-50/90 p-4 text-xs transition-all';
+                    passed.classList.add('hidden');
+                    blocked.classList.remove('hidden');
+                    btnSubmit.disabled = true;
+                    document.getElementById('eligibility-error-desc').textContent = 'Member masih memiliki tanggungan peminjaman buku yang belum dikembalikan.';
+                    loansList.innerHTML = 'Ada buku yang belum dikembalikan.';
                 } else {
                     box.className = 'rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs transition-all';
                     blocked.classList.add('hidden');

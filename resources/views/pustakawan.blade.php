@@ -4,7 +4,7 @@
 @section('description', 'Daftar pustakawan dan staf Perpustakaan MNC University. Temukan kontak dan bidang keahlian setiap pustakawan.')
 
 @section('content')
-    <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
+    <div class="mx-auto flex max-w-[1570px] flex-col gap-10 px-3 pt-4 sm:px-4 lg:gap-14 lg:px-6 xl:px-8 lg:pt-6 responsive-desktop-container">
 
         {{-- Page header --}}
         <section aria-labelledby="judul-pustakawan" class="px-1 lg:px-[26px]">
@@ -118,7 +118,7 @@
                 }
             @endphp
 
-            <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:gap-6">
+            <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-6 lg:grid-cols-2 xl:grid-cols-4 lg:gap-5 xl:gap-6">
                 @foreach ($librarians as $librarian)
                     <li class="flex flex-col rounded-xl border border-line bg-white p-5 transition duration-200 hover:shadow-raised motion-reduce:transition-none">
                         <div class="flex gap-4">
@@ -134,11 +134,11 @@
                             </div>
                         </div>
                         <p class="mt-3 flex-1 text-sm leading-relaxed text-ink-secondary">{{ $librarian['description'] }}</p>
-                        <div class="mt-4 flex items-center gap-1.5 text-xs text-ink-secondary lg:text-sm">
+                        <div class="mt-4 flex min-w-0 items-center gap-1.5 text-xs text-ink-secondary lg:text-sm">
                             <svg class="size-4 shrink-0 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" />
                             </svg>
-                            {{ $librarian['email'] }}
+                            <span class="truncate">{{ $librarian['email'] }}</span>
                         </div>
                         <div class="mt-4 h-1 rounded-full bg-linear-to-r {{ $librarian['accentLine'] }}"></div>
                     </li>

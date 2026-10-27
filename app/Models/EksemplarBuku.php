@@ -6,6 +6,8 @@ use App\Models\Concerns\HasLibraryId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EksemplarBuku extends Model
 {
@@ -42,5 +44,16 @@ class EksemplarBuku extends Model
     public function peminjaman(): HasMany
     {
         return $this->hasMany(PeminjamanBuku::class, 'id_eksemplar', 'id_eksemplar');
+    }
+
+    /**
+     * Relasi ke transaksi peminjaman aktif yang sedang berjalan untuk eksemplar ini.
+     */
+    public function peminjamanAktif(): HasOne
+    {
+        return $this->hasOne(PeminjamanBuku::class, 'id_eksemplar', 'id_eksemplar')
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->latest('id_peminjaman');
     }
 }

@@ -14,6 +14,9 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'nama_lengkap',
     'role',
+    'is_member',
+    'member_sejak',
+    'nomor_anggota',
     'email',
     'password',
     'alamat_lengkap',
@@ -42,7 +45,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'tanggal_lahir' => 'date',
+            'is_member' => 'boolean',
+            'member_sejak' => 'datetime',
         ];
+    }
+
+    public function isMember(): bool
+    {
+        return (bool) $this->is_member;
     }
 
     public function getNamaLengkapAttribute(?string $value): string

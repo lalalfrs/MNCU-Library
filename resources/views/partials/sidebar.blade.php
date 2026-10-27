@@ -234,6 +234,54 @@
                             @endif
                         </a>
                     </li>
+
+                    {{-- Statistik Perpustakaan Sesuai Flowchart --}}
+                    @php $isStatActive = request()->routeIs('admin.statistics.*'); @endphp
+                    <li>
+                        <a
+                            href="{{ route('admin.statistics.index') }}"
+                            class="group/item flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-all duration-200 ease-out active:scale-[0.97] {{ $isStatActive ? 'bg-primary/10 font-bold text-primary shadow-xs border border-primary/20' : 'text-ink-secondary hover:bg-subtle hover:translate-x-1.5 hover:text-primary' }}"
+                        >
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="flex size-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ease-out {{ $isStatActive ? 'bg-primary text-white shadow-xs scale-105 ring-2 ring-primary/25' : 'bg-slate-100 text-slate-600 group-hover/item:bg-primary group-hover/item:text-white group-hover/item:scale-110 group-hover/item:-rotate-6' }}">
+                                    <i class="fa-solid fa-chart-simple text-xs transition-transform duration-200 group-hover/item:scale-110"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <span class="block truncate font-medium">Statistik Perpustakaan</span>
+                                    <span class="block text-[10px] text-muted truncate">Analisis tren &amp; sirkulasi</span>
+                                </div>
+                            </div>
+                            @if ($isStatActive)
+                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            @else
+                                <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
+                            @endif
+                        </a>
+                    </li>
+
+                    {{-- Laporan Perpustakaan (Report) Sesuai Flowchart --}}
+                    @php $isReportActive = request()->routeIs('admin.reports.*'); @endphp
+                    <li>
+                        <a
+                            href="{{ route('admin.reports.index') }}"
+                            class="group/item flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-all duration-200 ease-out active:scale-[0.97] {{ $isReportActive ? 'bg-primary/10 font-bold text-primary shadow-xs border border-primary/20' : 'text-ink-secondary hover:bg-subtle hover:translate-x-1.5 hover:text-primary' }}"
+                        >
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="flex size-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ease-out {{ $isReportActive ? 'bg-primary text-white shadow-xs scale-105 ring-2 ring-primary/25' : 'bg-slate-100 text-slate-600 group-hover/item:bg-primary group-hover/item:text-white group-hover/item:scale-110 group-hover/item:-rotate-6' }}">
+                                    <i class="fa-solid fa-file-lines text-xs transition-transform duration-200 group-hover/item:scale-110"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <span class="block truncate font-medium">Laporan (Report)</span>
+                                    <span class="block text-[10px] text-muted truncate">Rekapitulasi &amp; cetak PDF</span>
+                                </div>
+                            </div>
+                            @if ($isReportActive)
+                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            @else
+                                <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
+                            @endif
+                        </a>
+                    </li>
                 </ul>
             </details>
         @endif

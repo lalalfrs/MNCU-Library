@@ -33,7 +33,7 @@ class BerandaController extends Controller
                 VisitorLog::recordVisit();
 
                 $latestNews = Berita::published()
-                    ->take(3)
+                    ->take(10)
                     ->get()
                     ->map(function (Berita $news): array {
                         return [
@@ -49,7 +49,7 @@ class BerandaController extends Controller
                     ->all();
 
                 $upcomingEvents = Acara::upcoming()
-                    ->take(3)
+                    ->take(10)
                     ->get()
                     ->map(function (Acara $event): array {
                         return [

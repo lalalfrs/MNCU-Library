@@ -4,7 +4,7 @@
 @section('description', 'Kelola koleksi buku fisik, e-book, kategori, penerbit, nomor ISBN, dan ketersediaan stok eksemplar perpustakaan MNC University.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 py-6 lg:px-6 lg:py-8">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -375,7 +375,7 @@
                     </div>
                 </div>
             @else
-                <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 2xl:grid-cols-6 opac-catalog-grid">
                     @foreach ($books as $book)
                         @php
                             $totalEk = $book->eksemplar->count();
