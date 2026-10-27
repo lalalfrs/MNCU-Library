@@ -117,6 +117,12 @@ class Berita extends Model
                 if (str_starts_with($this->gambar_berita, 'http://') || str_starts_with($this->gambar_berita, 'https://')) {
                     return $this->gambar_berita;
                 }
+                if (str_starts_with($this->gambar_berita, 'images/') || file_exists(public_path($this->gambar_berita))) {
+                    return asset($this->gambar_berita);
+                }
+                if (str_starts_with($this->gambar_berita, 'storage/')) {
+                    return asset($this->gambar_berita);
+                }
 
                 return asset('storage/'.$this->gambar_berita);
             },

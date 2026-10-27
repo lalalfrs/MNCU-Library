@@ -306,7 +306,7 @@ class LibraryController extends Controller
                     'isbn' => $buku->isbn ?? '-',
                     'edition' => $buku->edisi ?? 'Edisi Pertama',
                     'pages' => $buku->jumlah_halaman ? "{$buku->jumlah_halaman} hlm" : '-',
-                    'cover_url' => $buku->sampul_buku,
+                    'cover_url' => $buku->sampul_url,
                     'description' => $buku->deskripsi ?: 'Buku referensi akademik koleksi Perpustakaan MNC University.',
                     'subjects' => $buku->subjek->pluck('nama_subjek')->all(),
                     'subject_ids' => $buku->subjek->pluck('id_subjek_buku')->all(),

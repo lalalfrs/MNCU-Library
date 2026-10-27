@@ -65,16 +65,7 @@
                 <div class="rounded-2xl border border-line bg-white p-5 shadow-card">
                     {{-- Cover --}}
                     <div class="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-line bg-subtle shadow-xs">
-                        @if ($book->sampul_buku)
-                            <img src="{{ $book->sampul_buku }}" alt="{{ $book->judul_buku }}" class="h-full w-full object-cover">
-                        @else
-                            <div class="flex h-full w-full flex-col items-center justify-center p-4 text-center text-muted">
-                                <div class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                                    <i class="fa-solid fa-book text-2xl"></i>
-                                </div>
-                                <span class="mt-2 text-xs font-medium text-ink/70">Tanpa Sampul</span>
-                            </div>
-                        @endif
+                        <img src="{{ $book->sampul_url }}" alt="{{ $book->judul_buku }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';">
                     </div>
 
                     {{-- Spesifikasi Bibliografi Ringkas --}}

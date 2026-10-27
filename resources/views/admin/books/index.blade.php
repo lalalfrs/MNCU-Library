@@ -221,13 +221,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex items-start gap-3.5">
                                         <div class="relative h-16 w-11 shrink-0 overflow-hidden rounded-md border border-line bg-subtle shadow-xs">
-                                            @if ($book->sampul_buku)
-                                                <img src="{{ $book->sampul_buku }}" alt="{{ $book->judul_buku }}" class="h-full w-full object-cover">
-                                            @else
-                                                <div class="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
-                                                    <i class="fa-solid fa-book text-sm"></i>
-                                                </div>
-                                            @endif
+                                            <img src="{{ $book->sampul_url }}" alt="{{ $book->judul_buku }}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';">
                                         </div>
                                         <div class="min-w-0">
                                             <a href="{{ route('admin.books.show', $book->id_buku) }}" class="font-semibold text-ink leading-snug hover:text-primary transition-colors">
@@ -385,21 +379,13 @@
                         <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-line bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md">
                             {{-- Sampul Buku --}}
                             <div class="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-slate-100 border-b border-line/60">
-                                @if ($book->sampul_buku)
-                                    <img
-                                        src="{{ $book->sampul_buku }}"
-                                        alt="{{ $book->judul_buku }}"
-                                        class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        loading="lazy"
-                                    >
-                                @else
-                                    <div class="flex size-full flex-col items-center justify-center p-3 text-center text-muted">
-                                        <div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                            <i class="fa-solid fa-book text-lg"></i>
-                                        </div>
-                                        <span class="mt-1.5 text-[10px] font-medium text-ink/70">Tanpa Sampul</span>
-                                    </div>
-                                @endif
+                                <img
+                                    src="{{ $book->sampul_url }}"
+                                    alt="{{ $book->judul_buku }}"
+                                    class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    loading="lazy"
+                                    onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';"
+                                >
 
                                 {{-- Badges Melayang di Atas Gambar --}}
                                 <div class="absolute inset-x-2 top-2 flex items-center justify-between gap-1 pointer-events-none">

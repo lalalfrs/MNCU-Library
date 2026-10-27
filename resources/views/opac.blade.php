@@ -969,6 +969,7 @@
                                 src=""
                                 alt="Sampul Koleksi"
                                 class="h-full w-full object-cover"
+                                onerror="this.classList.add('hidden'); document.getElementById('modal-cover-placeholder')?.classList.remove('hidden'); document.getElementById('modal-cover-placeholder')?.classList.add('flex');"
                             >
                             <div id="modal-cover-placeholder" class="hidden h-full w-full flex-col items-center justify-center p-3 text-center text-muted">
                                 <i class="fa-solid fa-book text-2xl text-primary/60"></i>
@@ -1310,7 +1311,7 @@
                     {{-- Ringkasan Koleksi Buku yang Dipilih --}}
                     <div class="rounded-xl border border-line bg-slate-50/80 p-3 flex gap-3 items-center">
                         <div class="size-14 shrink-0 overflow-hidden rounded-lg border border-line bg-white shadow-2xs flex items-center justify-center">
-                            <img id="borrow-form-cover-img" src="" alt="Sampul" class="h-full w-full object-cover hidden">
+                            <img id="borrow-form-cover-img" src="" alt="Sampul" class="h-full w-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('borrow-form-cover-placeholder')?.classList.remove('hidden'); document.getElementById('borrow-form-cover-placeholder')?.classList.add('flex');">
                             <div id="borrow-form-cover-placeholder" class="flex size-full items-center justify-center bg-slate-100 text-muted">
                                 <i class="fa-solid fa-book text-lg"></i>
                             </div>
@@ -1545,8 +1546,9 @@
                         <img
                             id="return-form-cover-img"
                             src=""
-                            alt=""
+                            alt="Sampul Buku"
                             class="h-full w-full object-cover hidden"
+                            onerror="this.classList.add('hidden'); document.getElementById('return-form-cover-placeholder')?.classList.remove('hidden'); document.getElementById('return-form-cover-placeholder')?.classList.add('flex');"
                         >
                         <div id="return-form-cover-placeholder" class="flex h-full w-full items-center justify-center bg-subtle text-muted">
                             <i class="fa-solid fa-book text-xl"></i>

@@ -99,4 +99,23 @@ class Buku extends Model
     {
         return $this->hasMany(PeminjamanBuku::class, 'id_buku', 'id_buku');
     }
+
+    public function getSampulUrlAttribute(): string
+    {
+        $cover = $this->sampul_buku ?: 'images/buku/default-cover.jpg';
+
+        if (filter_var($cover, FILTER_VALIDATE_URL)) {
+            return $cover;
+        }
+
+        if (str_starts_with($cover, 'images/') || file_exists(public_path($cover))) {
+            return asset($cover);
+        }
+
+        if (str_starts_with($cover, 'storage/')) {
+            return asset($cover);
+        }
+
+        return asset('storage/'.$cover);
+    }
 }

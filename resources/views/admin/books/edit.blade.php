@@ -94,31 +94,38 @@
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-01.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Komputer
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-02.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Bisnis
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-03.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Desain
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-05.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
-                                Umum
+                                Pengembangan Diri
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applySampleCover('images/buku/default-cover.jpg')"
+                                class="rounded-lg border border-primary/40 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
+                            >
+                                Standar MNCU
                             </button>
                         </div>
                     </div>
@@ -397,9 +404,14 @@
                 previewStatusBadge.textContent = 'Memuat...';
                 previewStatusBadge.className = 'inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-medium text-amber-800';
 
+                let testUrl = url;
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+                    testUrl = '{{ asset("") }}' + url.replace(/^\/+/, '');
+                }
+
                 const testImage = new Image();
                 testImage.onload = function () {
-                    previewImg.src = url;
+                    previewImg.src = testUrl;
                     previewImg.classList.remove('hidden');
                     previewPlaceholder.classList.add('hidden');
                     previewPlaceholder.classList.remove('flex');
@@ -413,7 +425,7 @@
                     previewStatusBadge.textContent = 'Gambar Gagal Dimuat';
                     previewStatusBadge.className = 'inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-medium text-red-800';
                 };
-                testImage.src = url;
+                testImage.src = testUrl;
             }
 
             coverInput.addEventListener('input', updateCoverPreview);
