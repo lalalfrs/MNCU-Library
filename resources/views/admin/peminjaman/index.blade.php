@@ -19,22 +19,11 @@
                     Sirkulasi Peminjaman &amp; Keterlambatan Buku
                 </h1>
                 <p class="mt-0.5 text-xs text-ink-secondary sm:text-sm">
-                    Kelola data transaksi sirkulasi, validasi eligibilitas mahasiswa, visualisasi durasi keterlambatan tanpa sanksi finansial, serta integrasi validasi Sanctum.
+                    Kelola data transaksi sirkulasi, validasi eligibilitas mahasiswa, visualisasi durasi keterlambatan tanpa sanksi finansial, serta status peminjaman pemustaka.
                 </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5">
-                {{-- Tombol Informasi Sanctum API --}}
-                <button
-                    type="button"
-                    onclick="openSanctumModal()"
-                    class="inline-flex h-10 items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 text-xs font-semibold text-primary shadow-xs transition-all hover:bg-primary/10 sm:h-11 sm:text-sm"
-                    title="Informasi Validasi API Sanctum"
-                >
-                    <i class="fa-solid fa-key text-xs"></i>
-                    <span>API Sanctum</span>
-                </button>
-
                 {{-- Tombol Catat Peminjaman Baru --}}
                 <a
                     href="{{ route('admin.peminjaman.create') }}"
@@ -474,83 +463,7 @@
         </div>
     </div>
 
-    {{-- Modal Informasi API Sanctum --}}
-    <div id="modal-sanctum" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs flex items-center justify-center">
-        <div class="relative w-full max-w-2xl rounded-2xl border border-line bg-white p-6 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-line pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <i class="fa-solid fa-shield-halved text-sm"></i>
-                    </span>
-                    <div>
-                        <h3 class="text-sm font-bold text-ink">Integrasi Validasi API Sanctum</h3>
-                        <p class="text-[11px] text-muted">Layanan API Sirkulasi Perpustakaan MNC University</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeSanctumModal()" class="text-muted hover:text-ink">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
 
-            <div class="mt-4 space-y-4 text-xs text-ink-secondary max-h-[70vh] overflow-y-auto pr-1">
-                <p>
-                    Seluruh validasi sirkulasi dan aturan eligibilitas peminjaman dilindungi menggunakan <strong>Laravel Sanctum</strong> (<code class="bg-slate-100 px-1 py-0.5 rounded text-primary">auth:sanctum</code>).
-                </p>
-
-                <div class="rounded-xl border border-line bg-slate-50 p-3.5 space-y-2">
-                    <p class="font-bold text-ink text-xs uppercase tracking-wide">Daftar Endpoint API Sanctum:</p>
-                    <div class="space-y-1.5 font-mono text-[11px]">
-                        <div class="flex items-center gap-2">
-                            <span class="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">GET</span>
-                            <span>/api/peminjaman/cek-eligibilitas/{id_pengguna}</span>
-                        </div>
-                        <p class="text-[10px] text-muted pl-12 font-sans">Validasi apakah mahasiswa memiliki tanggungan buku yang belum dikembalikan.</p>
-
-                        <div class="flex items-center gap-2 pt-1">
-                            <span class="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">GET</span>
-                            <span>/api/peminjaman/eksemplar-tersedia/{id_buku}</span>
-                        </div>
-                        <p class="text-[10px] text-muted pl-12 font-sans">Daftar eksemplar fisik buku yang berstatus 'Tersedia' untuk dipinjam.</p>
-
-                        <div class="flex items-center gap-2 pt-1">
-                            <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">POST</span>
-                            <span>/api/peminjaman</span>
-                        </div>
-                        <p class="text-[10px] text-muted pl-12 font-sans">Catat peminjaman baru (mengurangi stok eksemplar menjadi Dipinjam).</p>
-
-                        <div class="flex items-center gap-2 pt-1">
-                            <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">POST</span>
-                            <span>/api/peminjaman/{id}/kembalikan</span>
-                        </div>
-                        <p class="text-[10px] text-muted pl-12 font-sans">Proses pengembalian buku (menambah stok eksemplar kembali Tersedia &amp; catat keterlambatan).</p>
-
-                        <div class="flex items-center gap-2 pt-1">
-                            <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">POST</span>
-                            <span>/api/peminjaman/{id}/kirim-peringatan</span>
-                        </div>
-                        <p class="text-[10px] text-muted pl-12 font-sans">Kirim notifikasi peringatan lewat batas waktu ke mahasiswa.</p>
-                    </div>
-                </div>
-
-                <div class="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
-                    <p class="font-bold text-primary">Cara Otentikasi:</p>
-                    <p class="mt-1 text-[11px] text-ink-secondary">
-                        Sertakan header <code class="font-mono bg-white px-1.5 py-0.5 rounded border border-line">Authorization: Bearer &lt;token&gt;</code> pada setiap HTTP request ke endpoint di atas.
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end pt-4 border-t border-line mt-4">
-                <button
-                    type="button"
-                    onclick="closeSanctumModal()"
-                    class="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-white hover:bg-primary-dark"
-                >
-                    Tutup
-                </button>
-            </div>
-        </div>
-    </div>
 
     {{-- Modal Input Keterlambatan & Sanksi --}}
     <div id="modal-sanksi" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs flex items-center justify-center">
@@ -793,14 +706,6 @@
 
         function closeSanksiModal() {
             document.getElementById('modal-sanksi').classList.add('hidden');
-        }
-
-        function openSanctumModal() {
-            document.getElementById('modal-sanctum').classList.remove('hidden');
-        }
-
-        function closeSanctumModal() {
-            document.getElementById('modal-sanctum').classList.add('hidden');
         }
     </script>
 @endsection

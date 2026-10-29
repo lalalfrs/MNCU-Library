@@ -84,6 +84,20 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                    <div class="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 shadow-sm sm:text-sm">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-triangle-exclamation text-red-600"></i>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-700 hover:text-red-900" aria-label="Tutup pemberitahuan">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             @if (session('info'))
                 <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
                     <div class="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-800 shadow-sm sm:text-sm">

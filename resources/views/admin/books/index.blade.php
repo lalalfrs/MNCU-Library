@@ -230,7 +230,16 @@
                                             <p class="mt-0.5 text-xs text-muted truncate">
                                                 Penulis: {{ $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan' }}
                                             </p>
-                                            <span class="font-mono text-[10px] text-muted">{{ $book->id_buku }}</span>
+                                            <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                                <span class="font-mono text-[10px] text-muted">{{ $book->id_buku }}</span>
+                                                @if (! empty($book->kata_kunci_list))
+                                                    @foreach (array_slice($book->kata_kunci_list, 0, 3) as $kw)
+                                                        <span class="inline-flex items-center rounded bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary border border-primary/20">
+                                                            #{{ $kw }}
+                                                        </span>
+                                                    @endforeach
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -326,7 +335,7 @@
                                         <form
                                             action="{{ route('admin.books.destroy', $book->id_buku) }}"
                                             method="POST"
-                                            onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh riwayat eksemplarnya?')"
+                                            onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplar dan riwayat peminjamannya?')"
                                             class="inline-block"
                                         >
                                             @csrf
@@ -334,7 +343,7 @@
                                             <button
                                                 type="submit"
                                                 class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
-                                                title="Hapus Buku"
+                                                title="Hapus Buku Beserta Seluruh Eksemplar"
                                             >
                                                 <i class="fa-regular fa-trash-can text-xs"></i>
                                             </button>
@@ -358,147 +367,201 @@
             </div>
         </div>
 
-        {{-- 2. TAMPILAN GRID (CARD VIEW) DILENGKAPI CHIP STOK --}}
+        {{-- 2. TAMPILAN GRID (CARD VIEW) DENGAN STRUKTUR LAYOUT 2-KOLOM HORISONTAL (SESUAI OPAC) --}}
         <div id="books-grid-view" class="{{ $viewMode === 'table' ? 'hidden' : '' }}">
             @if ($books->isEmpty())
                 <div class="rounded-2xl border border-line bg-white p-12 text-center shadow-card">
                     <div class="flex flex-col items-center justify-center gap-2">
-                        <i class="fa-solid fa-book-open text-3xl text-muted/40"></i>
+                        <i class="fa-solid fa-book-open text-3xl text-muted/40" aria-hidden="true"></i>
                         <p class="font-medium text-ink">Tidak ada koleksi buku ditemukan.</p>
                         <p class="text-xs text-muted">Coba ubah kata kunci pencarian atau filter kategori.</p>
                     </div>
                 </div>
             @else
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 2xl:grid-cols-6 opac-catalog-grid">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach ($books as $book)
                         @php
                             $totalEk = $book->eksemplar->count();
                             $readyEk = $book->eksemplar->where('status', 'Tersedia')->count();
+                            $borrowedEk = $book->eksemplar->where('status', 'Dipinjam')->count();
                             $firstCopy = $book->eksemplar->first();
+                            $callNumber = $firstCopy?->nomor_panggil ?: ($book->nomor_dewey ? $book->nomor_dewey . ' MNC' : '000.00 MNC');
+                            $primaryCategory = $book->kategoriBuku?->nama_kategori ?? 'Umum';
+                            $formatName = $book->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak';
+                            $penulisStr = $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan';
+                            $penerbitStr = $book->penerbit?->nama_penerbit ?? 'Penerbit MNC University';
                         @endphp
-                        <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-line bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md">
-                            {{-- Sampul Buku --}}
-                            <div class="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-slate-100 border-b border-line/60">
-                                <img
-                                    src="{{ $book->sampul_url }}"
-                                    alt="{{ $book->judul_buku }}"
-                                    class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    loading="lazy"
-                                    onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';"
-                                >
+                        <article class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-raised">
+                            <div class="grid grid-cols-12 gap-3.5 sm:gap-4 h-full">
+                                {{-- Sisi Kiri (4 Kolom): Sampul Buku & Badge Status Stok --}}
+                                <div class="col-span-4 relative overflow-hidden rounded-xl border border-line/70 bg-slate-100 shadow-xs min-h-[165px] sm:min-h-[185px]">
+                                    <img
+                                        src="{{ $book->sampul_url }}"
+                                        alt="{{ $book->judul_buku }}"
+                                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        loading="lazy"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';"
+                                    >
 
-                                {{-- Badges Melayang di Atas Gambar --}}
-                                <div class="absolute inset-x-2 top-2 flex items-center justify-between gap-1 pointer-events-none">
-                                    <span class="inline-flex items-center rounded bg-white/95 px-1.5 py-0.5 text-[9px] font-semibold text-primary shadow-xs backdrop-blur border border-line/60 truncate max-w-[65%]">
-                                        {{ $book->jenisBuku?->nama_jenis_buku ?? 'Buku Cetak' }}
-                                    </span>
-                                    <span class="inline-flex items-center rounded bg-slate-900/80 px-1.5 py-0.5 font-mono text-[9px] font-medium text-white shadow-xs backdrop-blur shrink-0">
-                                        #{{ $book->id_buku }}
-                                    </span>
-                                </div>
-
-                                {{-- Badge Stok di Pojok Bawah Gambar --}}
-                                <div class="absolute inset-x-2 bottom-2 pointer-events-none">
-                                    @if ($totalEk === 0)
-                                        <span class="inline-flex items-center gap-1 rounded bg-slate-900/80 px-1.5 py-0.5 text-[9px] font-semibold text-slate-200 backdrop-blur-xs">
-                                            Digital
+                                    {{-- Badge Format Melayang di Atas --}}
+                                    <div class="absolute inset-x-2 top-2 flex items-center justify-between gap-1 pointer-events-none">
+                                        <span class="inline-flex items-center rounded-md bg-white/95 px-1.5 py-0.5 text-[9px] font-semibold text-primary shadow-xs backdrop-blur-xs border border-line/60 truncate max-w-[70%]">
+                                            {{ $formatName }}
                                         </span>
-                                    @elseif ($readyEk > 0)
-                                        <span class="inline-flex items-center gap-1 rounded bg-emerald-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
-                                            <span class="size-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                                            <span>{{ $readyEk }}/{{ $totalEk }} Eks</span>
+                                        <span class="inline-flex items-center rounded-md bg-slate-900/80 px-1.5 py-0.5 font-mono text-[9px] font-medium text-white shadow-xs backdrop-blur-xs shrink-0">
+                                            #{{ $book->id_buku }}
                                         </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 rounded bg-amber-700/90 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs shadow-xs">
-                                            <span>Dipinjam</span>
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Isi Rincian Kartu --}}
-                            <div class="flex flex-1 flex-col justify-between p-3">
-                                <div>
-                                    {{-- Kategori & Tahun --}}
-                                    <div class="flex items-center justify-between text-[10px] text-muted">
-                                        <span class="font-medium text-primary truncate max-w-[65%]">{{ $book->kategoriBuku?->nama_kategori ?? 'Umum' }}</span>
-                                        <span>{{ $book->tahun_terbit ?? '-' }}</span>
                                     </div>
 
-                                    {{-- Judul Buku --}}
-                                    <a href="{{ route('admin.books.show', $book->id_buku) }}">
-                                        <h3 class="mt-1 text-xs sm:text-sm font-bold text-ink transition-colors group-hover:text-primary leading-snug line-clamp-2" title="{{ $book->judul_buku }}">
-                                            {{ $book->judul_buku }}
-                                        </h3>
-                                    </a>
-
-                                    {{-- Pengarang & Penerbit --}}
-                                    <div class="mt-1.5 space-y-0.5 text-[10px] text-muted">
-                                        <p class="truncate" title="Penulis">
-                                            <i class="fa-solid fa-user-pen mr-1 text-[9px] text-primary/70"></i>
-                                            {{ $book->penulis->pluck('nama_penulis')->join(', ') ?: 'Tim Perpustakaan' }}
-                                        </p>
-                                        <p class="truncate" title="Penerbit">
-                                            <i class="fa-solid fa-building-columns mr-1 text-[9px] text-primary/70"></i>
-                                            {{ $book->penerbit?->nama_penerbit ?? 'Penerbit MNCU' }}
-                                        </p>
-                                        @if ($firstCopy?->lokasi_rak)
-                                            <p class="truncate text-[10px] text-ink-secondary" title="Lokasi Rak">
-                                                <i class="fa-solid fa-location-dot mr-1 text-[9px] text-primary/70"></i>
-                                                {{ $firstCopy->lokasi_rak }}
-                                            </p>
+                                    {{-- Badge Stok Melayang di Bawah Gambar --}}
+                                    <div class="absolute inset-x-2 bottom-2 pointer-events-none">
+                                        @if ($totalEk === 0)
+                                            <span class="inline-flex items-center gap-1 rounded-md bg-slate-900/85 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                                                Digital
+                                            </span>
+                                        @elseif ($readyEk > 0)
+                                            <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600/95 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                                                <span class="size-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                                                <span>{{ $readyEk }}/{{ $totalEk }} Tersedia</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 rounded-md bg-amber-600/95 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                                                <span>Dipinjam ({{ $borrowedEk }})</span>
+                                            </span>
                                         @endif
                                     </div>
-                                </div>
 
-                                {{-- Action Bar di Bagian Bawah Kartu --}}
-                                <div class="mt-3 flex items-center gap-1 pt-2.5 border-t border-line">
+                                    {{-- Overlay Hover "Lihat" --}}
                                     <a
                                         href="{{ route('admin.books.show', $book->id_buku) }}"
-                                        class="inline-flex h-7.5 flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
-                                        title="Detail & Kelola Eksemplar"
+                                        class="absolute inset-0 flex items-center justify-center bg-[#0F2A6B]/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                                        title="Buka detail buku di panel admin"
                                     >
-                                        <i class="fa-solid fa-boxes-stacked text-[10px]"></i>
-                                        <span>Stok</span>
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-primary shadow-md">
+                                            <i class="fa-solid fa-eye text-[11px]" aria-hidden="true"></i>
+                                            <span>Lihat</span>
+                                        </span>
                                     </a>
+                                </div>
 
-                                    <a
-                                        href="{{ route('opac', ['buku' => $book->id_buku]) }}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="inline-flex size-7.5 items-center justify-center rounded-lg border border-line bg-subtle/40 text-[11px] font-semibold text-emerald-600 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700"
-                                        title="Lihat Detail Buku di Katalog OPAC (Tab Baru)"
-                                    >
-                                        <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
-                                    </a>
+                                {{-- Sisi Kanan (8 Kolom): Judul, Metadata Bibliografi & Action Bar Admin --}}
+                                <div class="col-span-8 flex flex-col justify-between min-w-0">
+                                    <div>
+                                        {{-- Baris Nomor Panggil & ID Buku --}}
+                                        <div class="flex flex-wrap items-center justify-between gap-1.5 text-[11px] mb-1">
+                                            <span class="inline-flex items-center gap-1 font-mono font-bold text-primary truncate max-w-[70%]" title="Nomor Panggil: {{ $callNumber }}">
+                                                <i class="fa-solid fa-bookmark text-[10px] text-amber-600" aria-hidden="true"></i>
+                                                <span class="truncate">{{ $callNumber }}</span>
+                                            </span>
+                                            <span class="font-mono text-[10px] font-semibold text-muted shrink-0">#{{ $book->id_buku }}</span>
+                                        </div>
 
-                                    <a
-                                        href="{{ route('admin.books.edit', $book->id_buku) }}"
-                                        class="inline-flex size-7.5 items-center justify-center rounded-lg border border-line bg-subtle/40 text-[11px] font-semibold text-ink transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-                                        title="Ubah Buku"
-                                    >
-                                        <i class="fa-regular fa-pen-to-square text-[10px]"></i>
-                                    </a>
+                                        {{-- Judul Buku --}}
+                                        <a href="{{ route('admin.books.show', $book->id_buku) }}">
+                                            <h3 class="text-sm sm:text-base font-bold text-ink transition-colors group-hover:text-primary leading-snug line-clamp-2" title="{{ $book->judul_buku }}">
+                                                {{ $book->judul_buku }}
+                                            </h3>
+                                        </a>
 
-                                    <form
-                                        action="{{ route('admin.books.destroy', $book->id_buku) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplarnya?')"
-                                        class="inline-block"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="inline-flex size-7.5 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
-                                            title="Hapus Buku"
+                                        {{-- Metadata Pengarang, Penerbit, Tahun & Lokasi Rak --}}
+                                        <div class="mt-2 space-y-1 text-xs text-ink-secondary">
+                                            <div class="flex items-center gap-2 truncate" title="Pengarang: {{ $penulisStr }}">
+                                                <i class="fa-solid fa-user-pen w-4 text-center text-[11px] text-muted shrink-0" aria-hidden="true"></i>
+                                                <span class="truncate">{{ $penulisStr }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 truncate" title="Penerbit: {{ $penerbitStr }}">
+                                                <i class="fa-solid fa-building w-4 text-center text-[11px] text-muted shrink-0" aria-hidden="true"></i>
+                                                <span class="truncate">{{ $penerbitStr }}</span>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                                                <span class="inline-flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-calendar-days w-4 text-center text-[11px] text-muted" aria-hidden="true"></i>
+                                                    <span>{{ $book->tahun_terbit ?? '-' }}</span>
+                                                </span>
+                                                @if ($firstCopy?->lokasi_rak)
+                                                    <span class="inline-flex items-center gap-1 truncate max-w-[180px]" title="Lokasi Rak: {{ $firstCopy->lokasi_rak }}">
+                                                        <i class="fa-solid fa-location-dot text-[11px] text-rose-500" aria-hidden="true"></i>
+                                                        <span class="truncate">{{ $firstCopy->lokasi_rak }}</span>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- Tag Kata Kunci --}}
+                                        @if (! empty($book->kata_kunci_list))
+                                            <div class="mt-2 flex flex-wrap items-center gap-1">
+                                                @foreach (array_slice($book->kata_kunci_list, 0, 3) as $kw)
+                                                    <span class="inline-flex items-center gap-0.5 rounded-md border border-line/80 bg-subtle px-1.5 py-0.5 text-[10px] font-medium text-ink-secondary">
+                                                        <i class="fa-solid fa-hashtag text-[8px] opacity-70" aria-hidden="true"></i>
+                                                        <span>{{ $kw }}</span>
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Footer Kartu: Kategori/Subjek (Kiri) & Tombol Aksi Admin Lengkap (Kanan) --}}
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2.5">
+                                        <span
+                                            class="inline-block truncate max-w-[40%] rounded-lg border border-line bg-subtle px-2.5 py-1 text-[11px] font-medium text-ink-secondary"
+                                            title="Kategori: {{ $primaryCategory }}"
                                         >
-                                            <i class="fa-regular fa-trash-can text-[10px]"></i>
-                                        </button>
-                                    </form>
+                                            {{ $primaryCategory }}
+                                        </span>
+
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            {{-- Tombol Detail & Kelola Stok --}}
+                                            <a
+                                                href="{{ route('admin.books.show', $book->id_buku) }}"
+                                                class="btn-press inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-primary/10 px-2.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                                                title="Detail & Kelola Stok Eksemplar"
+                                            >
+                                                <i class="fa-solid fa-boxes-stacked text-[10px]" aria-hidden="true"></i>
+                                                <span>Stok</span>
+                                            </a>
+
+                                            {{-- Tombol Lihat di OPAC --}}
+                                            <a
+                                                href="{{ route('opac', ['buku' => $book->id_buku]) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex size-8 items-center justify-center rounded-lg border border-line bg-subtle/50 text-emerald-600 transition-colors hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700"
+                                                title="Lihat Detail Buku di Katalog OPAC (Tab Baru)"
+                                            >
+                                                <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                                            </a>
+
+                                            {{-- Tombol Ubah Buku --}}
+                                            <a
+                                                href="{{ route('admin.books.edit', $book->id_buku) }}"
+                                                class="inline-flex size-8 items-center justify-center rounded-lg border border-line bg-subtle/50 text-muted transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                                                title="Ubah Katalog Buku"
+                                            >
+                                                <i class="fa-regular fa-pen-to-square text-xs" aria-hidden="true"></i>
+                                            </a>
+
+                                            {{-- Tombol Hapus Buku --}}
+                                            <form
+                                                action="{{ route('admin.books.destroy', $book->id_buku) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplar dan riwayat peminjamannya?')"
+                                                class="inline-block"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button
+                                                    type="submit"
+                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
+                                                    title="Hapus Buku Beserta Seluruh Eksemplar"
+                                                >
+                                                    <i class="fa-regular fa-trash-can text-xs" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                     @endforeach
                 </div>
             @endif

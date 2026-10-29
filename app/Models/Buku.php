@@ -33,9 +33,24 @@ class Buku extends Model
         'tahun_terbit',
         'edisi',
         'deskripsi',
+        'kata_kunci',
         'sampul_buku',
         'jumlah_halaman',
     ];
+
+    /**
+     * Mengembalikan daftar kata kunci buku dalam bentuk array string.
+     *
+     * @return array<int, string>
+     */
+    public function getKataKunciListAttribute(): array
+    {
+        if (empty($this->kata_kunci)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $this->kata_kunci))));
+    }
 
     protected function casts(): array
     {

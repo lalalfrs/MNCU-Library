@@ -112,6 +112,89 @@
                         {{ $book->deskripsi ?: 'Tidak ada sinopsis untuk koleksi ini.' }}
                     </p>
                 </div>
+
+                {{-- Kata Kunci Buku (Pencarian OPAC) --}}
+                <div class="rounded-2xl border border-line bg-white p-5 shadow-card">
+                    <div class="flex items-center justify-between border-b border-line pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <i class="fa-solid fa-tags text-xs"></i>
+                            </span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-ink">Kata Kunci Pencarian OPAC</h3>
+                        </div>
+                        <button
+                            type="button"
+                            onclick="document.getElementById('form-edit-kata-kunci').classList.toggle('hidden')"
+                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary-dark transition-colors"
+                        >
+                            <i class="fa-solid fa-pen text-[10px]"></i>
+                            <span>Kelola Kata Kunci</span>
+                        </button>
+                    </div>
+
+                    {{-- Tag Kata Kunci Aktif --}}
+                    <div class="mt-3">
+                        @if (! empty($book->kata_kunci_list))
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach ($book->kata_kunci_list as $kw)
+                                    <span class="inline-flex items-center gap-1 rounded-lg border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">
+                                        <i class="fa-solid fa-hashtag text-[9px] opacity-70"></i>
+                                        <span>{{ $kw }}</span>
+                                    </span>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs italic text-muted">
+                                Belum ada kata kunci yang ditambahkan untuk buku ini.
+                            </p>
+                        @endif
+                    </div>
+
+                    {{-- Form Cepat Update Kata Kunci (Bisa dibuka/tutup) --}}
+                    <form
+                        id="form-edit-kata-kunci"
+                        action="{{ route('admin.books.kata-kunci.update', $book->id_buku) }}"
+                        method="POST"
+                        class="{{ empty($book->kata_kunci) ? '' : 'hidden' }} mt-4 border-t border-line pt-3.5 space-y-2.5"
+                    >
+                        @csrf
+                        <label for="input-kata-kunci" class="block text-[11px] font-semibold text-ink">
+                            Ubah / Tambah Kata Kunci (Pisahkan dengan koma):
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                name="kata_kunci"
+                                id="input-kata-kunci"
+                                value="{{ old('kata_kunci', $book->kata_kunci) }}"
+                                placeholder="Contoh: Coding, Pembelajaran, Python (atau Hiburan, Sastra)"
+                                class="h-10 w-full rounded-xl border border-line bg-white pr-9 pl-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+                            >
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-muted">
+                                <i class="fa-solid fa-tags text-xs"></i>
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-muted">
+                            Kata kunci ini akan dicocokkan saat pemustaka mencari di katalog OPAC dan tampil sebagai tag topik yang dapat diklik.
+                        </p>
+                        <div class="flex items-center justify-end gap-2 pt-1">
+                            <button
+                                type="button"
+                                onclick="document.getElementById('form-edit-kata-kunci').classList.add('hidden')"
+                                class="h-8 rounded-lg border border-line px-3 text-[11px] font-medium text-muted hover:bg-subtle hover:text-ink"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-[11px] font-semibold text-white hover:bg-primary-dark transition-all"
+                            >
+                                <i class="fa-solid fa-floppy-disk text-[10px]"></i>
+                                <span>Simpan Kata Kunci</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             {{-- Panel Kanan: Status Stok & Manajemen Inventaris Eksemplar --}}

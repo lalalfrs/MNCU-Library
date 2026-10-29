@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -181,12 +182,160 @@ class PeminjamanAdminController extends Controller
     }
 
     /**
+     * Tampilkan Inbox Pengajuan Peminjaman & Pengembalian Buku yang memerlukan validasi admin.
+     * Mendukung multi-user request untuk buku yang sama, di mana admin berhak menentukan prioritas persetujuan.
+     */
+    public function inbox(Request $request): View
+    {
+        $this->peminjamanService->sinkronisasiStatusKeterlambatan();
+
+        $q = trim((string) $request->query('q', ''));
+
+        // Hitung total pengajuan peminjaman baru yang menunggu persetujuan
+        $totalMenungguPinjam = PeminjamanBuku::where('status', 'Menunggu Persetujuan')->count();
+
+        // Hitung total pengajuan pengembalian yang menunggu verifikasi admin
+        $totalMenungguVerifikasi = PeminjamanBuku::where('status', 'Menunggu Verifikasi')
+            ->whereNull('tanggal_kembali')
+            ->count();
+
+        // Hitung total pengajuan yang sudah diverifikasi (history)
+        $totalRiwayatVerifikasi = PeminjamanBuku::where(function ($sq): void {
+            $sq->whereIn('status', ['Kembali', 'Dipinjam', 'Ditolak'])
+                ->where(function ($sub): void {
+                    $sub->whereNotNull('tanggal_pengajuan_kembali')
+                        ->orWhereNotNull('tanggal_pengajuan_pinjam');
+                });
+        })->count();
+
+        // Tentukan tab aktif
+        $rawTab = trim((string) $request->query('tab', ''));
+        if ($rawTab === '' || $rawTab === 'menunggu') {
+            $tab = $totalMenungguPinjam > 0 ? 'pinjam' : ($totalMenungguVerifikasi > 0 ? 'kembali' : 'pinjam');
+            if ($rawTab === 'menunggu') {
+                $tab = 'kembali';
+            }
+        } else {
+            $tab = $rawTab;
+        }
+
+        // Query data berdasarkan tab
+        $query = PeminjamanBuku::with(['pengguna.peran', 'pengguna.prodi', 'buku.eksemplar', 'eksemplar']);
+
+        if ($tab === 'pinjam') {
+            $query->where('status', 'Menunggu Persetujuan')
+                ->latest('tanggal_pengajuan_pinjam');
+        } elseif ($tab === 'kembali') {
+            $query->where('status', 'Menunggu Verifikasi')
+                ->whereNull('tanggal_kembali')
+                ->latest('tanggal_pengajuan_kembali');
+        } else {
+            // Tab riwayat
+            $query->where(function ($sq): void {
+                $sq->whereIn('status', ['Kembali', 'Dipinjam', 'Ditolak'])
+                    ->where(function ($sub): void {
+                        $sub->whereNotNull('tanggal_pengajuan_kembali')
+                            ->orWhereNotNull('tanggal_pengajuan_pinjam');
+                    });
+            })->latest();
+        }
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q): void {
+                $sub->where('id_peminjaman', 'like', "%{$q}%")
+                    ->orWhereHas('pengguna', function ($userSub) use ($q): void {
+                        $userSub->where('nama_lengkap', 'like', "%{$q}%")
+                            ->orWhere('nim', 'like', "%{$q}%")
+                            ->orWhere('email', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('buku', function ($bookSub) use ($q): void {
+                        $bookSub->where('judul_buku', 'like', "%{$q}%")
+                            ->orWhere('isbn', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('eksemplar', function ($ekSub) use ($q): void {
+                        $ekSub->where('kode_inventaris', 'like', "%{$q}%")
+                            ->orWhere('nomor_panggil', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        $requests = $query->paginate(15)->withQueryString();
+
+        // Hitung persaingan permohonan multi-user untuk buku yang sama pada tab peminjaman
+        $competingCounts = PeminjamanBuku::where('status', 'Menunggu Persetujuan')
+            ->select('id_buku', DB::raw('count(*) as total'))
+            ->groupBy('id_buku')
+            ->pluck('total', 'id_buku')
+            ->all();
+
+        return view('admin.inbox.index', compact(
+            'requests',
+            'q',
+            'tab',
+            'totalMenungguPinjam',
+            'totalMenungguVerifikasi',
+            'totalRiwayatVerifikasi',
+            'competingCounts'
+        ));
+    }
+
+    /**
+     * Admin menyetujui pengajuan peminjaman buku dari pemustaka.
+     * Admin berhak memilih eksemplar fisik mana yang dialokasikan atau mendahulukan pemohon tertentu.
+     */
+    public function setujuiPeminjaman(Request $request, string $id): RedirectResponse
+    {
+        $request->validate([
+            'id_eksemplar' => 'nullable|string|exists:eksemplar_buku,id_eksemplar',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $loan = $this->peminjamanService->setujuiPeminjaman(
+                $id,
+                $request->input('id_eksemplar'),
+                $request->input('catatan')
+            );
+
+            $pesan = "Pengajuan peminjaman buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} berhasil disetujui! Eksemplar ({$loan->eksemplar->kode_inventaris}) telah dialokasikan.";
+
+            return redirect()->route('admin.inbox', ['tab' => 'pinjam'])->with('success', $pesan);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+    }
+
+    /**
+     * Admin menolak pengajuan peminjaman buku dari pemustaka (misal karena stok terbatas atau dialokasikan ke orang lain).
+     */
+    public function tolakPeminjaman(Request $request, string $id): RedirectResponse
+    {
+        $request->validate([
+            'alasan' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $loan = $this->peminjamanService->tolakPeminjaman(
+                $id,
+                $request->input('alasan')
+            );
+
+            $pesan = "Pengajuan peminjaman buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} telah ditolak.";
+
+            return redirect()->route('admin.inbox', ['tab' => 'pinjam'])->with('success', $pesan);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+    }
+
+    /**
      * Proses pengembalian buku (status eksemplar kembali bertambah menjadi 'Tersedia').
      */
     public function kembalikan(Request $request, string $id): RedirectResponse
     {
         $request->validate([
             'catatan' => 'nullable|string|max:500',
+            'redirect_to' => 'nullable|string',
         ]);
 
         try {
@@ -195,9 +344,13 @@ class PeminjamanAdminController extends Controller
                 $request->input('catatan')
             );
 
-            $pesan = "Buku \"{$loan->buku->judul_buku}\" berhasil dikembalikan oleh {$loan->pengguna->nama_lengkap}. Status stok eksemplar buku kembali bertambah.";
+            $pesan = "Pengembalian buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} berhasil divalidasi dan disetujui. Status eksemplar telah kembali Tersedia.";
             if ($loan->hari_keterlambatan > 0) {
                 $pesan .= " Tercatat keterlambatan selama {$loan->hari_keterlambatan} hari.";
+            }
+
+            if ($request->input('redirect_to') === 'inbox' || str_contains((string) $request->headers->get('referer'), '/admin/inbox')) {
+                return redirect()->route('admin.inbox')->with('success', $pesan);
             }
 
             return redirect()->route('admin.peminjaman.index')->with('success', $pesan);
@@ -213,6 +366,7 @@ class PeminjamanAdminController extends Controller
     {
         $request->validate([
             'alasan' => 'nullable|string|max:500',
+            'redirect_to' => 'nullable|string',
         ]);
 
         try {
@@ -221,7 +375,13 @@ class PeminjamanAdminController extends Controller
                 $request->input('alasan')
             );
 
-            return redirect()->route('admin.peminjaman.index')->with('success', "Pengajuan pengembalian buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} telah ditolak. Status transaksi dikembalikan menjadi {$loan->status}.");
+            $pesan = "Pengajuan pengembalian buku \"{$loan->buku->judul_buku}\" oleh {$loan->pengguna->nama_lengkap} telah ditolak. Status transaksi dikembalikan menjadi {$loan->status}.";
+
+            if ($request->input('redirect_to') === 'inbox' || str_contains((string) $request->headers->get('referer'), '/admin/inbox')) {
+                return redirect()->route('admin.inbox')->with('success', $pesan);
+            }
+
+            return redirect()->route('admin.peminjaman.index')->with('success', $pesan);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }

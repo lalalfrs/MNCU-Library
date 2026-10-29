@@ -27,6 +27,8 @@ class PeminjamanBuku extends Model
         'id_pengguna',
         'id_buku',
         'id_eksemplar',
+        'tanggal_pengajuan_pinjam',
+        'catatan_pengajuan_pinjam',
         'tanggal_pinjam',
         'tanggal_jatuh_tempo',
         'tanggal_kembali',
@@ -35,6 +37,7 @@ class PeminjamanBuku extends Model
         'status',
         'hari_keterlambatan',
         'catatan_keterlambatan',
+        'alasan_penolakan',
         'sanksi',
         'status_sanksi',
         'tanggal_sanksi',
@@ -45,6 +48,7 @@ class PeminjamanBuku extends Model
     protected function casts(): array
     {
         return [
+            'tanggal_pengajuan_pinjam' => 'datetime',
             'tanggal_pinjam' => 'date',
             'tanggal_jatuh_tempo' => 'date',
             'tanggal_kembali' => 'date',
@@ -54,6 +58,16 @@ class PeminjamanBuku extends Model
             'notifikasi_peringatan_dikirim' => 'boolean',
             'tanggal_notifikasi' => 'datetime',
         ];
+    }
+
+    public function isMenungguPersetujuanPinjam(): bool
+    {
+        return $this->status === 'Menunggu Persetujuan';
+    }
+
+    public function isMenungguVerifikasiKembali(): bool
+    {
+        return $this->status === 'Menunggu Verifikasi';
     }
 
     public function getIdPrefix(): string

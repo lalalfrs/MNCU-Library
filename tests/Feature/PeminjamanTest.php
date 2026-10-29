@@ -58,7 +58,6 @@ class PeminjamanTest extends TestCase
         $response->assertSee('Keterlambatan');
         $response->assertSee('Selesai Kembali');
         $response->assertSee('Catat Peminjaman Baru');
-        $response->assertSee('API Sanctum');
     }
 
     /**

@@ -109,6 +109,161 @@ class PeminjamanService
     }
 
     /**
+     * Mahasiswa / pemustaka mengajukan peminjaman buku via website katalog OPAC.
+     * Alur:
+     * 1. Validasi eligibilitas mahasiswa (bebas tanggungan buku lain & berstatus member aktif).
+     * 2. Validasi permohonan ganda: User belum memiliki permohonan berstatus 'Menunggu Persetujuan' untuk buku ini.
+     * 3. Validasi tanggal pinjam: Default hari ini, fleksibel dapat memilih maksimal 3 hari ke depan.
+     * 4. Transaksi dicatat dengan status 'Menunggu Persetujuan' (stok eksemplar belum berkurang sampai disetujui admin).
+     * 5. Mendukung multi-user request untuk 1 buku yang sama dengan stok terbatas, admin berhak memilih prioritas.
+     */
+    public function ajukanPeminjaman(
+        string $idPengguna,
+        string $idBuku,
+        ?string $idEksemplar = null,
+        ?string $tanggalPinjam = null,
+        ?string $tanggalJatuhTempo = null,
+        ?string $catatan = null
+    ): PeminjamanBuku {
+        // 1. Cek eligibilitas user
+        $eligibilitas = $this->cekEligibilitas($idPengguna);
+        if (! $eligibilitas['eligible']) {
+            throw ValidationException::withMessages([
+                'id_pengguna' => [$eligibilitas['message']],
+            ]);
+        }
+
+        // 2. Cek apakah user sudah memiliki permohonan pending untuk buku ini
+        $existingPending = PeminjamanBuku::where('id_pengguna', $idPengguna)
+            ->where('id_buku', $idBuku)
+            ->where('status', 'Menunggu Persetujuan')
+            ->first();
+
+        if ($existingPending) {
+            throw ValidationException::withMessages([
+                'id_buku' => ['Anda sudah memiliki permohonan peminjaman buku ini yang sedang menunggu persetujuan admin perpustakaan.'],
+            ]);
+        }
+
+        // 3. Validasi tanggal peminjaman (default hari ini, maksimal 3 hari ke depan)
+        $today = Carbon::today();
+        $maxBorrowDate = Carbon::today()->addDays(3);
+
+        $tglPinjam = $tanggalPinjam ? Carbon::parse($tanggalPinjam)->startOfDay() : $today->copy();
+        if ($tglPinjam->lt($today) || $tglPinjam->gt($maxBorrowDate)) {
+            throw ValidationException::withMessages([
+                'tanggal_pinjam' => [
+                    "Tanggal peminjaman harus antara hari ini ({$today->format('d/m/Y')}) sampai maksimal 3 hari ke depan ({$maxBorrowDate->format('d/m/Y')}).",
+                ],
+            ]);
+        }
+
+        // 4. Hitung tanggal jatuh tempo (default 14 hari sejak tanggal pinjam yang dipilih)
+        $tglJatuhTempo = $tanggalJatuhTempo
+            ? Carbon::parse($tanggalJatuhTempo)->startOfDay()
+            : $tglPinjam->copy()->addDays(14);
+
+        if ($tglJatuhTempo->lte($tglPinjam)) {
+            $tglJatuhTempo = $tglPinjam->copy()->addDays(14);
+        }
+
+        // 5. Simpan transaksi pengajuan peminjaman (eksemplar nullable atau preferensi pemohon)
+        $peminjaman = PeminjamanBuku::create([
+            'id_pengguna' => $idPengguna,
+            'id_buku' => $idBuku,
+            'id_eksemplar' => $idEksemplar,
+            'tanggal_pinjam' => $tglPinjam->toDateString(),
+            'tanggal_jatuh_tempo' => $tglJatuhTempo->toDateString(),
+            'status' => 'Menunggu Persetujuan',
+            'tanggal_pengajuan_pinjam' => Carbon::now(),
+            'catatan_pengajuan_pinjam' => $catatan ?: 'Pengajuan peminjaman mandiri via katalog OPAC',
+            'hari_keterlambatan' => 0,
+        ]);
+
+        return $peminjaman->fresh(['buku', 'eksemplar', 'pengguna']);
+    }
+
+    /**
+     * Admin menyetujui pengajuan peminjaman buku dan mengalokasikan eksemplar fisik yang tersedia.
+     * Eksemplar buku diubah statusnya menjadi 'Dipinjam' dan transaksi menjadi 'Dipinjam'.
+     */
+    public function setujuiPeminjaman(
+        string $idPeminjaman,
+        ?string $idEksemplar = null,
+        ?string $catatan = null
+    ): PeminjamanBuku {
+        $peminjaman = PeminjamanBuku::with(['buku', 'pengguna'])->findOrFail($idPeminjaman);
+
+        if ($peminjaman->status !== 'Menunggu Persetujuan') {
+            throw ValidationException::withMessages([
+                'id_peminjaman' => ['Transaksi peminjaman ini tidak dalam status Menunggu Persetujuan.'],
+            ]);
+        }
+
+        // Cari eksemplar buku yang berstatus Tersedia
+        $eksemplar = null;
+        if ($idEksemplar) {
+            $eksemplar = EksemplarBuku::where('id_buku', $peminjaman->id_buku)
+                ->where('id_eksemplar', $idEksemplar)
+                ->first();
+
+            if (! $eksemplar || $eksemplar->status !== 'Tersedia') {
+                throw ValidationException::withMessages([
+                    'id_eksemplar' => ['Eksemplar buku fisik yang dipilih tidak berstatus Tersedia di rak perpustakaan.'],
+                ]);
+            }
+        } else {
+            // Ambil eksemplar pertama yang Tersedia
+            $eksemplar = EksemplarBuku::where('id_buku', $peminjaman->id_buku)
+                ->where('status', 'Tersedia')
+                ->first();
+
+            if (! $eksemplar) {
+                throw ValidationException::withMessages([
+                    'id_eksemplar' => ['Semua eksemplar fisik buku ini sedang dipinjam atau tidak tersedia. Permohonan belum dapat disetujui hingga ada buku yang kembali.'],
+                ]);
+            }
+        }
+
+        return DB::transaction(function () use ($peminjaman, $eksemplar, $catatan): PeminjamanBuku {
+            // 1. Eksemplar buku menjadi Dipinjam
+            $eksemplar->update([
+                'status' => 'Dipinjam',
+            ]);
+
+            // 2. Transaksi disetujui menjadi Dipinjam
+            $peminjaman->update([
+                'id_eksemplar' => $eksemplar->id_eksemplar,
+                'status' => 'Dipinjam',
+                'catatan_keterlambatan' => $catatan ? "Disetujui admin: {$catatan}" : $peminjaman->catatan_keterlambatan,
+            ]);
+
+            return $peminjaman->fresh(['buku', 'eksemplar', 'pengguna']);
+        });
+    }
+
+    /**
+     * Admin menolak pengajuan peminjaman (misal stok terbatas dan diprioritaskan untuk pemohon lain).
+     */
+    public function tolakPeminjaman(string $idPeminjaman, ?string $alasan = null): PeminjamanBuku
+    {
+        $peminjaman = PeminjamanBuku::with(['buku', 'pengguna'])->findOrFail($idPeminjaman);
+
+        if ($peminjaman->status !== 'Menunggu Persetujuan') {
+            throw ValidationException::withMessages([
+                'id_peminjaman' => ['Hanya pengajuan peminjaman berstatus Menunggu Persetujuan yang dapat ditolak.'],
+            ]);
+        }
+
+        $peminjaman->update([
+            'status' => 'Ditolak',
+            'alasan_penolakan' => $alasan ?: 'Pengajuan peminjaman tidak disetujui oleh admin/pustakawan.',
+        ]);
+
+        return $peminjaman->fresh(['buku', 'pengguna']);
+    }
+
+    /**
      * Validasi pengembalian buku sesuai flowchart:
      * - Jika tidak ada data peminjaman aktif -> Pengembalian buku gagal.
      * - Jika pernah meminjam (aktif) -> Sukses, deteksi apakah ada keterlambatan.

@@ -80,6 +80,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
 
     // 2. Manajemen Buku & Stok Eksemplar
     Route::resource('buku', BookController::class)->names('books');
+    Route::post('buku/{buku}/kata-kunci', [BookController::class, 'updateKataKunci'])->name('books.kata-kunci.update');
     Route::post('buku/{buku}/eksemplar', [BookController::class, 'storeEksemplar'])->name('books.eksemplar.store');
     Route::put('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'updateEksemplar'])->name('books.eksemplar.update');
     Route::delete('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'destroyEksemplar'])->name('books.eksemplar.destroy');
@@ -91,10 +92,13 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     Route::resource('berita', BeritaAdminController::class)->names('berita');
 
     // 5. Manajemen Peminjaman & Keterlambatan Sirkulasi Buku
+    Route::get('inbox', [PeminjamanAdminController::class, 'inbox'])->name('inbox');
     Route::get('peminjaman/cek-eligibilitas/{id_pengguna}', [PeminjamanAdminController::class, 'cekEligibilitasUser'])->name('peminjaman.cek-eligibilitas');
     Route::resource('peminjaman', PeminjamanAdminController::class)->except(['edit', 'update', 'destroy']);
     Route::post('peminjaman/{peminjaman}/kembalikan', [PeminjamanAdminController::class, 'kembalikan'])->name('peminjaman.kembalikan');
     Route::post('peminjaman/{peminjaman}/tolak-pengembalian', [PeminjamanAdminController::class, 'tolakPengembalian'])->name('peminjaman.tolak-pengembalian');
+    Route::post('peminjaman/{peminjaman}/setujui-pinjam', [PeminjamanAdminController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui-pinjam');
+    Route::post('peminjaman/{peminjaman}/tolak-pinjam', [PeminjamanAdminController::class, 'tolakPeminjaman'])->name('peminjaman.tolak-pinjam');
     Route::post('peminjaman/{peminjaman}/kirim-peringatan', [PeminjamanAdminController::class, 'kirimPeringatan'])->name('peminjaman.kirim-peringatan');
     Route::post('peminjaman/{peminjaman}/input-keterlambatan', [PeminjamanAdminController::class, 'inputKeterlambatan'])->name('peminjaman.input-keterlambatan');
 

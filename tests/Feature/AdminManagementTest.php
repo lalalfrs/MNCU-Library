@@ -45,13 +45,11 @@ class AdminManagementTest extends TestCase
         $response = $this->actingAs($admin)->get(route('beranda'));
 
         $response->assertStatus(200);
-        $response->assertSee('Panel Kontrol & Manajemen Perpustakaan', false);
+        $response->assertSee('Inbox Pengembalian');
         $response->assertSee('Manajemen User');
         $response->assertSee('Manajemen Buku');
         $response->assertSee('Manajemen Acara');
-        $response->assertSee('Manajemen Berita');
-        $response->assertSee('Peminjaman');
-        $response->assertSee('Buka Menu Sidebar');
+        $response->assertSee('Sirkulasi & Peminjaman');
     }
 
     /**
@@ -259,9 +257,8 @@ class AdminManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertDontSee('Panel Kontrol & Manajemen Perpustakaan');
         $response->assertDontSee('Mode Administrator Aktif');
-        $response->assertSee('Halo, Ahmad Fauzi Rahman!');
-        $response->assertSee('Status keanggotaan aktif');
-        $response->assertSee('Cari Buku OPAC');
+        $response->assertSee('Selamat Datang, Ahmad Fauzi Rahman!');
+        $response->assertSee('Cari Buku di OPAC');
     }
 
     /**

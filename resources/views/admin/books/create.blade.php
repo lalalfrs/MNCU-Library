@@ -339,6 +339,32 @@
                             >{{ old('deskripsi') }}</textarea>
                         </div>
 
+                        {{-- Kata Kunci (Pencarian OPAC) --}}
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <label for="kata_kunci" class="block text-xs font-semibold text-ink">
+                                    Kata Kunci Pencarian OPAC
+                                </label>
+                                <span class="text-[11px] text-muted">Pisahkan dengan koma</span>
+                            </div>
+                            <div class="relative mt-1.5">
+                                <input
+                                    type="text"
+                                    name="kata_kunci"
+                                    id="kata_kunci"
+                                    value="{{ old('kata_kunci') }}"
+                                    placeholder="Contoh: Coding, Pembelajaran, Python (atau Hiburan, Sastra untuk fiksi)"
+                                    class="h-11 w-full rounded-xl border border-line bg-white pr-9 pl-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
+                                >
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted">
+                                    <i class="fa-solid fa-tags text-xs"></i>
+                                </span>
+                            </div>
+                            <p class="mt-1 text-[11px] text-muted">
+                                Kata kunci ini memudahkan pemustaka mencari buku di OPAC dan akan tampil sebagai tag topik yang dapat diklik.
+                            </p>
+                        </div>
+
                         {{-- Pengaturan Eksemplar Fisik & Stok Awal --}}
                         <div class="space-y-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
                             <div class="flex items-center justify-between">

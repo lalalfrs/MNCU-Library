@@ -8,6 +8,8 @@ use App\Models\PeminjamanBuku;
 use App\Models\Pengguna;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -103,11 +105,11 @@ class OpacPeminjamanTest extends TestCase
     }
 
     /**
-     * Alur peminjaman buku mandiri di katalog OPAC berjalan sukses:
-     * - Tanggal pengambilan auto-set hari ini
-     * - Tanggal pengembalian diinput oleh user
-     * - Status eksemplar buku berkurang menjadi 'Dipinjam'
-     * - Nama peminjam tampil di katalog OPAC sehingga admin dan pemustaka lain dapat melihat.
+     * Alur pengajuan peminjaman buku via OPAC dan verifikasi oleh admin perpustakaan:
+     * - User mengajukan peminjaman via OPAC -> status 'Menunggu Persetujuan'
+     * - Admin menerima di Inbox, memilih eksemplar fisik yang tersedia, dan menyetujui
+     * - Status transaksi berubah menjadi 'Dipinjam' dan eksemplar menjadi 'Dipinjam'
+     * - Nama peminjam tampil di katalog OPAC.
      */
     public function test_student_can_successfully_borrow_book_via_opac(): void
     {
@@ -115,12 +117,14 @@ class OpacPeminjamanTest extends TestCase
             ->where('status', 'Tersedia')
             ->count();
 
-        $returnDate = now()->addDays(14)->toDateString();
+        $chosenDate = now()->addDays(2)->toDateString();
+        $returnDate = now()->addDays(16)->toDateString();
 
         $response = $this->actingAs($this->studentNoLoan)
             ->postJson(route('opac.pinjam'), [
                 'id_buku' => $this->targetBook->id_buku,
                 'id_eksemplar' => $this->availableExemplar->id_eksemplar,
+                'tanggal_pinjam' => $chosenDate,
                 'tanggal_jatuh_tempo' => $returnDate,
                 'catatan' => 'Peminjaman mandiri riset skripsi',
             ]);
@@ -130,29 +134,36 @@ class OpacPeminjamanTest extends TestCase
             'success' => true,
             'data' => [
                 'judul_buku' => $this->targetBook->judul_buku,
-                'kode_inventaris' => $this->availableExemplar->kode_inventaris,
-                'tanggal_pinjam' => now()->toDateString(),
+                'tanggal_pinjam' => $chosenDate,
                 'tanggal_jatuh_tempo' => $returnDate,
+                'status' => 'Menunggu Persetujuan',
                 'nama_peminjam' => $this->studentNoLoan->nama_lengkap,
             ],
         ]);
 
-        // Verifikasi database: Peminjaman tercatat dan status eksemplar berubah menjadi Dipinjam
+        // Verifikasi database: Peminjaman berstatus Menunggu Persetujuan
         $this->assertDatabaseHas('peminjaman_buku', [
             'id_pengguna' => $this->studentNoLoan->id_pengguna,
             'id_buku' => $this->targetBook->id_buku,
-            'id_eksemplar' => $this->availableExemplar->id_eksemplar,
-            'status' => 'Dipinjam',
+            'status' => 'Menunggu Persetujuan',
         ]);
 
         $latestLoan = PeminjamanBuku::where('id_pengguna', $this->studentNoLoan->id_pengguna)
-            ->where('id_eksemplar', $this->availableExemplar->id_eksemplar)
+            ->where('id_buku', $this->targetBook->id_buku)
             ->latest('id_peminjaman')
             ->first();
         $this->assertNotNull($latestLoan);
-        $this->assertEquals(now()->toDateString(), $latestLoan->tanggal_pinjam->format('Y-m-d'));
-        $this->assertEquals($returnDate, $latestLoan->tanggal_jatuh_tempo->format('Y-m-d'));
+        $this->assertEquals($chosenDate, $latestLoan->tanggal_pinjam->format('Y-m-d'));
 
+        // Admin memverifikasi dan menyetujui peminjaman serta mengalokasikan eksemplar
+        $approveResponse = $this->actingAs($this->admin)
+            ->post(route('admin.peminjaman.setujui-pinjam', $latestLoan->id_peminjaman), [
+                'id_eksemplar' => $this->availableExemplar->id_eksemplar,
+                'catatan' => 'Disetujui untuk peminjam prioritas riset skripsi.',
+            ]);
+
+        $approveResponse->assertRedirect(route('admin.inbox', ['tab' => 'pinjam']));
+        $this->assertEquals('Dipinjam', $latestLoan->fresh()->status);
         $this->assertEquals('Dipinjam', $this->availableExemplar->fresh()->status);
 
         // Verifikasi bahwa stok tersedia berkurang 1
@@ -166,6 +177,111 @@ class OpacPeminjamanTest extends TestCase
         $opacResponse->assertStatus(200);
         $opacResponse->assertSee('Sedang Dipinjam:');
         $opacResponse->assertSee($this->studentNoLoan->nama_lengkap);
+    }
+
+    /**
+     * Validasi tanggal peminjaman:
+     * - Tanggal tidak boleh sebelum hari ini
+     * - Tanggal maksimal 3 hari setelah hari ini
+     */
+    public function test_borrow_date_must_be_between_today_and_three_days_later(): void
+    {
+        // 1. Tanggal di masa lalu harus ditolak
+        $pastResponse = $this->actingAs($this->studentNoLoan)
+            ->postJson(route('opac.pinjam'), [
+                'id_buku' => $this->targetBook->id_buku,
+                'tanggal_pinjam' => now()->subDay()->toDateString(),
+            ]);
+        $pastResponse->assertStatus(422);
+
+        // 2. Tanggal lebih dari 3 hari ke depan harus ditolak
+        $futureResponse = $this->actingAs($this->studentNoLoan)
+            ->postJson(route('opac.pinjam'), [
+                'id_buku' => $this->targetBook->id_buku,
+                'tanggal_pinjam' => now()->addDays(4)->toDateString(),
+            ]);
+        $futureResponse->assertStatus(422);
+
+        // 3. Tanggal hari ini (default) dan hingga 3 hari ke depan valid
+        $validResponse = $this->actingAs($this->studentNoLoan)
+            ->postJson(route('opac.pinjam'), [
+                'id_buku' => $this->targetBook->id_buku,
+                'tanggal_pinjam' => now()->addDays(3)->toDateString(),
+            ]);
+        $validResponse->assertStatus(201);
+    }
+
+    /**
+     * Skenario multi-user:
+     * Dua user merequest pinjam buku yang sama dengan stok terbatas.
+     * Admin berhak memutuskan siapa yang didahulukan (setuju) dan menolak user lainnya dengan alasan.
+     */
+    public function test_two_users_requesting_same_book_admin_can_prioritize_and_reject_competitor(): void
+    {
+        // Siapkan user kedua yang juga eligible (bebas pinjaman aktif)
+        $studentSecond = Pengguna::create([
+            'id_pengguna' => 'MNCU00099',
+            'uuid' => (string) Str::uuid(),
+            'id_peran' => 'MNCU00003',
+            'id_prodi' => 'MNCU00001',
+            'is_member' => true,
+            'status_keanggotaan' => 'Aktif',
+            'member_sejak' => now(),
+            'nomor_anggota' => 'MNCU00099',
+            'nama_lengkap' => 'Budi Santoso',
+            'email' => 'budi.santoso@mncu.ac.id',
+            'kata_sandi' => Hash::make('password123'),
+            'nomor_identitas' => '2024010099',
+        ]);
+
+        // User 1 mengajukan permohonan pinjam buku target
+        $res1 = $this->actingAs($this->studentNoLoan)
+            ->postJson(route('opac.pinjam'), [
+                'id_buku' => $this->targetBook->id_buku,
+                'tanggal_pinjam' => now()->toDateString(),
+                'catatan' => 'Permohonan user 1',
+            ]);
+        $res1->assertStatus(201);
+        $loan1Id = $res1->json('data.id_peminjaman');
+
+        // User 2 mengajukan permohonan pinjam buku target yang sama
+        $res2 = $this->actingAs($studentSecond)
+            ->postJson(route('opac.pinjam'), [
+                'id_buku' => $this->targetBook->id_buku,
+                'tanggal_pinjam' => now()->addDay()->toDateString(),
+                'catatan' => 'Permohonan user 2',
+            ]);
+        $res2->assertStatus(201);
+        $loan2Id = $res2->json('data.id_peminjaman');
+
+        // Admin memeriksa Inbox: tab pinjam memuat kedua permohonan dengan indikator persaingan
+        $inboxResponse = $this->actingAs($this->admin)
+            ->get(route('admin.inbox', ['tab' => 'pinjam']));
+        $inboxResponse->assertStatus(200);
+        $inboxResponse->assertSee('Antrean Bersaing');
+
+        // Admin memutuskan mendahulukan User 2 (alokasikan eksemplar tersedia ke User 2)
+        $approveResponse = $this->actingAs($this->admin)
+            ->post(route('admin.peminjaman.setujui-pinjam', $loan2Id), [
+                'id_eksemplar' => $this->availableExemplar->id_eksemplar,
+                'catatan' => 'Didahulukan karena kebutuhan mendesak.',
+            ]);
+        $approveResponse->assertRedirect(route('admin.inbox', ['tab' => 'pinjam']));
+
+        $loan2 = PeminjamanBuku::findOrFail($loan2Id);
+        $this->assertEquals('Dipinjam', $loan2->status);
+        $this->assertEquals($this->availableExemplar->id_eksemplar, $loan2->id_eksemplar);
+
+        // Admin menolak permohonan User 1 karena stok telah dialokasikan
+        $rejectResponse = $this->actingAs($this->admin)
+            ->post(route('admin.peminjaman.tolak-pinjam', $loan1Id), [
+                'alasan' => 'Stok eksemplar fisik buku telah dialokasikan ke pemustaka lain yang membutuhkan terlebih dahulu.',
+            ]);
+        $rejectResponse->assertRedirect(route('admin.inbox', ['tab' => 'pinjam']));
+
+        $loan1 = PeminjamanBuku::findOrFail($loan1Id);
+        $this->assertEquals('Ditolak', $loan1->status);
+        $this->assertStringContainsString('dialokasikan', (string) $loan1->alasan_penolakan);
     }
 
     /**

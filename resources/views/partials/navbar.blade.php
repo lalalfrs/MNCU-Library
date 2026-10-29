@@ -45,6 +45,85 @@
                     <span>Login</span>
                 </a>
             @else
+                @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
+                    {{-- Tombol & Notifikasi Inbox Pengajuan Pengembalian Buku --}}
+                    <div class="relative">
+                        <button
+                            type="button"
+                            id="inbox-notification-button"
+                            class="relative inline-flex size-9 sm:size-10 lg:size-11 items-center justify-center rounded-xl border border-line bg-white text-ink hover:bg-subtle hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 btn-press"
+                            aria-label="Kotak Masuk Pengajuan Pengembalian"
+                            title="Kotak Masuk Pengajuan Pengembalian Buku"
+                        >
+                            <i class="fa-solid fa-inbox text-sm sm:text-base text-primary"></i>
+                            @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
+                                <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow-xs">
+                                    {{ $inboxPendingCount > 99 ? '99+' : $inboxPendingCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        {{-- Dropdown Preview Notifikasi Inbox --}}
+                        <div
+                            id="inbox-notification-dropdown"
+                            class="absolute right-0 mt-2 hidden w-80 sm:w-88 rounded-2xl border border-line bg-white p-3 shadow-raised z-50 animate-in fade-in zoom-in-95 duration-150"
+                            role="menu"
+                        >
+                            <div class="flex items-center justify-between border-b border-line pb-2.5 px-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                        <i class="fa-solid fa-inbox text-xs"></i>
+                                    </span>
+                                    <div>
+                                        <p class="text-xs font-bold text-ink">Inbox Pengembalian</p>
+                                        <p class="text-[10px] text-muted">{{ $inboxPendingCount ?? 0 }} permohonan menunggu validasi</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('admin.inbox') }}" class="text-[11px] font-semibold text-primary hover:underline">
+                                    Buka Semua
+                                </a>
+                            </div>
+
+                            <div class="divide-y divide-line/60 max-h-64 overflow-y-auto py-1">
+                                @forelse ($inboxPendingItems ?? [] as $pendingItem)
+                                    @php
+                                        $isPinjam = $pendingItem->status === 'Menunggu Persetujuan';
+                                        $targetTab = $isPinjam ? 'pinjam' : 'kembali';
+                                    @endphp
+                                    <a href="{{ route('admin.inbox', ['tab' => $targetTab]) }}" class="group block p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <p class="text-xs font-bold text-ink group-hover:text-primary transition-colors line-clamp-1">
+                                                {{ $pendingItem->pengguna->nama_lengkap }}
+                                            </p>
+                                            <span class="text-[9px] font-semibold {{ $isPinjam ? 'text-primary bg-primary/10' : 'text-amber-800 bg-amber-100' }} rounded px-1.5 py-0.5 shrink-0">
+                                                {{ $isPinjam ? 'Pinjam' : 'Kembali' }}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-ink-secondary truncate mt-0.5">
+                                            {{ $pendingItem->buku->judul_buku }}
+                                        </p>
+                                        <p class="text-[10px] text-muted mt-1 flex items-center justify-between">
+                                            <span>No: {{ $pendingItem->eksemplar?->kode_inventaris ?: ($isPinjam ? 'Antrean Pinjam' : '-') }}</span>
+                                            <span>{{ $pendingItem->tanggal_pengajuan_pinjam ? $pendingItem->tanggal_pengajuan_pinjam->diffForHumans() : ($pendingItem->tanggal_pengajuan_kembali ? $pendingItem->tanggal_pengajuan_kembali->diffForHumans() : 'Baru saja') }}</span>
+                                        </p>
+                                    </a>
+                                @empty
+                                    <div class="py-6 text-center text-xs text-muted">
+                                        <i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>
+                                        <span>Tidak ada permohonan pinjam atau kembali pending</span>
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            <div class="border-t border-line pt-2 text-center">
+                                <a href="{{ route('admin.inbox') }}" class="block w-full rounded-xl bg-primary/10 py-1.5 text-center text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                    Buka Inbox Validasi Lengkap
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="relative">
                     <button
                         type="button"
@@ -83,10 +162,21 @@
                             </span>
                         </div>
 
-                        {{-- Akses Cepat CRUD Manajemen (Khusus Super Admin) --}}
-                        @if (Auth::user()->isSuperAdmin())
+                        {{-- Akses Cepat CRUD Manajemen (Khusus Super Admin & Pustakawan) --}}
+                        @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
                             <div class="py-1 border-b border-line">
                                 <span class="block px-3 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Panel CRUD</span>
+                                <a href="{{ route('admin.inbox') }}" class="flex items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-amber-700">
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fa-solid fa-inbox text-amber-600 w-4"></i>
+                                        <span>Inbox Pengembalian</span>
+                                    </div>
+                                    @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
+                                        <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
+                                            {{ $inboxPendingCount }}
+                                        </span>
+                                    @endif
+                                </a>
                                 <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#7C3AED]">
                                     <i class="fa-solid fa-users-gear text-[#7C3AED] w-4"></i>
                                     <span>Manajemen User</span>
@@ -147,19 +237,33 @@
 
 <script>
     (() => {
-        const btn = document.getElementById('user-menu-button');
-        const dropdown = document.getElementById('user-dropdown');
-        if (btn && dropdown) {
-            btn.addEventListener('click', (e) => {
+        const userBtn = document.getElementById('user-menu-button');
+        const userDropdown = document.getElementById('user-dropdown');
+        if (userBtn && userDropdown) {
+            userBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isHidden = dropdown.classList.contains('hidden');
-                dropdown.classList.toggle('hidden', !isHidden);
-                btn.setAttribute('aria-expanded', String(isHidden));
-            });
-            document.addEventListener('click', () => {
-                dropdown.classList.add('hidden');
-                btn.setAttribute('aria-expanded', 'false');
+                const isHidden = userDropdown.classList.contains('hidden');
+                userDropdown.classList.toggle('hidden', !isHidden);
+                userBtn.setAttribute('aria-expanded', String(isHidden));
+                document.getElementById('inbox-notification-dropdown')?.classList.add('hidden');
             });
         }
+
+        const inboxBtn = document.getElementById('inbox-notification-button');
+        const inboxDropdown = document.getElementById('inbox-notification-dropdown');
+        if (inboxBtn && inboxDropdown) {
+            inboxBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = inboxDropdown.classList.contains('hidden');
+                inboxDropdown.classList.toggle('hidden', !isHidden);
+                userDropdown?.classList.add('hidden');
+            });
+        }
+
+        document.addEventListener('click', () => {
+            userDropdown?.classList.add('hidden');
+            inboxDropdown?.classList.add('hidden');
+            userBtn?.setAttribute('aria-expanded', 'false');
+        });
     })();
 </script>

@@ -17,10 +17,15 @@
                 'href' => route('repository'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-graduation-cap',
-                'iconBox' => 'bg-[#7C3AED]/10 text-[#7C3AED]',
-                'linkColor' => 'text-[#7C3AED]',
-                'hoverBorder' => 'hover:border-[#DDD6FE]',
-                'accentLine' => 'from-[#8B5CF6] to-[#D946EF]',
+                'cardBg' => 'bg-white',
+                'cardBorder' => 'border-purple-200 hover:border-purple-400',
+                'cardShadow' => 'hover:shadow-lg hover:shadow-purple-500/10',
+                'iconBox' => 'bg-purple-100 text-purple-700 border border-purple-200',
+                'iconStyle' => 'background-color: #f3e8ff; color: #7c3aed;',
+                'topBarStyle' => 'background: linear-gradient(to right, #7c3aed, #d946ef);',
+                'tagBadge' => 'bg-purple-100 text-purple-800 border border-purple-200',
+                'titleColor' => 'group-hover:text-purple-700',
+                'linkColor' => 'text-purple-700',
                 'typeBadge' => 'Karya Ilmiah',
             ],
             [
@@ -29,10 +34,15 @@
                 'href' => route('ejournal'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-newspaper',
-                'iconBox' => 'bg-[#2563EB]/10 text-[#2563EB]',
-                'linkColor' => 'text-[#2563EB]',
-                'hoverBorder' => 'hover:border-[#BFDBFE]',
-                'accentLine' => 'from-[#0EA5E9] to-[#2563EB]',
+                'cardBg' => 'bg-white',
+                'cardBorder' => 'border-blue-200 hover:border-blue-400',
+                'cardShadow' => 'hover:shadow-lg hover:shadow-blue-500/10',
+                'iconBox' => 'bg-blue-100 text-blue-700 border border-blue-200',
+                'iconStyle' => 'background-color: #dbeafe; color: #2563eb;',
+                'topBarStyle' => 'background: linear-gradient(to right, #0ea5e9, #2563eb);',
+                'tagBadge' => 'bg-blue-100 text-blue-800 border border-blue-200',
+                'titleColor' => 'group-hover:text-blue-700',
+                'linkColor' => 'text-blue-700',
                 'typeBadge' => 'Jurnal Online',
             ],
             [
@@ -41,10 +51,15 @@
                 'href' => route('ojs'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-layer-group',
-                'iconBox' => 'bg-[#059669]/10 text-[#047857]',
-                'linkColor' => 'text-[#047857]',
-                'hoverBorder' => 'hover:border-[#A7F3D0]',
-                'accentLine' => 'from-[#10B981] to-[#14B8A6]',
+                'cardBg' => 'bg-white',
+                'cardBorder' => 'border-emerald-200 hover:border-emerald-400',
+                'cardShadow' => 'hover:shadow-lg hover:shadow-emerald-500/10',
+                'iconBox' => 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+                'iconStyle' => 'background-color: #d1fae5; color: #047857;',
+                'topBarStyle' => 'background: linear-gradient(to right, #10b981, #14b8a6);',
+                'tagBadge' => 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+                'titleColor' => 'group-hover:text-emerald-700',
+                'linkColor' => 'text-emerald-700',
                 'typeBadge' => 'Portal OJS',
             ],
             [
@@ -53,10 +68,15 @@
                 'href' => route('ebook'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-tablet-screen-button',
-                'iconBox' => 'bg-[#E11D48]/10 text-[#E11D48]',
-                'linkColor' => 'text-[#E11D48]',
-                'hoverBorder' => 'hover:border-[#FECDD3]',
-                'accentLine' => 'from-[#F43F5E] to-[#EC4899]',
+                'cardBg' => 'bg-white',
+                'cardBorder' => 'border-rose-200 hover:border-rose-400',
+                'cardShadow' => 'hover:shadow-lg hover:shadow-rose-500/10',
+                'iconBox' => 'bg-rose-100 text-rose-700 border border-rose-200',
+                'iconStyle' => 'background-color: #ffe4e6; color: #e11d48;',
+                'topBarStyle' => 'background: linear-gradient(to right, #f43f5e, #ec4899);',
+                'tagBadge' => 'bg-rose-100 text-rose-800 border border-rose-200',
+                'titleColor' => 'group-hover:text-rose-700',
+                'linkColor' => 'text-rose-700',
                 'typeBadge' => 'Buku Digital',
             ],
         ];
@@ -199,43 +219,43 @@
                     </div>
 
                     <dl class="mt-3.5 sm:mt-4 flex flex-col gap-2.5 sm:gap-3">
-                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-colors hover:bg-subtle">
+                        <div class="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-blue-400 hover:shadow-xs">
                             <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 shadow-xs" style="background-color: #dbeafe; color: #2563eb;">
                                     <i class="fa-solid fa-user-clock text-xs sm:text-sm" aria-hidden="true"></i>
                                 </span>
                                 <div>
-                                    <dt class="text-xs text-muted">Hari ini</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-ink-secondary">Kunjungan unik hari ini</span>
+                                    <dt class="text-xs font-bold text-slate-800">Hari ini</dt>
+                                    <span class="text-[10px] sm:text-[11px] text-slate-500">Kunjungan unik hari ini</span>
                                 </div>
                             </div>
-                            <dd class="text-xl sm:text-2xl font-bold text-primary">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
+                            <dd class="text-xl sm:text-2xl font-extrabold text-blue-700">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
                         </div>
 
-                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-colors hover:bg-subtle">
+                        <div class="flex items-center justify-between rounded-xl border border-purple-200 bg-purple-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-purple-400 hover:shadow-xs">
                             <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-[#7C3AED]">
+                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[#7C3AED] shadow-xs" style="background-color: #f3e8ff; color: #7c3aed;">
                                     <i class="fa-solid fa-calendar-check text-xs sm:text-sm" aria-hidden="true"></i>
                                 </span>
                                 <div>
-                                    <dt class="text-xs text-muted">Bulan ini</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-ink-secondary">{{ now()->translatedFormat('F Y') }}</span>
+                                    <dt class="text-xs font-bold text-slate-800">Bulan ini</dt>
+                                    <span class="text-[10px] sm:text-[11px] text-slate-500">{{ now()->translatedFormat('F Y') }}</span>
                                 </div>
                             </div>
-                            <dd class="text-xl sm:text-2xl font-bold text-primary">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
+                            <dd class="text-xl sm:text-2xl font-extrabold text-[#7C3AED]">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
                         </div>
 
-                        <div class="flex items-center justify-between rounded-xl border border-line bg-subtle/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-colors hover:bg-subtle">
+                        <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-emerald-400 hover:shadow-xs">
                             <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shadow-xs" style="background-color: #d1fae5; color: #059669;">
                                     <i class="fa-solid fa-users text-xs sm:text-sm" aria-hidden="true"></i>
                                 </span>
                                 <div>
-                                    <dt class="text-xs text-muted">Total Kunjungan</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-ink-secondary">Akumulasi pengunjung</span>
+                                    <dt class="text-xs font-bold text-slate-800">Total Kunjungan</dt>
+                                    <span class="text-[10px] sm:text-[11px] text-slate-500">Akumulasi pengunjung</span>
                                 </div>
                             </div>
-                            <dd class="text-xl sm:text-2xl font-bold text-primary">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
+                            <dd class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
                         </div>
                     </dl>
 
@@ -269,23 +289,32 @@
         <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-line bg-white p-6 lg:p-8">
             <div class="flex flex-wrap items-end justify-between gap-2">
                 <div>
-                    <h2 id="judul-layanan" class="text-lg font-medium text-ink lg:text-2xl">Layanan Perpustakaan</h2>
-                    <p class="mt-1 text-sm text-muted lg:text-base">Pilih layanan sesuai koleksi yang ingin kamu cari.</p>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary mb-2">
+                        <i class="fa-solid fa-sparkles text-[10px]"></i>
+                        Koleksi & Portal Digital
+                    </div>
+                    <h2 id="judul-layanan" class="text-xl font-bold text-ink lg:text-3xl">Layanan Perpustakaan</h2>
+                    <p class="mt-1 text-sm text-slate-600 lg:text-base">Pilih layanan perpustakaan sesuai koleksi atau kebutuhan riset yang ingin kamu akses.</p>
                 </div>
             </div>
 
             {{-- Kartu utama: satu-satunya layanan yang berupa halaman di situs ini, jadi diberi porsi lebih besar. --}}
-            <a href="{{ route('opac') }}" class="group mt-6 flex flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
-                <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-105 lg:size-20">
-                    <i class="fa-solid fa-book-open-reader text-3xl lg:text-4xl text-primary" aria-hidden="true"></i>
+            <a href="{{ route('opac') }}" class="group relative mt-6 flex flex-col gap-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-primary/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
+                <span class="absolute inset-x-0 top-0 h-1.5" style="background: linear-gradient(to right, #0f2a6b, #2563eb, #38bdf8);"></span>
+                <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-105 lg:size-20" style="background-color: #0f2a6b; color: #ffffff;">
+                    <i class="fa-solid fa-book-open-reader text-3xl lg:text-4xl text-white" aria-hidden="true"></i>
                 </span>
                 <span class="flex-1">
-                    <span class="block text-xl font-medium text-ink lg:text-2xl">Katalog OPAC</span>
-                    <span class="mt-1.5 block text-sm leading-relaxed text-ink-secondary lg:text-base">Cari buku teks, monograf, dan referensi fisik. Cek ketersediaan eksemplar dan lokasi nomor panggil rak secara real-time.</span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-0.5 text-xs font-bold text-primary mb-2">
+                        <span class="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                        Koleksi & Sirkulasi Utama
+                    </span>
+                    <span class="block text-xl font-bold text-ink lg:text-2xl group-hover:text-primary transition-colors">Katalog OPAC</span>
+                    <span class="mt-1.5 block text-sm leading-relaxed text-slate-600 lg:text-base">Cari buku teks, monograf, dan referensi fisik. Cek ketersediaan eksemplar dan lokasi nomor panggil rak secara real-time.</span>
                 </span>
-                <span class="inline-flex items-center gap-2 text-base font-semibold text-primary lg:text-lg">
+                <span class="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all duration-200 group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-105 lg:text-base" style="background-color: #0f2a6b; color: #ffffff;">
                     Buka Katalog
-                    <i class="fa-solid fa-arrow-right text-base transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true"></i>
+                    <i class="fa-solid fa-arrow-right text-base transition-transform duration-200 group-hover:translate-x-1.5 motion-reduce:transition-none" aria-hidden="true"></i>
                 </span>
             </a>
 
@@ -295,33 +324,36 @@
                         <a
                             href="{{ $digitalService['href'] }}"
                             @if ($digitalService['isExternal']) target="_blank" rel="noopener" @endif
-                            class="group flex h-full flex-col rounded-xl border border-line bg-white p-4.5 xl:p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0 {{ $digitalService['hoverBorder'] }}"
+                            class="group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 {{ $digitalService['cardBorder'] }} {{ $digitalService['cardBg'] }} {{ $digitalService['cardShadow'] }} p-5 transition-all duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                         >
-                            <span class="flex items-start gap-3.5 xl:gap-4">
-                                <span class="flex size-12 xl:size-14 2xl:size-[60px] shrink-0 items-center justify-center rounded-xl {{ $digitalService['iconBox'] }} transition-transform duration-200 group-hover:scale-105">
+                            <span class="absolute inset-x-0 top-0 h-1.5" style="{{ $digitalService['topBarStyle'] }}"></span>
+
+                            <span class="flex items-start gap-3.5 xl:gap-4 pt-1">
+                                <span class="flex size-12 xl:size-14 2xl:size-[60px] shrink-0 items-center justify-center rounded-2xl {{ $digitalService['iconBox'] }} transition-transform duration-300 group-hover:scale-110" style="{{ $digitalService['iconStyle'] ?? '' }}">
                                     <i class="{{ $digitalService['faIcon'] }} text-xl xl:text-2xl 2xl:text-3xl" aria-hidden="true"></i>
                                 </span>
                                 <span class="min-w-0">
-                                    <span class="block text-base font-semibold text-ink lg:text-base xl:text-lg truncate">{{ $digitalService['title'] }}</span>
-                                    <span class="mt-1 block text-xs leading-relaxed text-muted xl:text-sm line-clamp-2">{{ $digitalService['description'] }}</span>
+                                    <span class="block text-base font-bold text-ink lg:text-base xl:text-lg transition-colors {{ $digitalService['titleColor'] }} truncate">{{ $digitalService['title'] }}</span>
+                                    <span class="mt-1 block text-xs leading-relaxed text-slate-600 xl:text-sm line-clamp-2">{{ $digitalService['description'] }}</span>
                                 </span>
                             </span>
 
-                            <span class="mt-auto block pt-4">
-                                <span class="block h-px bg-line"></span>
+                            <span class="mt-auto block pt-5">
+                                <span class="block h-px bg-slate-200/70"></span>
                                 <span class="mt-4 flex items-center justify-between text-xs sm:text-sm">
-                                    <span class="text-ink truncate pr-2">{{ $digitalService['typeBadge'] ?? ($digitalService['isExternal'] ? 'Situs eksternal' : 'Layanan digital') }}</span>
-                                    <span class="inline-flex shrink-0 items-center gap-1.5 font-medium {{ $digitalService['linkColor'] }}">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $digitalService['tagBadge'] }}">
+                                        {{ $digitalService['typeBadge'] ?? ($digitalService['isExternal'] ? 'Situs eksternal' : 'Layanan digital') }}
+                                    </span>
+                                    <span class="inline-flex shrink-0 items-center gap-1.5 font-bold {{ $digitalService['linkColor'] }}">
                                         Buka
                                         @if ($digitalService['isExternal'])
                                             <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
                                             <span class="sr-only">(tab baru)</span>
                                         @else
-                                            <i class="fa-solid fa-chevron-right text-xs transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-chevron-right text-xs transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true"></i>
                                         @endif
                                     </span>
                                 </span>
-                                <span class="mt-3 block h-1 rounded-full bg-linear-to-r {{ $digitalService['accentLine'] }}"></span>
                             </span>
                         </a>
                     </li>
@@ -377,10 +409,10 @@
                         aria-label="Daftar Berita Perpustakaan yang dapat digeser"
                     >
                         @foreach ($latestNews as $newsItem)
-                            <li class="carousel-item-3 shrink-0">
+                            <li class="carousel-item-3 shrink-0 flex flex-col">
                                 <a
                                     href="{{ !empty($newsItem['slug']) && $newsItem['slug'] !== '#' ? route('berita.show', $newsItem['slug']) : route('berita.index') }}"
-                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                                     draggable="false"
                                 >
                                     <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5 select-none pointer-events-none">
@@ -391,20 +423,26 @@
                                                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 loading="lazy"
                                                 draggable="false"
-                                             onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';" >
+                                                onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
+                                            >
                                         @endif
-                                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-primary shadow-xs backdrop-blur-xs">
-                                            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
+                                            <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
                                             {{ $newsItem['category'] ?? 'Berita Kampus' }}
                                         </span>
                                     </div>
-                                    <span class="flex flex-1 flex-col p-5">
-                                        <span class="text-[13px] text-muted">{{ $newsItem['date'] }}</span>
-                                        <span class="mt-2 line-clamp-2 text-base font-semibold text-ink group-hover:text-primary lg:text-lg">{{ $newsItem['title'] }}</span>
-                                        <span class="mt-2 line-clamp-2 text-sm text-ink-secondary">{{ $newsItem['excerpt'] }}</span>
-                                        <span class="mt-auto pt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                                    <span class="flex flex-1 flex-col p-5 bg-white">
+                                        <span class="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                                            <i class="fa-regular fa-calendar text-[11px]"></i>
+                                            <span>{{ $newsItem['date'] }}</span>
+                                        </span>
+                                        <span class="mt-2 line-clamp-2 text-base font-bold text-ink group-hover:text-primary transition-colors lg:text-lg">{{ $newsItem['title'] }}</span>
+                                        <span class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $newsItem['excerpt'] }}</span>
+                                        <span class="mt-auto pt-4 flex items-center justify-between border-t border-slate-100 text-xs sm:text-sm font-bold text-primary">
                                             <span>Baca berita</span>
-                                            <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
+                                            <span class="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-200 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-white shadow-xs">
+                                                <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                                            </span>
                                         </span>
                                     </span>
                                 </a>
@@ -488,10 +526,10 @@
                         aria-label="Daftar Acara Perpustakaan yang dapat digeser"
                     >
                         @foreach ($upcomingEvents as $eventItem)
-                            <li class="carousel-item-3 shrink-0">
+                            <li class="carousel-item-3 shrink-0 flex flex-col">
                                 <a
                                     href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}"
-                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                                     draggable="false"
                                 >
                                     <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5 select-none pointer-events-none">
@@ -502,7 +540,8 @@
                                                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 loading="lazy"
                                                 draggable="false"
-                                             onerror="this.onerror=null; this.src='{{ asset('images/acara/acara-01.jpg') }}';" >
+                                                onerror="this.onerror=null; this.src='{{ asset('images/acara/acara-01.jpg') }}';"
+                                            >
                                         @else
                                             <div class="flex h-full w-full items-center justify-center p-6 text-muted">
                                                 <svg class="size-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -513,17 +552,12 @@
                                                 </svg>
                                             </div>
                                         @endif
-                                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-primary shadow-xs backdrop-blur-xs">
-                                            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                                                <line x1="16" x2="16" y1="2" y2="6"/>
-                                                <line x1="8" x2="8" y1="2" y2="6"/>
-                                                <line x1="3" x2="21" y1="10" y2="10"/>
-                                            </svg>
+                                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
+                                            <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
                                             {{ $eventItem['category'] ?? 'Acara Kampus' }}
                                         </span>
                                         @if (!empty($eventItem['day']) && $eventItem['day'] !== '--')
-                                            <span class="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-xs backdrop-blur-xs">
+                                            <span class="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-xs backdrop-blur-xs border border-line">
                                                 <svg class="size-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                                     <circle cx="12" cy="12" r="10"/>
                                                     <polyline points="12 6 12 12 16 14"/>
@@ -532,27 +566,27 @@
                                             </span>
                                         @endif
                                     </div>
-                                    <span class="flex flex-1 flex-col p-5">
-                                        <span class="text-[13px] text-muted">
-                                             {{ !empty($eventItem['date']) ? $eventItem['date'] : ($eventItem['day'] . ' ' . $eventItem['month']) }}
+                                    <span class="flex flex-1 flex-col p-5 bg-white">
+                                        <span class="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                                            <i class="fa-regular fa-clock text-[11px]"></i>
+                                            <span>{{ !empty($eventItem['date']) ? $eventItem['date'] : ($eventItem['day'] . ' ' . $eventItem['month']) }}</span>
                                             @if (!empty($eventItem['time']))
-                                                &middot; {{ $eventItem['time'] }}
+                                                &middot; <span>{{ $eventItem['time'] }}</span>
                                             @endif
                                         </span>
-                                        <span class="mt-2 line-clamp-2 text-base font-semibold text-ink group-hover:text-primary lg:text-lg">{{ $eventItem['title'] }}</span>
-                                        <span class="mt-2 line-clamp-2 text-sm text-ink-secondary">{{ !empty($eventItem['excerpt']) && $eventItem['excerpt'] !== '[Ringkasan acara, maksimal dua baris]' ? $eventItem['excerpt'] : (!empty($eventItem['place']) ? 'Diselenggarakan di ' . $eventItem['place'] . '.' : 'Agenda kegiatan perpustakaan.') }}</span>
+                                        <span class="mt-2 line-clamp-2 text-base font-bold text-ink group-hover:text-primary transition-colors lg:text-lg">{{ $eventItem['title'] }}</span>
+                                        <span class="mt-2 line-clamp-2 text-sm text-slate-600">{{ !empty($eventItem['excerpt']) && $eventItem['excerpt'] !== '[Ringkasan acara, maksimal dua baris]' ? $eventItem['excerpt'] : (!empty($eventItem['place']) ? 'Diselenggarakan di ' . $eventItem['place'] . '.' : 'Agenda kegiatan perpustakaan.') }}</span>
                                         @if (!empty($eventItem['place']))
-                                            <span class="mt-2.5 flex items-center gap-1.5 text-xs text-muted truncate">
-                                                <svg class="size-3.5 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                                                    <circle cx="12" cy="10" r="3"/>
-                                                </svg>
+                                            <span class="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-slate-600 truncate">
+                                                <i class="fa-solid fa-location-dot text-rose-500 text-[11px]"></i>
                                                 <span class="truncate">{{ $eventItem['place'] }}</span>
                                             </span>
                                         @endif
-                                        <span class="mt-auto pt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                                        <span class="mt-auto pt-4 flex items-center justify-between border-t border-slate-100 text-xs sm:text-sm font-bold text-primary">
                                             <span>Lihat detail acara</span>
-                                            <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
+                                            <span class="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-200 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-white shadow-xs">
+                                                <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                                            </span>
                                         </span>
                                     </span>
                                 </a>
@@ -593,7 +627,7 @@
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h2 id="judul-lokasi" class="text-base font-medium text-ink lg:text-xl">Lokasi Perpustakaan</h2>
-                    <p class="mt-1 text-[13px] text-muted lg:text-base">[Alamat lengkap perpustakaan]</p>
+                    <p class="mt-1 text-[13px] text-muted lg:text-base">Gedung Perpustakaan MNC University, Jl. Haji Ten No. 34, RT.7/RW.2, Kebon Sirih, Menteng, Jakarta Pusat, DKI Jakarta 10340</p>
                 </div>
                 <a href="https://www.google.com/maps/search/?api=1&query=MNC+University" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
                     Buka di Google Maps

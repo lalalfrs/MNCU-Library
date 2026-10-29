@@ -115,6 +115,37 @@
                 </summary>
 
                 <ul class="mt-1 space-y-1 border-t border-line/60 pt-2 pb-1 px-1">
+                    {{-- Inbox Validasi Pengembalian Buku --}}
+                    @php $isInboxActive = request()->routeIs('admin.inbox'); @endphp
+                    <li>
+                        <a
+                            href="{{ route('admin.inbox') }}"
+                            class="group/item flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-all duration-200 ease-out active:scale-[0.97] {{ $isInboxActive ? 'bg-primary/10 font-bold text-primary shadow-xs border border-primary/20' : 'text-ink-secondary hover:bg-subtle hover:translate-x-1.5 hover:text-primary' }}"
+                        >
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="flex size-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ease-out {{ $isInboxActive ? 'bg-amber-600 text-white shadow-xs scale-105 ring-2 ring-amber-600/25' : 'bg-amber-50 text-amber-700 group-hover/item:bg-amber-600 group-hover/item:text-white group-hover/item:scale-110 group-hover/item:-rotate-6' }}">
+                                    <i class="fa-solid fa-inbox text-xs transition-transform duration-200 group-hover/item:scale-110"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="block truncate font-medium">Inbox Pengembalian</span>
+                                        @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
+                                            <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
+                                                {{ $inboxPendingCount }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="block text-[10px] text-muted truncate">Validasi pengembalian OPAC</span>
+                                </div>
+                            </div>
+                            @if ($isInboxActive)
+                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            @else
+                                <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
+                            @endif
+                        </a>
+                    </li>
+
                     {{-- Manajemen User --}}
                     @php $isUserActive = request()->routeIs('admin.users.*'); @endphp
                     <li>
