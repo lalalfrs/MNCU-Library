@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Buku;
+use App\Models\PeminjamanBuku;
 use App\Models\Pengguna;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -221,5 +223,96 @@ class ProfileTest extends TestCase
         $this->assertNotEquals($firstPath, $secondPath);
         Storage::disk('public')->assertMissing($firstPath); // Foto lama wajib terhapus
         Storage::disk('public')->assertExists($secondPath); // Foto baru tersimpan
+    }
+
+    /**
+     * User yang sedang login dapat melihat riwayat peminjamannya sendiri di halaman profil.
+     * Data mencakup Tanggal Peminjaman, Tanggal Pengembalian, dan Nama Buku.
+     */
+    public function test_user_can_view_own_borrowing_history_on_profile_show(): void
+    {
+        $mahasiswa1 = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->firstOrFail();
+        $mahasiswa2 = Pengguna::where('email', 'nabila.mhs@mncu.ac.id')->firstOrFail();
+        $buku1 = Buku::firstOrFail();
+        $buku2 = Buku::skip(1)->firstOrFail();
+
+        // Peminjaman milik mahasiswa1
+        PeminjamanBuku::create([
+            'id_pengguna' => $mahasiswa1->id_pengguna,
+            'id_buku' => $buku1->id_buku,
+            'tanggal_pinjam' => '2026-10-10',
+            'tanggal_jatuh_tempo' => '2026-10-17',
+            'tanggal_kembali' => '2026-10-15',
+            'status' => 'Dikembalikan',
+        ]);
+
+        // Peminjaman milik mahasiswa2 (tidak boleh bocor ke mahasiswa1)
+        PeminjamanBuku::create([
+            'id_pengguna' => $mahasiswa2->id_pengguna,
+            'id_buku' => $buku2->id_buku,
+            'tanggal_pinjam' => '2026-10-12',
+            'tanggal_jatuh_tempo' => '2026-10-19',
+            'status' => 'Dipinjam',
+        ]);
+
+        $response = $this->actingAs($mahasiswa1)->get(route('profile.show'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Riwayat Peminjaman Buku');
+        $response->assertSee($buku1->judul_buku);
+        $response->assertSee('10 Oct 2026'); // Tanggal Peminjaman
+        $response->assertSee('15 Oct 2026'); // Tanggal Pengembalian
+        $response->assertDontSee($buku2->judul_buku); // Filter user aktif aman
+    }
+
+    /**
+     * Halaman khusus riwayat peminjaman per user dapat diakses dan mendukung filter serta cetak PDF.
+     */
+    public function test_user_can_access_dedicated_borrowing_history_page_with_filters_and_pdf_print(): void
+    {
+        $mahasiswa = Pengguna::where('email', 'fauzi.mhs@mncu.ac.id')->firstOrFail();
+        $buku = Buku::firstOrFail();
+
+        PeminjamanBuku::create([
+            'id_pengguna' => $mahasiswa->id_pengguna,
+            'id_buku' => $buku->id_buku,
+            'tanggal_pinjam' => '2026-10-20',
+            'tanggal_jatuh_tempo' => '2026-10-27',
+            'status' => 'Dipinjam',
+        ]);
+
+        $response = $this->actingAs($mahasiswa)->get(route('profile.riwayat'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Riwayat Peminjaman Buku');
+        $response->assertSee($buku->judul_buku);
+        $response->assertSee('20 Oct 2026');
+        $response->assertSee('27 Oct 2026');
+        $response->assertSee('Cetak PDF');
+
+        // Filter aktif
+        $respAktif = $this->actingAs($mahasiswa)->get(route('profile.riwayat', ['status' => 'aktif']));
+        $respAktif->assertStatus(200);
+        $respAktif->assertSee($buku->judul_buku);
+
+        // Filter selesai
+        $respSelesai = $this->actingAs($mahasiswa)->get(route('profile.riwayat', ['status' => 'selesai']));
+        $respSelesai->assertStatus(200);
+        $respSelesai->assertDontSee($buku->judul_buku);
+
+        // Uji peminjaman berstatus 'Kembali' (buku selesai dikembalikan)
+        PeminjamanBuku::create([
+            'id_pengguna' => $mahasiswa->id_pengguna,
+            'id_buku' => $buku->id_buku,
+            'tanggal_pinjam' => '2026-10-01',
+            'tanggal_jatuh_tempo' => '2026-10-08',
+            'tanggal_kembali' => '2026-10-05',
+            'status' => 'Kembali',
+        ]);
+
+        $respSelesai2 = $this->actingAs($mahasiswa)->get(route('profile.riwayat', ['status' => 'selesai']));
+        $respSelesai2->assertStatus(200);
+        $respSelesai2->assertSee($buku->judul_buku);
+        $respSelesai2->assertSee('Dikembalikan');
     }
 }

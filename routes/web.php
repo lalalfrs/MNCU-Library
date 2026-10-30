@@ -35,6 +35,8 @@ Route::middleware('auth')->group(function (): void {
 // Profil Pengguna (Khusus Pengguna Terautentikasi)
 Route::middleware('auth')->group(function (): void {
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profil/riwayat-peminjaman', [ProfileController::class, 'riwayatPeminjaman'])->name('profile.riwayat');
+    Route::get('/riwayat-peminjaman', [ProfileController::class, 'riwayatPeminjaman'])->name('peminjaman.riwayat');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');

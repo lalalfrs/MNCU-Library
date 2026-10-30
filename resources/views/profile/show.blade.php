@@ -58,6 +58,10 @@
                         <i class="fa-solid fa-id-card text-xs" aria-hidden="true"></i>
                         <span>Ringkasan</span>
                     </span>
+                    <a href="{{ route('profile.riwayat') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
+                        <span>Riwayat Peminjaman</span>
+                    </a>
                     <a href="{{ route('profile.edit') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
                         <i class="fa-solid fa-user-pen text-xs" aria-hidden="true"></i>
                         <span>Edit Profil</span>
@@ -252,6 +256,18 @@
                         </h2>
                     </div>
                     <div class="p-3 space-y-1">
+                        <a href="{{ route('profile.riwayat') }}" class="flex min-h-[44px] items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-clock-rotate-left text-primary" aria-hidden="true"></i>
+                                <span>Riwayat Peminjaman Buku</span>
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                @if (isset($totalPinjamAktif) && $totalPinjamAktif > 0)
+                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">{{ $totalPinjamAktif }} Aktif</span>
+                                @endif
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+                            </div>
+                        </a>
                         <a href="{{ route('opac') }}" class="flex min-h-[44px] items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50">
                             <span class="flex items-center gap-3">
                                 <i class="fa-solid fa-book-open text-primary" aria-hidden="true"></i>
@@ -411,6 +427,306 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- ========================================================================= --}}
+        {{-- 3. RIWAYAT PEMINJAMAN BUKU SPESIFIK USER (TABEL & CARD LIST TAILWIND)    --}}
+        {{-- ========================================================================= --}}
+        <div id="riwayat-peminjaman" class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+            {{-- Header Bagian Riwayat --}}
+            <div class="flex flex-col gap-3 border-b border-line bg-slate-50/70 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <i class="fa-solid fa-clock-rotate-left text-sm" aria-hidden="true"></i>
+                        </span>
+                        <h2 class="text-base font-bold text-ink sm:text-lg">Riwayat Peminjaman Buku Saya</h2>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">
+                        Daftar riwayat peminjaman buku fisik terdaftar atas nama akun Anda di Perpustakaan MNC University.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-white border border-line px-3 py-1.5 text-xs font-semibold text-ink shadow-xs">
+                        <span class="size-2 rounded-full bg-primary"></span>
+                        <span>Total: {{ isset($riwayatPeminjaman) ? $riwayatPeminjaman->count() : 0 }} Buku</span>
+                    </span>
+                    @if (isset($totalPinjamAktif) && $totalPinjamAktif > 0)
+                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-xs">
+                            <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span>{{ $totalPinjamAktif }} Sedang Berjalan</span>
+                        </span>
+                    @endif
+                    <a href="{{ route('profile.riwayat') }}" class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark">
+                        <i class="fa-solid fa-list-check text-xs"></i>
+                        <span>Lihat Detail Lengkap</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- Tampilan Desktop: Tabel Responsif --}}
+            <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="border-b border-line bg-subtle text-muted">
+                        <tr>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">No</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Nama Buku</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Tanggal Peminjaman</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Tanggal Pengembalian</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Status Sirkulasi</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px] text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line/70">
+                        @forelse ($riwayatPeminjaman ?? [] as $index => $pinjam)
+                            @php
+                                $hariTerlambat = method_exists($pinjam, 'hitungHariTerlambat') ? $pinjam->hitungHariTerlambat() : 0;
+                            @endphp
+                            <tr class="transition-colors hover:bg-slate-50/70">
+                                <td class="px-5 py-4 font-mono text-muted text-xs">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="size-11 shrink-0 overflow-hidden rounded-lg border border-line bg-slate-100 shadow-xs">
+                                            @if ($pinjam->buku && $pinjam->buku->sampul_url)
+                                                <img src="{{ $pinjam->buku->sampul_url }}" alt="{{ $pinjam->buku->judul_buku }}" class="size-full object-cover">
+                                            @else
+                                                <div class="flex size-full items-center justify-center bg-primary/10 text-primary">
+                                                    <i class="fa-solid fa-book text-sm" aria-hidden="true"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0 max-w-[320px]">
+                                            <p class="font-bold text-ink hover:text-primary transition-colors line-clamp-2" title="{{ $pinjam->buku?->judul_buku }}">
+                                                {{ $pinjam->buku?->judul_buku ?? 'Judul Buku Tidak Ditemukan' }}
+                                            </p>
+                                            <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+                                                <span class="font-mono">ID: {{ $pinjam->id_peminjaman }}</span>
+                                                @if ($pinjam->eksemplar?->nomor_barcode)
+                                                    <span>•</span>
+                                                    <span class="font-mono">Barcode: {{ $pinjam->eksemplar->nomor_barcode }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-1.5 font-semibold text-ink">
+                                        <i class="fa-regular fa-calendar-check text-xs text-primary" aria-hidden="true"></i>
+                                        <span>{{ $pinjam->tanggal_pinjam ? $pinjam->tanggal_pinjam->format('d M Y') : ($pinjam->created_at ? $pinjam->created_at->format('d M Y') : '-') }}</span>
+                                    </div>
+                                    @if ($pinjam->tanggal_pengajuan_pinjam && ! $pinjam->tanggal_pinjam)
+                                        <span class="mt-0.5 block text-[10px] text-muted">Diajukan: {{ $pinjam->tanggal_pengajuan_pinjam->format('d M Y') }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    @if ($pinjam->tanggal_kembali)
+                                        <div class="flex items-center gap-1.5 font-bold text-emerald-700">
+                                            <i class="fa-solid fa-circle-check text-xs text-emerald-600" aria-hidden="true"></i>
+                                            <span>{{ $pinjam->tanggal_kembali->format('d M Y') }}</span>
+                                        </div>
+                                        <span class="mt-0.5 block text-[10px] text-muted">Selesai Dikembalikan</span>
+                                    @else
+                                        @if ($pinjam->tanggal_jatuh_tempo)
+                                            <div class="flex items-center gap-1.5 font-bold {{ $hariTerlambat > 0 ? 'text-rose-600' : 'text-amber-700' }}">
+                                                <i class="fa-regular fa-clock text-xs" aria-hidden="true"></i>
+                                                <span>{{ $pinjam->tanggal_jatuh_tempo->format('d M Y') }}</span>
+                                            </div>
+                                            @if ($hariTerlambat > 0)
+                                                <span class="mt-0.5 block text-[10px] font-semibold text-rose-600">Terlambat {{ $hariTerlambat }} hari</span>
+                                            @else
+                                                <span class="mt-0.5 block text-[10px] text-muted">Batas Pengembalian</span>
+                                            @endif
+                                        @else
+                                            <span class="font-medium text-slate-500">-</span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    @php
+                                        $isKembali = in_array($pinjam->status, ['Kembali', 'Dikembalikan']) || ! empty($pinjam->tanggal_kembali);
+                                    @endphp
+                                    @if ($isKembali)
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                            <i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i>
+                                            <span>Dikembalikan</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Dipinjam')
+                                        @if ($hariTerlambat > 0)
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                                <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
+                                                <span>Terlambat</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-primary border border-blue-200">
+                                                <i class="fa-solid fa-book-open-reader text-[10px]" aria-hidden="true"></i>
+                                                <span>Sedang Dipinjam</span>
+                                            </span>
+                                        @endif
+                                    @elseif (in_array($pinjam->status, ['Menunggu Verifikasi', 'Menunggu Persetujuan']))
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200">
+                                            <i class="fa-solid fa-hourglass-half text-[10px]" aria-hidden="true"></i>
+                                            <span>{{ $pinjam->status }}</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Terlambat')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                            <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
+                                            <span>Terlambat</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Ditolak')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                            <i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i>
+                                            <span>Ditolak</span>
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                                            {{ $pinjam->status }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 text-right whitespace-nowrap">
+                                    <a
+                                        href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
+                                        class="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-medium text-ink hover:bg-slate-50 hover:text-primary transition-colors"
+                                        title="Buka buku ini di OPAC"
+                                    >
+                                        <i class="fa-solid fa-eye text-[11px] text-muted" aria-hidden="true"></i>
+                                        <span>Katalog OPAC</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                        <i class="fa-solid fa-book text-2xl" aria-hidden="true"></i>
+                                    </div>
+                                    <h3 class="mt-3 text-sm font-bold text-ink">Belum Ada Riwayat Peminjaman</h3>
+                                    <p class="mx-auto mt-1 max-w-sm text-xs text-muted leading-relaxed">
+                                        Anda belum pernah meminjam koleksi buku fisik di Perpustakaan MNC University. Silakan temukan dan pinjam buku favorit Anda melalui katalog OPAC.
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="{{ route('opac') }}" class="btn-press inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark">
+                                            <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                                            <span>Jelajahi Katalog Buku (OPAC)</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Tampilan Mobile: Card List Responsif (antislop-layoutmobile) --}}
+            <div class="block sm:hidden divide-y divide-line/70">
+                @forelse ($riwayatPeminjaman ?? [] as $pinjam)
+                    @php
+                        $hariTerlambat = method_exists($pinjam, 'hitungHariTerlambat') ? $pinjam->hitungHariTerlambat() : 0;
+                    @endphp
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="size-12 shrink-0 overflow-hidden rounded-xl border border-line bg-slate-100 shadow-xs">
+                                    @if ($pinjam->buku && $pinjam->buku->sampul_url)
+                                        <img src="{{ $pinjam->buku->sampul_url }}" alt="{{ $pinjam->buku->judul_buku }}" class="size-full object-cover">
+                                    @else
+                                        <div class="flex size-full items-center justify-center bg-primary/10 text-primary">
+                                            <i class="fa-solid fa-book text-base" aria-hidden="true"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-bold text-xs text-ink line-clamp-2 leading-snug">
+                                        {{ $pinjam->buku?->judul_buku ?? 'Judul Buku Tidak Ditemukan' }}
+                                    </h3>
+                                    <p class="mt-0.5 font-mono text-[11px] text-muted">ID: {{ $pinjam->id_peminjaman }}</p>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                @php
+                                    $isKembali = in_array($pinjam->status, ['Kembali', 'Dikembalikan']) || ! empty($pinjam->tanggal_kembali);
+                                @endphp
+                                @if ($isKembali)
+                                    <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                        Dikembalikan
+                                    </span>
+                                @elseif ($pinjam->status === 'Dipinjam')
+                                    @if ($hariTerlambat > 0)
+                                        <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                            Terlambat
+                                        </span>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-primary border border-blue-200">
+                                            Dipinjam
+                                        </span>
+                                    @endif
+                                @elseif (in_array($pinjam->status, ['Menunggu Verifikasi', 'Menunggu Persetujuan']))
+                                    <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200">
+                                        Verifikasi
+                                    </span>
+                                @elseif ($pinjam->status === 'Terlambat')
+                                    <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                        Terlambat
+                                    </span>
+                                @else
+                                    <span class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+                                        {{ $pinjam->status }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Metadata Grid Tanggal Peminjaman & Pengembalian --}}
+                        <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2.5 text-[11px] border border-line/60">
+                            <div>
+                                <span class="block text-muted text-[10px]">Tanggal Peminjaman</span>
+                                <span class="font-bold text-ink">
+                                    {{ $pinjam->tanggal_pinjam ? $pinjam->tanggal_pinjam->format('d M Y') : ($pinjam->created_at ? $pinjam->created_at->format('d M Y') : '-') }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="block text-muted text-[10px]">Tanggal Pengembalian</span>
+                                <span class="font-bold {{ $pinjam->tanggal_kembali ? 'text-emerald-700' : ($hariTerlambat > 0 ? 'text-rose-600' : 'text-ink') }}">
+                                    @if ($pinjam->tanggal_kembali)
+                                        {{ $pinjam->tanggal_kembali->format('d M Y') }}
+                                    @elseif ($pinjam->tanggal_jatuh_tempo)
+                                        {{ $pinjam->tanggal_jatuh_tempo->format('d M Y') }}
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            @if ($pinjam->eksemplar?->nomor_barcode)
+                                <span class="font-mono text-[10px] text-muted">Barcode: {{ $pinjam->eksemplar->nomor_barcode }}</span>
+                            @else
+                                <span></span>
+                            @endif
+                            <a
+                                href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
+                                class="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                            >
+                                <span>Lihat di OPAC</span>
+                                <i class="fa-solid fa-angle-right text-[10px]" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center">
+                        <i class="fa-solid fa-book-open text-2xl text-slate-300 mb-2 block"></i>
+                        <p class="text-xs font-semibold text-ink">Belum Ada Riwayat Peminjaman</p>
+                        <p class="mt-1 text-[11px] text-muted">Buku yang Anda pinjam akan tercatat otomatis di sini.</p>
+                        <a href="{{ route('opac') }}" class="btn-press mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>Buka Katalog OPAC</span>
+                        </a>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>

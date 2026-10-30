@@ -1,4 +1,4 @@
-<header id="main-header" class="sticky top-2 sm:top-3 z-40 mx-2 sm:mx-3 lg:top-4 lg:mx-6 xl:mx-8 lg:mt-4 transition-all duration-300 ease-in-out">
+<header id="main-header" class="sticky top-2 sm:top-3 z-40 mx-2 sm:mx-3 lg:top-4 lg:mx-6 xl:mx-8 lg:mt-4 transition-all duration-300 ease-in-out print:hidden">
     <nav aria-label="Navigasi utama" class="mx-auto flex h-14 max-w-[1570px] items-center justify-between gap-2 sm:gap-3 lg:gap-4 rounded-2xl bg-white px-2.5 sm:px-4 shadow-raised lg:h-[70px] lg:px-6 xl:px-7">
         {{-- Kiri: Tombol Hamburger & Logo Perpustakaan --}}
         <div class="flex min-w-0 items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3">
@@ -204,6 +204,10 @@
                             <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
                                 <i class="fa-solid fa-user-circle text-primary w-4"></i>
                                 <span>Profil Saya</span>
+                            </a>
+                            <a href="{{ route('profile.riwayat') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                <i class="fa-solid fa-clock-rotate-left text-primary w-4"></i>
+                                <span>Riwayat Peminjaman</span>
                             </a>
                             <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
                                 <i class="fa-solid fa-user-pen text-muted w-4"></i>

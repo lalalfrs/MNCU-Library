@@ -44,7 +44,7 @@
             @endphp
 
             @if ($databaseAlert)
-                <div id="database-alert-banner" class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                <div id="database-alert-banner" class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6 print:hidden">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 rounded-2xl border border-red-200 bg-red-50/95 p-4 text-xs text-red-900 shadow-sm sm:text-sm">
                         <div class="flex items-start sm:items-center gap-3">
                             <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
@@ -71,7 +71,7 @@
             @endif
 
             @if (session('success'))
-                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6 print:hidden">
                     <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-circle-check text-emerald-600"></i>
@@ -85,7 +85,7 @@
             @endif
 
             @if (session('error'))
-                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6 print:hidden">
                     <div class="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 shadow-sm sm:text-sm">
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-triangle-exclamation text-red-600"></i>
@@ -99,7 +99,7 @@
             @endif
 
             @if (session('info'))
-                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6 print:hidden">
                     <div class="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-800 shadow-sm sm:text-sm">
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-circle-info text-blue-600"></i>

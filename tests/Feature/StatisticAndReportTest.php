@@ -100,6 +100,9 @@ class StatisticAndReportTest extends TestCase
         $response->assertSee('2. Total Anggota Member');
         $response->assertSee('3. Total User Meminjam Buku');
         $response->assertSee('4. Buku Belum Dikembalikan');
+        $response->assertSee('Cetak PDF');
+        $response->assertSee('PERPUSTAKAAN MNC UNIVERSITY');
+        $response->assertSee('Dr. H. Muhammad Arifin, M.Hum.');
 
         // Tes Export CSV
         $respCsv = $this->actingAs($this->superAdmin)->get(route('admin.reports.export-csv'));

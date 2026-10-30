@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\PeminjamanBuku;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,14 +13,124 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Tampilkan halaman lihat profil pengguna.
+     * Tampilkan halaman lihat profil pengguna beserta riwayat peminjamannya.
      */
     public function show(Request $request): View
     {
         $user = $request->user();
         $role = $user->role ?? 'mahasiswa';
 
-        return view('profile.show', compact('user', 'role'));
+        // Query riwayat peminjaman spesifik pengguna yang login
+        $riwayatPeminjaman = PeminjamanBuku::with(['buku.kategoriBuku', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->orderByRaw("
+                CASE 
+                    WHEN status IN ('Menunggu Persetujuan', 'Dipinjam', 'Terlambat', 'Menunggu Verifikasi') THEN 1 
+                    ELSE 2 
+                END
+            ")
+            ->latest('tanggal_pinjam')
+            ->latest('created_at')
+            ->get();
+
+        $totalPinjaman = $riwayatPeminjaman->count();
+        $totalPinjamAktif = $riwayatPeminjaman->filter(function ($pinjam) {
+            return empty($pinjam->tanggal_kembali) && in_array($pinjam->status, ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'], true);
+        })->count();
+        $totalPinjamSelesai = $riwayatPeminjaman->filter(function ($pinjam) {
+            return in_array($pinjam->status, ['Kembali', 'Dikembalikan'], true) || ! empty($pinjam->tanggal_kembali);
+        })->count();
+
+        return view('profile.show', compact(
+            'user',
+            'role',
+            'riwayatPeminjaman',
+            'totalPinjaman',
+            'totalPinjamAktif',
+            'totalPinjamSelesai'
+        ));
+    }
+
+    /**
+     * Tampilkan halaman riwayat peminjaman spesifik pengguna yang sedang login.
+     */
+    public function riwayatPeminjaman(Request $request): View
+    {
+        $user = $request->user();
+        $role = $user->role ?? 'mahasiswa';
+        $statusFilter = strtolower((string) $request->query('status', 'semua'));
+
+        $query = PeminjamanBuku::with(['buku.kategoriBuku', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna);
+
+        if ($statusFilter === 'aktif' || $statusFilter === 'berjalan' || $statusFilter === 'sedang_berjalan') {
+            // Sedang berjalan: peminjaman aktif yang belum dikembalikan
+            $query->whereNull('tanggal_kembali')
+                ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi']);
+        } elseif ($statusFilter === 'selesai' || $statusFilter === 'kembali' || $statusFilter === 'dikembalikan') {
+            // Selesai dikembalikan: status 'Kembali', 'Dikembalikan', atau sudah memiliki tanggal_kembali
+            $query->where(function ($q) {
+                $q->whereIn('status', ['Kembali', 'Dikembalikan'])
+                    ->orWhereNotNull('tanggal_kembali');
+            });
+        } elseif ($statusFilter === 'terlambat' || $statusFilter === 'keterlambatan') {
+            // Keterlambatan: status Terlambat, lewat tanggal jatuh tempo belum kembali, atau ada hari_keterlambatan > 0
+            $query->where(function ($q) {
+                $q->where('status', 'Terlambat')
+                    ->orWhere(function ($sub) {
+                        $sub->whereNull('tanggal_kembali')
+                            ->whereDate('tanggal_jatuh_tempo', '<', now()->toDateString());
+                    })
+                    ->orWhere('hari_keterlambatan', '>', 0);
+            });
+        } elseif ($statusFilter === 'menunggu' || $statusFilter === 'verifikasi' || $statusFilter === 'menunggu_verifikasi') {
+            // Menunggu verifikasi pengembalian atau persetujuan pinjam
+            $query->whereNull('tanggal_kembali')
+                ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Persetujuan']);
+        }
+
+        $riwayatPeminjaman = $query->orderByRaw("
+                CASE 
+                    WHEN status IN ('Menunggu Persetujuan', 'Dipinjam', 'Terlambat', 'Menunggu Verifikasi') THEN 1 
+                    ELSE 2 
+                END
+            ")
+            ->latest('tanggal_pinjam')
+            ->latest('created_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $baseQuery = PeminjamanBuku::where('id_pengguna', $user->id_pengguna);
+
+        $ringkasan = [
+            'total' => (clone $baseQuery)->count(),
+            'aktif' => (clone $baseQuery)
+                ->whereNull('tanggal_kembali')
+                ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+                ->count(),
+            'selesai' => (clone $baseQuery)
+                ->where(function ($q) {
+                    $q->whereIn('status', ['Kembali', 'Dikembalikan'])
+                        ->orWhereNotNull('tanggal_kembali');
+                })
+                ->count(),
+            'terlambat' => (clone $baseQuery)
+                ->where(function ($q) {
+                    $q->where('status', 'Terlambat')
+                        ->orWhere(function ($sub) {
+                            $sub->whereNull('tanggal_kembali')
+                                ->whereDate('tanggal_jatuh_tempo', '<', now()->toDateString());
+                        })
+                        ->orWhere('hari_keterlambatan', '>', 0);
+                })
+                ->count(),
+            'menunggu' => (clone $baseQuery)
+                ->whereNull('tanggal_kembali')
+                ->whereIn('status', ['Menunggu Verifikasi', 'Menunggu Persetujuan'])
+                ->count(),
+        ];
+
+        return view('profile.riwayat', compact('user', 'role', 'riwayatPeminjaman', 'statusFilter', 'ringkasan'));
     }
 
     /**

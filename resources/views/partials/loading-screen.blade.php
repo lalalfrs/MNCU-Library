@@ -1,10 +1,10 @@
 {{-- Top Progress Bar (meluncur di bagian atas viewport saat navigasi) --}}
-<div id="mncu-progress-bar" class="fixed top-0 left-0 right-0 z-[10000] h-[3px] w-0 bg-gradient-to-r from-primary via-blue-500 to-indigo-500 shadow-[0_1px_8px_rgba(37,99,235,0.45)] transition-all duration-200 ease-out pointer-events-none" aria-hidden="true"></div>
+<div id="mncu-progress-bar" class="fixed top-0 left-0 right-0 z-[10000] h-[3px] w-0 bg-gradient-to-r from-primary via-blue-500 to-indigo-500 shadow-[0_1px_8px_rgba(37,99,235,0.45)] transition-all duration-200 ease-out pointer-events-none print:hidden" aria-hidden="true"></div>
 
 {{-- Loading Screen Overlay Unik Bertema Perpustakaan MNC --}}
 <div
     id="mncu-loading-screen"
-    class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md transition-all duration-300 ease-out"
+    class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md transition-all duration-300 ease-out print:hidden"
     style="position: fixed; inset: 0; z-index: 9999;"
     role="status"
     aria-live="polite"

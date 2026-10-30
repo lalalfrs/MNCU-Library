@@ -55,7 +55,10 @@
                 </div>
 
                 <div class="mt-3 flex items-center justify-between border-t border-line/60 pt-2.5 text-xs">
-                    <span class="text-muted text-[11px]">Akun Terverifikasi</span>
+                    <a href="{{ route('profile.riwayat') }}" class="group/r font-medium text-slate-600 hover:text-primary inline-flex items-center gap-1.5 text-[11px] transition-colors">
+                        <i class="fa-solid fa-clock-rotate-left text-[11px] text-primary"></i>
+                        <span>Riwayat Pinjam</span>
+                    </a>
                     <a href="{{ route('profile.show') }}" class="group/p font-semibold text-primary hover:underline inline-flex items-center gap-1">
                         <span>Profil Saya</span>
                         <i class="fa-solid fa-angle-right text-[10px] transition-transform duration-200 group-hover/p:translate-x-0.5"></i>
