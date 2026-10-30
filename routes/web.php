@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\KehadiranController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,10 @@ Route::middleware('auth')->group(function (): void {
 
 // Beranda Utama
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
+
+// Buku Tamu & Presensi Kehadiran Pengunjung Perpustakaan
+Route::get('/kehadiran', [KehadiranController::class, 'index'])->name('kehadiran.index');
+Route::post('/kehadiran', [KehadiranController::class, 'store'])->name('kehadiran.store');
 
 // Profil & Informasi Perpustakaan
 Route::view('/tentang-kami', 'tentang-kami')->name('tentang-kami');
@@ -79,6 +84,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     Route::resource('users', UserController::class);
 
     // 2. Manajemen Buku & Stok Eksemplar
+    Route::get('buku/{buku}/cetak-label/{eksemplar?}', [BookController::class, 'cetakLabel'])->name('books.cetak-label');
     Route::resource('buku', BookController::class)->names('books');
     Route::post('buku/{buku}/kata-kunci', [BookController::class, 'updateKataKunci'])->name('books.kata-kunci.update');
     Route::post('buku/{buku}/eksemplar', [BookController::class, 'storeEksemplar'])->name('books.eksemplar.store');

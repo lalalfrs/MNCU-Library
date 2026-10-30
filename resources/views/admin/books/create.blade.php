@@ -124,7 +124,7 @@
             {{-- Panel Kanan: Form Entri Data Buku --}}
             <div class="lg:col-span-8">
                 <div class="rounded-2xl border border-line bg-white p-6 shadow-card sm:p-8">
-                    <form action="{{ route('admin.books.store') }}" method="POST" class="space-y-5">
+                    <form action="{{ route('admin.books.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                         @csrf
 
                         {{-- Judul Buku --}}
@@ -143,116 +143,104 @@
                             >
                         </div>
 
-                        {{-- Kategori & Format Buku --}}
+                        {{-- Kategori & Format Buku (Input Manual via Keyboard, Tanpa Dropdown) --}}
                         <div class="grid gap-5 sm:grid-cols-2">
                             <div>
-                                <label for="id_kategori_buku" class="block text-xs font-semibold text-ink">
-                                    Kategori Buku <span class="text-red-500">*</span>
+                                <label for="nama_kategori" class="flex items-center justify-between text-xs font-semibold text-ink">
+                                    <span>Kategori Koleksi <span class="text-red-500">*</span></span>
+                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
                                 </label>
-                                <select
-                                    name="id_kategori_buku"
-                                    id="id_kategori_buku"
+                                <input
+                                    type="text"
+                                    name="nama_kategori"
+                                    id="nama_kategori"
+                                    list="kategori_list"
+                                    value="{{ old('nama_kategori') }}"
                                     required
+                                    placeholder="Contoh: Komputer & Teknologi, Sains, Bisnis..."
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
-                                    <option value="">Pilih Kategori</option>
+                                <datalist id="kategori_list">
                                     @foreach ($categories as $cat)
-                                        <option value="{{ $cat->id_kategori_buku }}" {{ old('id_kategori_buku') === $cat->id_kategori_buku ? 'selected' : '' }}>
-                                            {{ $cat->nama_kategori }}
-                                        </option>
+                                        <option value="{{ $cat->nama_kategori }}"></option>
                                     @endforeach
-                                </select>
+                                </datalist>
+                                <span class="text-[10px] text-muted">Ketik langsung kategori baru atau pilih rekomendasi dari keyboard</span>
                             </div>
 
                             <div>
-                                <label for="id_jenis_buku" class="block text-xs font-semibold text-ink">
-                                    Format / Jenis Buku <span class="text-red-500">*</span>
+                                <label for="nama_jenis_buku" class="flex items-center justify-between text-xs font-semibold text-ink">
+                                    <span>Format / Jenis Koleksi <span class="text-red-500">*</span></span>
+                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
                                 </label>
-                                <select
-                                    name="id_jenis_buku"
-                                    id="id_jenis_buku"
+                                <input
+                                    type="text"
+                                    name="nama_jenis_buku"
+                                    id="nama_jenis_buku"
+                                    list="jenis_list"
+                                    value="{{ old('nama_jenis_buku') }}"
                                     required
+                                    placeholder="Contoh: Buku Teks, Referensi, E-Book, Jurnal..."
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
-                                    <option value="">Pilih Format</option>
+                                <datalist id="jenis_list">
                                     @foreach ($types as $type)
-                                        <option value="{{ $type->id_jenis_buku }}" {{ old('id_jenis_buku') === $type->id_jenis_buku ? 'selected' : '' }}>
-                                            {{ $type->nama_jenis_buku }}
-                                        </option>
+                                        <option value="{{ $type->nama_jenis_buku }}"></option>
                                     @endforeach
-                                </select>
+                                </datalist>
+                                <span class="text-[10px] text-muted">Ketik langsung format koleksi baru atau pilih rekomendasi</span>
                             </div>
                         </div>
 
-                        {{-- Penerbit & Pengarang Utama --}}
-                        <div class="space-y-4 rounded-xl border border-line bg-subtle/30 p-4">
-                            <div class="grid gap-5 sm:grid-cols-2">
-                                <div>
-                                    <label for="id_penerbit" class="block text-xs font-semibold text-ink">
-                                        Penerbit Buku
-                                    </label>
-                                    <select
-                                        name="id_penerbit"
-                                        id="id_penerbit"
-                                        class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
-                                    >
-                                        <option value="">Pilih Penerbit</option>
-                                        @foreach ($publishers as $pub)
-                                            <option value="{{ $pub->id_penerbit }}" {{ old('id_penerbit') === $pub->id_penerbit ? 'selected' : '' }}>
-                                                {{ $pub->nama_penerbit }} ({{ $pub->kota }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label for="id_penulis" class="block text-xs font-semibold text-ink">
-                                        Pilih Pengarang Terdaftar
-                                    </label>
-                                    <select
-                                        name="id_penulis"
-                                        id="id_penulis"
-                                        class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
-                                    >
-                                        <option value="">-- Pilih dari Pengarang yang Ada --</option>
-                                        @foreach ($authors as $auth)
-                                            <option value="{{ $auth->id_penulis }}" {{ old('id_penulis') === $auth->id_penulis ? 'selected' : '' }}>
-                                                {{ $auth->nama_penulis }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            {{-- Input Manual Pengarang Baru via Keyboard --}}
-                            <div class="border-t border-line/80 pt-3">
-                                <label for="nama_penulis_manual" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>
-                                        <i class="fa-solid fa-keyboard mr-1.5 text-primary"></i>Atau Tulis Manual Nama Pengarang Baru
-                                    </span>
-                                    <span class="text-[11px] font-normal text-muted">Ketik langsung di keyboard</span>
+                        {{-- Penerbit & Pengarang Utama (Input Manual via Keyboard, Tanpa Dropdown) --}}
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label for="nama_penerbit" class="flex items-center justify-between text-xs font-semibold text-ink">
+                                    <span>Penerbit Buku</span>
+                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
                                 </label>
-                                <div class="relative mt-1.5">
-                                    <input
-                                        type="text"
-                                        name="nama_penulis_manual"
-                                        id="nama_penulis_manual"
-                                        value="{{ old('nama_penulis_manual') }}"
-                                        placeholder="Ketik nama lengkap pengarang baru (contoh: Prof. Budi Rahardjo, Ph.D.)..."
-                                        class="h-11 w-full rounded-xl border border-line bg-white pr-9 pl-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
-                                    >
-                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted">
-                                        <i class="fa-solid fa-pen-nib text-xs"></i>
-                                    </span>
-                                </div>
-                                <p class="mt-1 text-[11px] text-muted">
-                                    Jika diisi, sistem akan otomatis mendaftarkan nama pengarang baru ini ke basis data dan menghubungkannya dengan buku.
-                                </p>
+                                <input
+                                    type="text"
+                                    name="nama_penerbit"
+                                    id="nama_penerbit"
+                                    list="penerbit_list"
+                                    value="{{ old('nama_penerbit') }}"
+                                    placeholder="Ketik penerbit (misal: Penerbit Andi, Erlangga)..."
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                                >
+                                <datalist id="penerbit_list">
+                                    @foreach ($publishers as $pub)
+                                        <option value="{{ $pub->nama_penerbit }}"></option>
+                                    @endforeach
+                                </datalist>
+                                <span class="text-[10px] text-muted">Ketik nama penerbit; jika belum ada akan otomatis terdaftar</span>
+                            </div>
+
+                            <div>
+                                <label for="nama_penulis" class="flex items-center justify-between text-xs font-semibold text-ink">
+                                    <span>Pengarang / Penulis Utama</span>
+                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nama_penulis"
+                                    id="nama_penulis"
+                                    list="penulis_list"
+                                    value="{{ old('nama_penulis', old('nama_penulis_manual')) }}"
+                                    placeholder="Ketik nama pengarang (misal: Prof. Dr. Ir. Budi Rahardjo)..."
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                                >
+                                <datalist id="penulis_list">
+                                    @foreach ($authors as $auth)
+                                        <option value="{{ $auth->nama_penulis }}"></option>
+                                    @endforeach
+                                </datalist>
+                                <span class="text-[10px] text-muted">Ketik nama pengarang langsung menggunakan keyboard</span>
                             </div>
                         </div>
 
-                        {{-- ISBN, Tahun, Halaman --}}
-                        <div class="grid gap-5 sm:grid-cols-3">
+                        {{-- ISBN, Tahun, Halaman & Dimensi / Ukuran Fisik --}}
+                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
                                 <label for="isbn" class="block text-xs font-semibold text-ink">
                                     Nomor ISBN
@@ -263,7 +251,7 @@
                                     id="isbn"
                                     value="{{ old('isbn') }}"
                                     placeholder="978-602-xxx"
-                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm font-mono"
                                 >
                             </div>
 
@@ -295,33 +283,71 @@
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
                             </div>
+
+                            <div>
+                                <label for="dimensi" class="block text-xs font-semibold text-ink">
+                                    Dimensi / Ukuran Fisik
+                                </label>
+                                <input
+                                    type="text"
+                                    name="dimensi"
+                                    id="dimensi"
+                                    value="{{ old('dimensi') }}"
+                                    placeholder="Contoh: 21 cm atau 15 x 23 cm"
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                                >
+                                <span class="text-[10px] text-muted">Dicetak pada label stiker</span>
+                            </div>
                         </div>
 
-                        {{-- URL Sampul Buku (Terhubung ke Live Preview) --}}
-                        <div>
+                        {{-- Unggah Berkas Sampul Buku & Alternatif URL --}}
+                        <div class="rounded-xl border border-line bg-subtle/30 p-4 space-y-3">
                             <div class="flex items-center justify-between">
-                                <label for="sampul_buku" class="block text-xs font-semibold text-ink">
-                                    URL Sampul Buku (Opsional)
+                                <label for="sampul_buku_file" class="block text-xs font-semibold text-ink">
+                                    <i class="fa-solid fa-cloud-arrow-up mr-1.5 text-primary"></i>Unggah Berkas Sampul Buku (Opsional)
                                 </label>
-                                <span class="text-[11px] text-muted">Preview otomatis terupdate saat diketik</span>
+                                <span class="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">JPG, PNG, WEBP &bull; Maks. 200 KB</span>
                             </div>
-                            <div class="relative mt-1.5">
-                                <input
-                                    type="url"
-                                    name="sampul_buku"
-                                    id="sampul_buku"
-                                    value="{{ old('sampul_buku') }}"
-                                    placeholder="https://images.unsplash.com/... atau URL gambar sampul"
-                                    class="h-11 w-full rounded-xl border border-line bg-white pr-20 pl-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
-                                >
-                                <button
-                                    type="button"
-                                    onclick="clearCoverInput()"
-                                    id="btn-clear-cover"
-                                    class="hidden absolute inset-y-1.5 right-2 inline-flex items-center rounded-lg bg-slate-100 px-2.5 text-xs font-medium text-muted hover:bg-slate-200 hover:text-ink transition-colors"
-                                >
-                                    Reset
-                                </button>
+                            <p class="text-[11px] text-muted">
+                                Pilih file gambar sampul buku dari komputer Anda (format JPG, PNG, atau WEBP, ukuran maksimal 200 KB).
+                            </p>
+
+                            <input
+                                type="file"
+                                name="sampul_buku_file"
+                                id="sampul_buku_file"
+                                accept=".jpg,.jpeg,.png,.webp"
+                                class="block w-full text-xs text-ink-secondary file:mr-3 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2.5 file:text-xs file:font-semibold file:text-white file:transition-colors hover:file:bg-primary-dark cursor-pointer sm:text-sm"
+                            >
+                            <span id="file-size-warning" class="hidden text-[11px] font-medium text-red-600">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Ukuran file melebihi 200 KB. Harap pilih gambar yang lebih kecil dari 200 KB.
+                            </span>
+
+                            <div class="border-t border-line/80 pt-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label for="sampul_buku" class="block text-[11px] font-medium text-muted">
+                                        Atau gunakan tautan URL gambar sampul online:
+                                    </label>
+                                    <span class="text-[10px] text-muted">Preview otomatis terupdate</span>
+                                </div>
+                                <div class="relative mt-1">
+                                    <input
+                                        type="url"
+                                        name="sampul_buku"
+                                        id="sampul_buku"
+                                        value="{{ old('sampul_buku') }}"
+                                        placeholder="https://images.unsplash.com/... atau URL gambar sampul"
+                                        class="h-10 w-full rounded-xl border border-line bg-white pr-20 pl-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
+                                    >
+                                    <button
+                                        type="button"
+                                        onclick="clearCoverInput()"
+                                        id="btn-clear-cover"
+                                        class="hidden absolute inset-y-1.5 right-2 inline-flex items-center rounded-lg bg-slate-100 px-2.5 text-xs font-medium text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -366,22 +392,43 @@
                         </div>
 
                         {{-- Pengaturan Eksemplar Fisik & Stok Awal --}}
-                        <div class="space-y-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
+                        <div class="space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
                             <div class="flex items-center justify-between">
                                 <span class="flex items-center gap-2 text-xs font-bold text-emerald-950">
-                                    <i class="fa-solid fa-boxes-stacked text-emerald-700"></i>
-                                    Registrasi Eksemplar Fisik &amp; Stok Awal (Opsional)
+                                    <i class="fa-solid fa-barcode text-emerald-700"></i>
+                                    Registrasi Eksemplar Fisik &amp; Kode Barcode
                                 </span>
-                                <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">Inventaris Rak</span>
+                                <span class="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">Inventaris Rak &amp; Cetak Label Stiker</span>
                             </div>
                             <p class="text-[11px] text-emerald-900/80 leading-snug">
-                                Tentukan jumlah salinan fisik buku yang langsung tersedia di rak perpustakaan. Sistem otomatis men-generate barcode inventaris dan nomor panggil per eksemplar.
+                                Daftarkan salinan fisik buku. Anda dapat mengetik kode barcode manual dari stiker fisik, melakukan scan dengan barcode scanner, atau biarkan kosong agar sistem otomatis membuat kode inventaris baru.
                             </p>
 
-                            <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label for="kode_barcode" class="flex items-center justify-between text-xs font-semibold text-ink">
+                                        <span><i class="fa-solid fa-barcode mr-1 text-primary"></i>Kode Barcode / Nomor Inventaris Fisik</span>
+                                        <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik/Scan</span>
+                                    </label>
+                                    <div class="relative mt-1">
+                                        <input
+                                            type="text"
+                                            name="kode_barcode"
+                                            id="kode_barcode"
+                                            value="{{ old('kode_barcode') }}"
+                                            placeholder="Contoh: INV-MNCU-001 atau scan barcode..."
+                                            class="h-10 w-full rounded-xl border border-line bg-white pr-8 pl-3.5 text-xs font-mono text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+                                        >
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted">
+                                            <i class="fa-solid fa-keyboard text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <span class="text-[10px] text-muted">Jika kosong, sistem membuat kode otomatis INV-BK...</span>
+                                </div>
+
                                 <div>
                                     <label for="stok_awal" class="block text-xs font-semibold text-ink">
-                                        Jumlah Stok Awal
+                                        Jumlah Salinan / Eksemplar
                                     </label>
                                     <input
                                         type="number"
@@ -390,15 +437,17 @@
                                         value="{{ old('stok_awal', 1) }}"
                                         min="0"
                                         max="50"
-                                        placeholder="Misal: 2"
+                                        placeholder="Misal: 1"
                                         class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Isi 0 jika buku digital / belum ada fisik</span>
+                                    <span class="text-[10px] text-muted">Isi 0 jika hanya ada koleksi digital tanpa buku fisik</span>
                                 </div>
+                            </div>
 
+                            <div class="grid gap-4 sm:grid-cols-2 border-t border-emerald-200/60 pt-2">
                                 <div>
                                     <label for="nomor_panggil_dasar" class="block text-xs font-semibold text-ink">
-                                        Nomor Panggil Dasar
+                                        Nomor Panggil Buku (Call Number / DDC)
                                     </label>
                                     <input
                                         type="text"
@@ -406,9 +455,9 @@
                                         id="nomor_panggil_dasar"
                                         value="{{ old('nomor_panggil_dasar') }}"
                                         placeholder="Contoh: 005.1 HID a"
-                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none font-mono"
+                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs font-mono text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Akan diberi suffix c.1, c.2, dst.</span>
+                                    <span class="text-[10px] text-muted">Akan dicetak di bagian stiker punggung buku (8x5 cm)</span>
                                 </div>
 
                                 <div>
@@ -423,7 +472,7 @@
                                         placeholder="Contoh: Lantai 2, Rak Komputer 03"
                                         class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Letak fisik buku di gedung</span>
+                                    <span class="text-[10px] text-muted">Letak penempatan buku fisik di gedung perpustakaan</span>
                                 </div>
                             </div>
                         </div>
@@ -453,6 +502,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const coverInput = document.getElementById('sampul_buku');
+            const fileInput = document.getElementById('sampul_buku_file');
+            const sizeWarning = document.getElementById('file-size-warning');
             const previewImg = document.getElementById('cover-preview-img');
             const previewPlaceholder = document.getElementById('cover-preview-placeholder');
             const previewStatusBadge = document.getElementById('preview-status-badge');
@@ -461,22 +512,58 @@
             const titleInput = document.getElementById('judul_buku');
             const previewTitle = document.getElementById('preview-title-display');
 
-            const authorSelect = document.getElementById('id_penulis');
-            const authorManual = document.getElementById('nama_penulis_manual');
+            const authorInput = document.getElementById('nama_penulis');
             const previewAuthor = document.getElementById('preview-author-display');
 
-            // 1. Update Sampul Buku Preview
+            // 1. Update Sampul Buku Preview dari File Upload
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    if (file.size > 200 * 1024) {
+                        if (sizeWarning) sizeWarning.classList.remove('hidden');
+                        previewStatusBadge.textContent = 'Ukuran > 200 KB!';
+                        previewStatusBadge.className = 'inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-medium text-red-800';
+                        alert('Perhatian: Ukuran file sampul buku melebihi batas 200 KB (' + Math.round(file.size / 1024) + ' KB). Silakan gunakan file gambar JPG/PNG/WEBP di bawah 200 KB.');
+                    } else {
+                        if (sizeWarning) sizeWarning.classList.add('hidden');
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (evt) {
+                        previewImg.src = evt.target.result;
+                        previewImg.classList.remove('hidden');
+                        previewPlaceholder.classList.add('hidden');
+                        if (file.size <= 200 * 1024) {
+                            previewStatusBadge.textContent = 'File Terpilih (' + Math.round(file.size / 1024) + ' KB)';
+                            previewStatusBadge.className = 'inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-medium text-emerald-800';
+                        }
+                        btnClearCover.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 2. Update Sampul Buku Preview dari URL Text
             function updateCoverPreview() {
                 const url = coverInput.value.trim();
 
                 if (!url) {
-                    previewImg.classList.add('hidden');
-                    previewImg.src = '';
-                    previewPlaceholder.classList.remove('hidden');
-                    previewStatusBadge.textContent = 'Menunggu URL';
-                    previewStatusBadge.className = 'inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600';
-                    btnClearCover.classList.add('hidden');
+                    if (!fileInput || !fileInput.files.length) {
+                        previewImg.classList.add('hidden');
+                        previewImg.src = '';
+                        previewPlaceholder.classList.remove('hidden');
+                        previewStatusBadge.textContent = 'Menunggu URL / File';
+                        previewStatusBadge.className = 'inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600';
+                        btnClearCover.classList.add('hidden');
+                    }
                     return;
+                }
+
+                if (fileInput) {
+                    fileInput.value = '';
+                    if (sizeWarning) sizeWarning.classList.add('hidden');
                 }
 
                 btnClearCover.classList.remove('hidden');
@@ -510,11 +597,15 @@
 
             window.clearCoverInput = function () {
                 coverInput.value = '';
+                if (fileInput) fileInput.value = '';
+                if (sizeWarning) sizeWarning.classList.add('hidden');
                 updateCoverPreview();
                 coverInput.focus();
             };
 
             window.applySampleCover = function (sampleUrl) {
+                if (fileInput) fileInput.value = '';
+                if (sizeWarning) sizeWarning.classList.add('hidden');
                 coverInput.value = sampleUrl;
                 updateCoverPreview();
             };
@@ -525,34 +616,16 @@
                 previewTitle.textContent = title || '[Judul buku akan tampil di sini]';
             });
 
-            // 3. Mirror Pengarang (Manual vs Dropdown)
+            // 3. Mirror Pengarang
             function updateAuthorPreview() {
-                const manual = authorManual.value.trim();
-                if (manual) {
-                    previewAuthor.textContent = 'Pengarang: ' + manual;
-                    return;
-                }
-                const selectedOpt = authorSelect.options[authorSelect.selectedIndex];
-                if (selectedOpt && selectedOpt.value) {
-                    previewAuthor.textContent = 'Pengarang: ' + selectedOpt.text;
-                } else {
-                    previewAuthor.textContent = 'Pengarang: -';
-                }
+                const val = authorInput ? authorInput.value.trim() : '';
+                previewAuthor.textContent = val ? 'Pengarang: ' + val : 'Pengarang: -';
             }
 
-            authorManual.addEventListener('input', function () {
-                if (authorManual.value.trim()) {
-                    authorSelect.value = '';
-                }
-                updateAuthorPreview();
-            });
-
-            authorSelect.addEventListener('change', function () {
-                if (authorSelect.value) {
-                    authorManual.value = '';
-                }
-                updateAuthorPreview();
-            });
+            if (authorInput) {
+                authorInput.addEventListener('input', updateAuthorPreview);
+                authorInput.addEventListener('change', updateAuthorPreview);
+            }
 
             // Inisialisasi awal saat load
             if (coverInput.value) {

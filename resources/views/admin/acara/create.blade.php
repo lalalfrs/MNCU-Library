@@ -189,7 +189,7 @@
                         Poster / Foto Acara (Media Upload)
                     </label>
                     <p class="mt-0.5 text-xs text-muted">
-                        Format yang didukung: <span class="font-semibold text-ink">PNG, JPG, JPEG, WEBP</span>. Maksimal 5 MB.
+                        Format yang didukung: <span class="font-semibold text-ink">PNG, JPG, JPEG, WEBP</span>. Maksimal 200 KB.
                     </p>
 
                     <div class="mt-3 grid gap-4 sm:grid-cols-[1fr_160px] sm:items-start">
@@ -276,6 +276,9 @@
                 fileInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
+                        if (file.size > 200 * 1024) {
+                            alert('Perhatian: Ukuran file melebihi batas maksimal 200 KB (' + Math.round(file.size / 1024) + ' KB). Silakan kompres atau pilih file yang lebih kecil.');
+                        }
                         const reader = new FileReader();
                         reader.onload = function(evt) {
                             previewImg.src = evt.target.result;

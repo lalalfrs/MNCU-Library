@@ -61,6 +61,7 @@
                             src="{{ filter_var($berita->image, FILTER_VALIDATE_URL) ? $berita->image : asset($berita->image) }}"
                             alt="{{ $berita->title }}"
                             class="h-full w-full object-cover"
+                            onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
                         >
                     </div>
                 @else

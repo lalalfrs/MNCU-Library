@@ -72,14 +72,26 @@
 
             @if (session('success'))
                 <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
-                    <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-circle-check text-emerald-600"></i>
                             <span>{{ session('success') }}</span>
                         </div>
-                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900" aria-label="Tutup pemberitahuan">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                        <div class="flex items-center gap-2 self-end sm:self-auto">
+                            @if (session('cetak_label_url'))
+                                <a
+                                    href="{{ session('cetak_label_url') }}"
+                                    target="_blank"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-800 transition-colors"
+                                >
+                                    <i class="fa-solid fa-barcode"></i>
+                                    <span>Cetak Stiker (8x5 cm)</span>
+                                </a>
+                            @endif
+                            <button type="button" onclick="this.closest('.max-w-\\[1570px\\]').remove()" class="text-emerald-700 hover:text-emerald-900 p-1" aria-label="Tutup pemberitahuan">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             @endif

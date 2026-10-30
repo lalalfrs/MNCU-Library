@@ -103,8 +103,8 @@
                             <tr class="transition-colors hover:bg-[#F9FAFB]">
                                 <td class="px-5 py-4">
                                     <div class="flex items-start gap-3">
-                                        @if ($item->gambar_berita)
-                                            <img src="{{ $item->gambar_berita }}" alt="{{ $item->judul_berita }}" class="h-12 w-16 shrink-0 rounded-lg object-cover border border-line">
+                                        @if ($item->image)
+                                            <img src="{{ $item->image }}" alt="{{ $item->judul_berita }}" class="h-12 w-16 shrink-0 rounded-lg object-cover border border-line" onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';">
                                         @endif
                                         <div class="min-w-0">
                                             <a href="{{ route('berita.show', $item->slug ?? $item->id_berita) }}" target="_blank" class="font-semibold text-ink hover:text-primary leading-snug">

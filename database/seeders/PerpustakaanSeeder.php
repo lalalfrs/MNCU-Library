@@ -164,7 +164,7 @@ class PerpustakaanSeeder extends Seeder
                 'id_pengguna' => 'MNCU00001',
                 'nama_pustakawan' => 'Dr. H. Muhammad Arifin, M.Hum.',
                 'jabatan' => 'Kepala Perpustakaan MNC University',
-                'foto_pustakawan' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+                'foto_pustakawan' => 'images/pustakawan/pustakawan-01.jpg',
                 'deskripsi_pustakawan' => 'Bertanggung jawab atas pengelolaan seluruh layanan perpustakaan, pengembangan koleksi, dan koordinasi kegiatan literasi informasi.',
             ],
             [
@@ -173,7 +173,7 @@ class PerpustakaanSeeder extends Seeder
                 'id_pengguna' => 'MNCU00002',
                 'nama_pustakawan' => 'Sarah Amalia, S.I.Pust.',
                 'jabatan' => 'Pustakawan Layanan Sirkulasi & Referensi',
-                'foto_pustakawan' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+                'foto_pustakawan' => 'images/pustakawan/pustakawan-02.jpg',
                 'deskripsi_pustakawan' => 'Melayani sirkulasi peminjaman, konsultasi literasi informasi, dan administrasi keanggotaan pemustaka.',
             ],
             [
@@ -182,7 +182,7 @@ class PerpustakaanSeeder extends Seeder
                 'id_pengguna' => 'MNCU00003',
                 'nama_pustakawan' => 'Fajar Pratama, S.Kom.',
                 'jabatan' => 'Pustakawan Teknologi Informasi & E-Resources',
-                'foto_pustakawan' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+                'foto_pustakawan' => 'images/pustakawan/pustakawan-03.jpg',
                 'deskripsi_pustakawan' => 'Mengelola sistem katalog OPAC, repository karya ilmiah institusi, repositori jurnal, dan infrastruktur digital perpustakaan.',
             ],
         ];

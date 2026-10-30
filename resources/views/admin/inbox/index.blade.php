@@ -71,7 +71,7 @@
         @endif
 
         {{-- Kartu Ringkasan Status Inbox --}}
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:gap-4">
             {{-- 1. Pengajuan Peminjaman --}}
             <div class="rounded-2xl border {{ $totalMenungguPinjam > 0 ? 'border-primary/40 bg-blue-50/70 shadow-sm' : 'border-line bg-white' }} p-4 sm:p-5 transition-all">
                 <div class="flex items-center justify-between">
@@ -106,17 +106,6 @@
                 </div>
                 <p class="mt-2 text-2xl font-bold text-ink sm:text-3xl">{{ number_format($totalRiwayatVerifikasi) }}</p>
                 <p class="mt-1 text-[11px] text-muted">Total transaksi divalidasi</p>
-            </div>
-
-            {{-- 4. Panduan Prioritas Multi-User --}}
-            <div class="rounded-2xl border border-line bg-slate-50/80 p-4 sm:p-5">
-                <div class="flex items-center gap-2 text-xs font-semibold text-primary">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                    <span>Hak Prioritas Admin</span>
-                </div>
-                <p class="mt-1.5 text-[11px] text-ink-secondary leading-relaxed">
-                    Bila 2 user merequest buku yang sama, admin bebas memilih siapa yang didahulukan dengan mengklik <strong>Setujui</strong>.
-                </p>
             </div>
         </div>
 

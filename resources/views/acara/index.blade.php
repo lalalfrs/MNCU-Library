@@ -117,6 +117,7 @@
                                         alt="{{ $item->title }}"
                                         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/acara/acara-01.jpg') }}';"
                                     >
                                     <div class="absolute top-3 left-3 flex size-14 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-slate-900/80 text-white backdrop-blur-xs' : 'bg-primary text-white shadow-md' }}">
                                         <span class="text-lg font-bold leading-none">{{ $item->event_date->format('d') }}</span>

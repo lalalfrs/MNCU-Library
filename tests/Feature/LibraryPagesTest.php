@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Pengguna;
+use App\Models\VisitorLog;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -169,5 +170,32 @@ class LibraryPagesTest extends TestCase
     {
         $response = $this->get(route('pustakawan'));
         $response->assertStatus(200);
+    }
+
+    public function test_kehadiran_page_displays_and_increments_visitor_statistics(): void
+    {
+        $response = $this->get(route('kehadiran.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Kehadiran Pengunjung Perpustakaan');
+
+        $initialStats = VisitorLog::getStatistics();
+
+        $postResponse = $this->post(route('kehadiran.store'), [
+            'nama_pengunjung' => 'Budi Santoso',
+            'kategori_pengunjung' => 'Umum',
+            'identitas_pengunjung' => 'Jl. Kedoya Raya No. 12, Jakarta Barat',
+            'keperluan' => 'Membaca referensi bisnis',
+        ]);
+
+        $postResponse->assertRedirect(route('kehadiran.index'));
+        $this->assertDatabaseHas('log_kunjungan', [
+            'nama_pengunjung' => 'Budi Santoso',
+            'identitas_pengunjung' => 'Jl. Kedoya Raya No. 12, Jakarta Barat',
+        ]);
+
+        $updatedStats = VisitorLog::getStatistics();
+        $this->assertSame($initialStats['today'] + 1, $updatedStats['today']);
+        $this->assertSame($initialStats['month'] + 1, $updatedStats['month']);
+        $this->assertSame($initialStats['total'] + 1, $updatedStats['total']);
     }
 }

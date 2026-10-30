@@ -12,6 +12,8 @@ use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
 use App\Models\Pengguna;
 use App\Models\Penulis;
+use App\Services\BarcodeService;
+use App\Services\MediaUploadService;
 use App\Services\PeminjamanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +23,10 @@ use Illuminate\View\View;
 
 class BookController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Tampilkan daftar seluruh koleksi buku perpustakaan dengan metrik stok inventaris.
      */
@@ -116,54 +122,119 @@ class BookController extends Controller
     {
         $validated = $request->validate([
             'judul_buku' => ['required', 'string', 'max:255'],
-            'id_jenis_buku' => ['required', 'exists:jenis_buku,id_jenis_buku'],
-            'id_kategori_buku' => ['required', 'exists:kategori_buku,id_kategori_buku'],
-            'id_penerbit' => ['nullable', 'exists:penerbit,id_penerbit'],
+            'nama_kategori' => ['nullable', 'string', 'max:100'],
+            'id_kategori_buku' => ['nullable', 'string', 'max:10'],
+            'nama_jenis_buku' => ['nullable', 'string', 'max:100'],
+            'id_jenis_buku' => ['nullable', 'string', 'max:10'],
+            'nama_penerbit' => ['nullable', 'string', 'max:150'],
+            'id_penerbit' => ['nullable', 'string', 'max:10'],
+            'nama_penulis' => ['nullable', 'string', 'max:150'],
+            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
+            'dimensi' => ['nullable', 'string', 'max:100'],
             'isbn' => ['nullable', 'string', 'max:20'],
             'tahun_terbit' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'edisi' => ['nullable', 'string', 'max:50'],
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
+            'sampul_buku_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:200'],
             'deskripsi' => ['nullable', 'string'],
             'kata_kunci' => ['nullable', 'string', 'max:500'],
-            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
             'stok_awal' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'kode_barcode' => ['nullable', 'string', 'max:50'],
+            'kode_inventaris' => ['nullable', 'string', 'max:50'],
             'nomor_panggil_dasar' => ['nullable', 'string', 'max:50'],
             'lokasi_rak_dasar' => ['nullable', 'string', 'max:100'],
         ], [
             'judul_buku.required' => 'Judul buku wajib diisi.',
-            'id_jenis_buku.required' => 'Jenis buku wajib dipilih.',
-            'id_kategori_buku.required' => 'Kategori buku wajib dipilih.',
+            'sampul_buku_file.mimes' => 'Format file sampul buku harus berupa PNG, JPG, JPEG, atau WEBP.',
+            'sampul_buku_file.max' => 'Ukuran file sampul buku maksimal 200 KB.',
         ]);
 
-        $book = Buku::create($validated);
+        $idKategori = $this->resolveKategoriId($request);
+        $idJenis = $this->resolveJenisId($request);
+        $idPenerbit = $this->resolvePenerbitId($request);
+
+        if (empty($idKategori)) {
+            throw ValidationException::withMessages(['nama_kategori' => 'Kategori buku wajib diisi.']);
+        }
+        if (empty($idJenis)) {
+            throw ValidationException::withMessages(['nama_jenis_buku' => 'Format / jenis buku wajib diisi.']);
+        }
+
+        if ($request->hasFile('sampul_buku_file')) {
+            $sampulBuku = $this->mediaUploadService->uploadImage(
+                $request->file('sampul_buku_file'),
+                'buku'
+            );
+        } else {
+            $sampulBuku = $validated['sampul_buku'] ?? null;
+        }
+
+        $book = Buku::create([
+            'judul_buku' => $validated['judul_buku'],
+            'id_kategori_buku' => $idKategori,
+            'id_jenis_buku' => $idJenis,
+            'id_penerbit' => $idPenerbit,
+            'dimensi' => $validated['dimensi'] ?? null,
+            'isbn' => $validated['isbn'] ?? null,
+            'tahun_terbit' => $validated['tahun_terbit'] ?? null,
+            'edisi' => $validated['edisi'] ?? null,
+            'jumlah_halaman' => $validated['jumlah_halaman'] ?? null,
+            'sampul_buku' => $sampulBuku,
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'kata_kunci' => $validated['kata_kunci'] ?? null,
+        ]);
 
         $this->syncBookAuthor($book, $request);
 
-        // Jika pustakawan mengisi jumlah stok awal, buat eksemplar otomatis
-        $stokAwal = (int) $request->input('stok_awal', 0);
+        // Jika pustakawan mengisi jumlah stok awal atau kode barcode, daftarkan eksemplar fisik
+        $inputBarcode = trim((string) ($request->input('kode_barcode') ?: $request->input('kode_inventaris', '')));
+        $stokAwal = (int) $request->input('stok_awal', $inputBarcode !== '' ? 1 : 0);
+        $firstEksemplar = null;
+
         if ($stokAwal > 0) {
             $nomorPanggil = trim((string) $request->input('nomor_panggil_dasar', ''));
             $lokasiRak = trim((string) $request->input('lokasi_rak_dasar', 'Lantai 2, Rak Koleksi'));
 
             for ($i = 1; $i <= $stokAwal; $i++) {
-                $kodeInventaris = 'INV-'.$book->id_buku.'-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+                if ($i === 1 && $inputBarcode !== '') {
+                    $kodeInventaris = $inputBarcode;
+                } else {
+                    $kodeInventaris = 'INV-'.$book->id_buku.'-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+                }
+
+                $uniqueCode = $kodeInventaris;
+                $counter = 1;
+                while (EksemplarBuku::where('kode_inventaris', $uniqueCode)->exists()) {
+                    $uniqueCode = $kodeInventaris.'-'.$counter;
+                    $counter++;
+                }
+
                 $nomorPanggilCopy = $nomorPanggil !== '' ? "{$nomorPanggil} c.{$i}" : null;
 
-                EksemplarBuku::create([
+                $ek = EksemplarBuku::create([
                     'id_buku' => $book->id_buku,
-                    'kode_inventaris' => $kodeInventaris,
+                    'kode_inventaris' => $uniqueCode,
                     'nomor_panggil' => $nomorPanggilCopy,
                     'lokasi_rak' => $lokasiRak !== '' ? $lokasiRak : 'Lantai 2, Rak Koleksi',
                     'status' => 'Tersedia',
                 ]);
+
+                if (! $firstEksemplar) {
+                    $firstEksemplar = $ek;
+                }
             }
         }
 
         $pesanStok = $stokAwal > 0 ? " dengan {$stokAwal} eksemplar fisik siap dipinjam" : '';
+        $cetakUrl = route('admin.books.cetak-label', [
+            'buku' => $book->id_buku,
+            'eksemplar' => $firstEksemplar?->id_eksemplar,
+        ]);
 
         return redirect()->route('admin.books.index')
-            ->with('success', "Buku \"{$book->judul_buku}\" ({$book->id_buku}) berhasil ditambahkan ke katalog{$pesanStok}!");
+            ->with('success', "Buku \"{$book->judul_buku}\" ({$book->id_buku}) berhasil ditambahkan ke katalog{$pesanStok}!")
+            ->with('cetak_label_url', $cetakUrl);
     }
 
     /**
@@ -194,6 +265,36 @@ class BookController extends Controller
     }
 
     /**
+     * Tampilkan pratinjau cetak stiker label buku/eksemplar (format 8cm x 5cm) dengan barcode SVG.
+     */
+    public function cetakLabel(Request $request, string $id, ?string $idEksemplar = null, ?BarcodeService $barcodeService = null): View
+    {
+        $barcodeService = $barcodeService ?? app(BarcodeService::class);
+        $book = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar'])->findOrFail($id);
+
+        $eksemplar = null;
+        if ($idEksemplar) {
+            $eksemplar = $book->eksemplar->firstWhere('id_eksemplar', $idEksemplar);
+        }
+
+        if (! $eksemplar) {
+            $eksemplar = $book->eksemplar->first();
+        }
+
+        $barcodeText = $eksemplar ? $eksemplar->kode_inventaris : ($book->isbn ?: $book->id_buku);
+        $barcodeSvg = $barcodeService->generateSvg($barcodeText, 30, false);
+        $nomorPanggil = $eksemplar?->nomor_panggil ?: ($book->isbn ?: $book->id_buku);
+
+        return view('admin.books.print-label', compact(
+            'book',
+            'eksemplar',
+            'barcodeText',
+            'barcodeSvg',
+            'nomorPanggil'
+        ));
+    }
+
+    /**
      * Tampilkan formulir edit koleksi buku.
      */
     public function edit(string $id): View
@@ -216,24 +317,61 @@ class BookController extends Controller
 
         $validated = $request->validate([
             'judul_buku' => ['required', 'string', 'max:255'],
-            'id_jenis_buku' => ['required', 'exists:jenis_buku,id_jenis_buku'],
-            'id_kategori_buku' => ['required', 'exists:kategori_buku,id_kategori_buku'],
-            'id_penerbit' => ['nullable', 'exists:penerbit,id_penerbit'],
+            'nama_kategori' => ['nullable', 'string', 'max:100'],
+            'id_kategori_buku' => ['nullable', 'string', 'max:10'],
+            'nama_jenis_buku' => ['nullable', 'string', 'max:100'],
+            'id_jenis_buku' => ['nullable', 'string', 'max:10'],
+            'nama_penerbit' => ['nullable', 'string', 'max:150'],
+            'id_penerbit' => ['nullable', 'string', 'max:10'],
+            'nama_penulis' => ['nullable', 'string', 'max:150'],
+            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
+            'dimensi' => ['nullable', 'string', 'max:100'],
             'isbn' => ['nullable', 'string', 'max:20'],
             'tahun_terbit' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'edisi' => ['nullable', 'string', 'max:50'],
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
+            'sampul_buku_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:200'],
+            'hapus_sampul' => ['nullable', 'boolean'],
             'deskripsi' => ['nullable', 'string'],
             'kata_kunci' => ['nullable', 'string', 'max:500'],
-            'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
         ], [
             'judul_buku.required' => 'Judul buku wajib diisi.',
-            'id_jenis_buku.required' => 'Jenis buku wajib dipilih.',
-            'id_kategori_buku.required' => 'Kategori buku wajib dipilih.',
+            'sampul_buku_file.mimes' => 'Format file sampul buku harus berupa PNG, JPG, JPEG, atau WEBP.',
+            'sampul_buku_file.max' => 'Ukuran file sampul buku maksimal 200 KB.',
         ]);
 
-        $book->update($validated);
+        $idKategori = $this->resolveKategoriId($request);
+        $idJenis = $this->resolveJenisId($request);
+        $idPenerbit = $this->resolvePenerbitId($request);
+
+        if ($request->boolean('hapus_sampul')) {
+            $this->mediaUploadService->deleteImage($book->sampul_buku);
+            $sampulBuku = null;
+        } elseif ($request->hasFile('sampul_buku_file')) {
+            $sampulBuku = $this->mediaUploadService->uploadImage(
+                $request->file('sampul_buku_file'),
+                'buku',
+                $book->sampul_buku
+            );
+        } else {
+            $sampulBuku = $request->filled('sampul_buku') ? $request->input('sampul_buku') : $book->sampul_buku;
+        }
+
+        $book->update([
+            'judul_buku' => $validated['judul_buku'],
+            'id_kategori_buku' => $idKategori ?: $book->id_kategori_buku,
+            'id_jenis_buku' => $idJenis ?: $book->id_jenis_buku,
+            'id_penerbit' => $idPenerbit,
+            'dimensi' => $validated['dimensi'] ?? null,
+            'isbn' => $validated['isbn'] ?? null,
+            'tahun_terbit' => $validated['tahun_terbit'] ?? null,
+            'edisi' => $validated['edisi'] ?? null,
+            'jumlah_halaman' => $validated['jumlah_halaman'] ?? null,
+            'sampul_buku' => $sampulBuku,
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'kata_kunci' => $validated['kata_kunci'] ?? null,
+        ]);
 
         $this->syncBookAuthor($book, $request);
 
@@ -418,19 +556,19 @@ class BookController extends Controller
     }
 
     /**
-     * Sinkronisasi pengarang utama buku (baik dipilih dari daftar maupun diketik manual).
+     * Sinkronisasi pengarang utama buku (baik diketik manual via keyboard maupun dipilih).
      */
     protected function syncBookAuthor(Buku $book, Request $request): void
     {
-        $manualAuthor = trim((string) $request->input('nama_penulis_manual', ''));
+        $authorName = trim((string) ($request->input('nama_penulis') ?: $request->input('nama_penulis_manual', '')));
         $authorId = $request->input('id_penulis');
         $targetAuthorId = null;
 
-        if ($manualAuthor !== '') {
-            $author = Penulis::whereRaw('LOWER(nama_penulis) = ?', [strtolower($manualAuthor)])->first();
+        if ($authorName !== '') {
+            $author = Penulis::whereRaw('LOWER(nama_penulis) = ?', [strtolower($authorName)])->first();
             if (! $author) {
                 $author = Penulis::create([
-                    'nama_penulis' => $manualAuthor,
+                    'nama_penulis' => $authorName,
                     'deskripsi_penulis' => 'Penulis ditambahkan melalui entri katalog buku',
                 ]);
             }
@@ -446,6 +584,84 @@ class BookController extends Controller
                 'id_penulis' => $targetAuthorId,
             ]);
         }
+    }
+
+    /**
+     * Cari atau daftarkan kategori buku baru berdasarkan nama ketikan keyboard atau ID.
+     */
+    protected function resolveKategoriId(Request $request): string
+    {
+        $nama = trim((string) $request->input('nama_kategori', ''));
+        if ($nama !== '') {
+            $cat = KategoriBuku::whereRaw('LOWER(nama_kategori) = ?', [strtolower($nama)])->first();
+            if (! $cat) {
+                $cat = KategoriBuku::create([
+                    'nama_kategori' => $nama,
+                    'deskripsi_kategori' => 'Kategori ditambahkan otomatis melalui keyboard',
+                ]);
+            }
+
+            return $cat->id_kategori_buku;
+        }
+
+        $id = trim((string) $request->input('id_kategori_buku', ''));
+        if ($id !== '' && KategoriBuku::where('id_kategori_buku', $id)->exists()) {
+            return $id;
+        }
+
+        return KategoriBuku::value('id_kategori_buku') ?? '';
+    }
+
+    /**
+     * Cari atau daftarkan jenis/format buku baru berdasarkan nama ketikan keyboard atau ID.
+     */
+    protected function resolveJenisId(Request $request): string
+    {
+        $nama = trim((string) $request->input('nama_jenis_buku', ''));
+        if ($nama !== '') {
+            $jenis = JenisBuku::whereRaw('LOWER(nama_jenis_buku) = ?', [strtolower($nama)])->first();
+            if (! $jenis) {
+                $jenis = JenisBuku::create([
+                    'nama_jenis_buku' => $nama,
+                    'deskripsi_jenis' => 'Format koleksi ditambahkan otomatis melalui keyboard',
+                ]);
+            }
+
+            return $jenis->id_jenis_buku;
+        }
+
+        $id = trim((string) $request->input('id_jenis_buku', ''));
+        if ($id !== '' && JenisBuku::where('id_jenis_buku', $id)->exists()) {
+            return $id;
+        }
+
+        return JenisBuku::value('id_jenis_buku') ?? '';
+    }
+
+    /**
+     * Cari atau daftarkan penerbit buku baru berdasarkan nama ketikan keyboard atau ID.
+     */
+    protected function resolvePenerbitId(Request $request): ?string
+    {
+        $nama = trim((string) $request->input('nama_penerbit', ''));
+        if ($nama !== '') {
+            $pub = Penerbit::whereRaw('LOWER(nama_penerbit) = ?', [strtolower($nama)])->first();
+            if (! $pub) {
+                $pub = Penerbit::create([
+                    'nama_penerbit' => $nama,
+                    'deskripsi_penerbit' => 'Penerbit ditambahkan otomatis melalui keyboard',
+                ]);
+            }
+
+            return $pub->id_penerbit;
+        }
+
+        $id = trim((string) $request->input('id_penerbit', ''));
+        if ($id !== '' && Penerbit::where('id_penerbit', $id)->exists()) {
+            return $id;
+        }
+
+        return null;
     }
 
     /**
@@ -478,8 +694,11 @@ class BookController extends Controller
                 $book->eksemplar()->delete();
 
                 // 5. Hapus file sampul jika diupload kustom lokal
-                if ($book->sampul_buku && str_starts_with($book->sampul_buku, 'images/buku/uploads/') && file_exists(public_path($book->sampul_buku))) {
-                    @unlink(public_path($book->sampul_buku));
+                if ($book->sampul_buku) {
+                    $this->mediaUploadService->deleteImage($book->sampul_buku);
+                    if (str_starts_with($book->sampul_buku, 'images/buku/uploads/') && file_exists(public_path($book->sampul_buku))) {
+                        @unlink(public_path($book->sampul_buku));
+                    }
                 }
 
                 // 6. Hapus katalog buku

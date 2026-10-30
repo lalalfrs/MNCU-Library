@@ -28,14 +28,17 @@
 
             <div class="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
                 <div class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary/8 text-primary lg:size-32">
-                    @if (isset($kepala) && !empty($kepala->foto_pustakawan))
-                        <img src="{{ $kepala->foto_pustakawan }}" alt="{{ $kepala->nama_pustakawan }}" class="size-full object-cover">
-                    @else
-                        <svg class="size-14 lg:size-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M20 21a8 8 0 0 0-16 0" />
-                        </svg>
-                    @endif
+                    @php
+                        $kepalaPhoto = !empty($kepala?->foto_pustakawan)
+                            ? (filter_var($kepala->foto_pustakawan, FILTER_VALIDATE_URL) ? $kepala->foto_pustakawan : asset($kepala->foto_pustakawan))
+                            : asset('images/pustakawan/pustakawan-01.jpg');
+                    @endphp
+                    <img
+                        src="{{ $kepalaPhoto }}"
+                        alt="{{ $kepala->nama_pustakawan ?? 'Dr. H. Muhammad Arifin, M.Hum.' }}"
+                        class="size-full object-cover"
+                        onerror="this.onerror=null; this.src='{{ asset('images/pustakawan/pustakawan-01.jpg') }}';"
+                    >
                 </div>
                 <div class="text-center sm:text-left">
                     <p class="text-xl font-medium text-ink lg:text-2xl">{{ $kepala->nama_pustakawan ?? 'Dr. H. Muhammad Arifin, M.Hum.' }}</p>

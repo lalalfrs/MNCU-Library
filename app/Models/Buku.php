@@ -36,6 +36,7 @@ class Buku extends Model
         'kata_kunci',
         'sampul_buku',
         'jumlah_halaman',
+        'dimensi',
     ];
 
     /**
@@ -131,6 +132,10 @@ class Buku extends Model
             return asset($cover);
         }
 
-        return asset('storage/'.$cover);
+        if (file_exists(storage_path('app/public/'.$cover))) {
+            return asset('storage/'.$cover);
+        }
+
+        return asset('images/buku/default-cover.jpg');
     }
 }

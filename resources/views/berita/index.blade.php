@@ -85,6 +85,7 @@
                                         alt="{{ $item->title }}"
                                         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
                                     >
                                 @else
                                     <div class="flex h-full w-full items-center justify-center p-6 text-muted">

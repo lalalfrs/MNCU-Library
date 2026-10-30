@@ -2064,7 +2064,7 @@
             document.getElementById('modal-author').textContent = item.author || '-';
             document.getElementById('modal-publisher').textContent = (item.publisher || '-') + (item.publisher_city ? ' (' + item.publisher_city + ')' : '');
             document.getElementById('modal-year').textContent = item.year || '-';
-            document.getElementById('modal-pages').textContent = (item.edition || '-') + ' / ' + (item.pages || '-');
+            document.getElementById('modal-pages').textContent = (item.edition || '-') + ' / ' + (item.pages || '-') + (item.dimensi && item.dimensi !== '-' ? ' (' + item.dimensi + ')' : '');
             document.getElementById('modal-isbn').textContent = item.isbn || '-';
             document.getElementById('modal-call-number').textContent = item.call_number || '-';
             document.getElementById('modal-category').textContent = item.category || 'Buku Teks';

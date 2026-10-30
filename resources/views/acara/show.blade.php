@@ -60,6 +60,7 @@
                                 alt="Poster {{ $acara->title }}"
                                 class="w-full max-h-[520px] object-contain sm:object-cover mx-auto"
                                 loading="lazy"
+                                onerror="this.onerror=null; this.src='{{ asset('images/acara/acara-01.jpg') }}';"
                             >
                         </div>
                     @endif

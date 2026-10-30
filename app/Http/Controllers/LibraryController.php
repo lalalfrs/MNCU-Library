@@ -322,6 +322,7 @@ class LibraryController extends Controller
                     'isbn' => $buku->isbn ?? '-',
                     'edition' => $buku->edisi ?? 'Edisi Pertama',
                     'pages' => $buku->jumlah_halaman ? "{$buku->jumlah_halaman} hlm" : '-',
+                    'dimensi' => $buku->dimensi ?? '-',
                     'cover_url' => $buku->sampul_url,
                     'description' => $buku->deskripsi ?: 'Buku referensi akademik koleksi Perpustakaan MNC University.',
                     'kata_kunci' => $buku->kata_kunci,
@@ -1096,7 +1097,7 @@ class LibraryController extends Controller
                 'year' => 2024,
                 'pages' => '420 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuBFGNT3XheiIYPlqxxSefMAz_14hOzFOGeEvZmIwpfN4tZ9H6dkBFmKMPqAwTEYpm97YTdnoV9FJ7ZVP4hpUfwH8zqJh6C2NXm6x08q0H-3ur5-NQO8BzexbmgTo_aABfX3ijppIgO_GoWZd_HCZszRMlGCyTtXw8h704MJHq6OX0r4djSjSj0lBmgwQBD9xhct1bdW0_95kJOv9h9YF3dkME8kjK0dxTSGiZoeokYQIdb_xMV0lNls',
+                'cover_url' => asset('images/ebook/ebook-01.jpg'),
                 'description' => 'Pedoman lengkap rekayasa perangkat lunak, arsitektur sistem modular, dan metodologi pengembangan agile modern.',
             ],
             [
@@ -1106,7 +1107,7 @@ class LibraryController extends Controller
                 'year' => 2023,
                 'pages' => '280 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuBithebMUdUulLyhN5WrNVtvuyJ9pU7uDrz_Sdu0qeZvV4eFB-SRng3nMsx04M82pJz-rCXuAvwRc5lKaKIDjqHxWBOVWxbCk38sEo9Y6BSp6VBOXP7FtO26yIxzW1mqNwNYFQTEYPgDey2lQ7Vp4zCKmU-IgUBIm5Ctlh0j61D1_83bhZl3wS0TFiqa8pqhBJPj5HFG_i3BTQEsUyE7DJtWSa1oHyV0O4kMPtX8TrcINU2AMf98WLv',
+                'cover_url' => asset('images/ebook/ebook-02.jpg'),
                 'description' => 'Kaidah jurnalistik penyiaran, konvergensi media digital, etika peliputan berita televisi, dan produksi konten multimedia.',
             ],
             [
@@ -1116,7 +1117,7 @@ class LibraryController extends Controller
                 'year' => 2024,
                 'pages' => '310 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
+                'cover_url' => asset('images/ebook/ebook-03.jpg'),
                 'description' => 'Eksplorasi teori warna, hierarki tipografi, grid system, dan perancangan identitas visual untuk media digital dan cetak.',
             ],
             [
@@ -1126,7 +1127,7 @@ class LibraryController extends Controller
                 'year' => 2023,
                 'pages' => '390 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=600',
+                'cover_url' => asset('images/ebook/ebook-04.jpg'),
                 'description' => 'Analisis rasio keuangan, manajemen modal kerja, penganggaran investasi modal, dan studi kasus korporasi Indonesia.',
             ],
             [
@@ -1136,7 +1137,7 @@ class LibraryController extends Controller
                 'year' => 2024,
                 'pages' => '350 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuAxr25631MOraMM8EMu_28k2aE-tBREKbSeKlIUQ_eyQCKe2DTdZ-W2ArJ6C88Cb0hpxz83NVHq8F_ZC2yTxH0xp_5R3B7UH_Eoo5pH33k4zOyYUlNt-pmtwnMiI7sA7GJD8amOOvcnSV7KjewEx-wxvjnMFlnu4BabdZvksKY0rJ4E9JmwDjH7VgDENOUscnRpxVPaIsmnTjWsEGlhsX29kO9TErb2ZFdS4dtOW3wtfq7nhkc4VL-9',
+                'cover_url' => asset('images/ebook/ebook-05.jpg'),
                 'description' => 'Konsep perancangan skema basis data relasional, normalisasi data, optimasi kueri SQL, serta arsitektur database NoSQL.',
             ],
             [
@@ -1146,7 +1147,7 @@ class LibraryController extends Controller
                 'year' => 2023,
                 'pages' => '240 halaman',
                 'format' => 'PDF Digital',
-                'cover_url' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuAylDzhS69C6c_wFZDHdgwm1Ypy31UFEHMxhTitS9DFZODJtje34dJmVbrMw7HQ53upC5KYfWXtzGBmv3uIQ7Kz51DKUA6sd6VnZ3LRN3e5C0gE44u-iMNjF5Z60NzFgg_9aMqZpZdpiz3fenEhI02YN71v2W-7CRI3lOKWL08iA_Zs2mM41ecOs7oKRwq9ftnFZF7yDF2zpidL9TtiRcioUFMJqQVs257UHMoQr1fe5nkgLziOjVCd',
+                'cover_url' => asset('images/ebook/ebook-06.jpg'),
                 'description' => 'Kajian komprehensif undang-undang pers, perlindungan data privasi, regulasi ITE, dan tanggung jawab etis media penyiaran.',
             ],
         ];

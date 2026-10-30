@@ -268,9 +268,10 @@
                 {{-- Profil Penulis Quote --}}
                 <div class="mt-6 flex items-center gap-3.5">
                     <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
+                        src="{{ asset('images/pustakawan/pustakawan-01.jpg') }}"
                         alt="Dr. H. Muhammad Arifin, M.Hum."
                         class="size-11 rounded-full border-2 border-white object-cover shadow-sm"
+                        onerror="this.onerror=null; this.src='{{ asset('images/Logo.png') }}';"
                     >
                     <div>
                         <div class="text-sm font-semibold text-ink">Dr. H. Muhammad Arifin, M.Hum.</div>

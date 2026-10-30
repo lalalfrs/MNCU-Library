@@ -94,193 +94,664 @@
             'month' => 0,
             'total' => 0,
         ];
+
+        $heroPromoSlides = [];
+        foreach (array_slice($latestNews, 0, 2) as $newsItem) {
+            $rawNewsImg = $newsItem['image'] ?? '';
+            $heroPromoSlides[] = [
+                'badge' => 'Berita Perpustakaan',
+                'date' => $newsItem['date'] ?? now()->translatedFormat('d M Y'),
+                'title' => $newsItem['title'] ?? 'Berita Perpustakaan MNC University',
+                'excerpt' => $newsItem['excerpt'] ?? 'Informasi terbaru seputar layanan dan koleksi Perpustakaan MNC University.',
+                'image' => !empty($rawNewsImg) ? (filter_var($rawNewsImg, FILTER_VALIDATE_URL) ? $rawNewsImg : asset($rawNewsImg)) : asset('images/berita/berita-digital-library.jpg'),
+                'url' => !empty($newsItem['slug']) ? route('berita.show', $newsItem['slug']) : '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ];
+        }
+        foreach (array_slice($upcomingEvents, 0, 2) as $eventItem) {
+            $rawEventImg = $eventItem['image'] ?? ($eventItem['poster_url'] ?? '');
+            $heroPromoSlides[] = [
+                'badge' => 'Agenda Perpustakaan',
+                'date' => $eventItem['date'] ?? now()->translatedFormat('d M Y'),
+                'title' => $eventItem['title'] ?? 'Agenda Kegiatan Perpustakaan',
+                'excerpt' => !empty($eventItem['excerpt'])
+                    ? $eventItem['excerpt']
+                    : 'Ikuti kegiatan literasi dan akademik di ' . ($eventItem['place'] ?? 'Perpustakaan MNC University') . (!empty($eventItem['time']) ? ' pada pukul ' . $eventItem['time'] . '.' : '.'),
+                'image' => !empty($rawEventImg) ? (filter_var($rawEventImg, FILTER_VALIDATE_URL) ? $rawEventImg : asset($rawEventImg)) : asset('images/acara/acara-bedah-buku-ai.jpg'),
+                'url' => !empty($eventItem['slug']) ? route('acara.show', $eventItem['slug']) : '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ];
+        }
+        if (count($heroPromoSlides) < 4) {
+            foreach (array_slice($latestNews, 2) as $extraNews) {
+                if (count($heroPromoSlides) >= 4) {
+                    break;
+                }
+                $rawExtraImg = $extraNews['image'] ?? '';
+                $heroPromoSlides[] = [
+                    'badge' => 'Berita Perpustakaan',
+                    'date' => $extraNews['date'] ?? now()->translatedFormat('d M Y'),
+                    'title' => $extraNews['title'] ?? 'Berita Perpustakaan',
+                    'excerpt' => $extraNews['excerpt'] ?? 'Informasi terbaru Perpustakaan MNC University.',
+                    'image' => !empty($rawExtraImg) ? (filter_var($rawExtraImg, FILTER_VALIDATE_URL) ? $rawExtraImg : asset($rawExtraImg)) : asset('images/berita/berita-workshop-sitasi.jpg'),
+                    'url' => !empty($extraNews['slug']) ? route('berita.show', $extraNews['slug']) : '#berita-acara',
+                    'cta' => 'Baca Selengkapnya',
+                ];
+            }
+        }
+        $fallbackHeroSlides = [
+            [
+                'badge' => 'Berita Perpustakaan',
+                'date' => '24 Okt 2026',
+                'title' => 'TRANSFORMASI LAYANAN PERPUSTAKAAN DIGITAL MNC UNIVERSITY DI ERA KECERDASAN BUATAN',
+                'excerpt' => 'JAKARTA – Perpustakaan MNC University terus memperkuat ekosistem literasi digital melalui integrasi katalog OPAC terpadu, akses e-resource global, dan pendampingan riset akademik.',
+                'image' => asset('images/berita/berita-digital-library.jpg'),
+                'url' => '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ],
+            [
+                'badge' => 'Berita Perpustakaan',
+                'date' => '18 Okt 2026',
+                'title' => 'WORKSHOP SITASI ILMIAH & MANAJEMEN REFERENSI MENDELEY BAGI MAHASISWA TUGAS AKHIR',
+                'excerpt' => 'JAKARTA – Tingkatkan kualitas publikasi dan penulisan skripsi bersama tim pustakawan melalui sesi klinik sitasi ilmiah, penelusuran jurnal terindeks, dan pencegahan plagiarisme.',
+                'image' => asset('images/berita/berita-workshop-sitasi.jpg'),
+                'url' => '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ],
+            [
+                'badge' => 'Agenda Perpustakaan',
+                'date' => '05 Nov 2026',
+                'title' => 'BEDAH BUKU & DISKUSI LITERASI: ARTIFICIAL INTELLIGENCE UNTUK RISET AKADEMIK MODERN',
+                'excerpt' => 'Mari bergabung dalam forum diskusi interaktif membedah pemanfaatan teknologi kecerdasan buatan secara etis dan produktif dalam menyusun kajian pustaka.',
+                'image' => asset('images/acara/acara-bedah-buku-ai.jpg'),
+                'url' => '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ],
+            [
+                'badge' => 'Berita Perpustakaan',
+                'date' => '12 Nov 2026',
+                'title' => 'PENAMBAHAN KOLEKSI E-BOOK INTERNASIONAL & LITERATUR KECERDASAN BUATAN TERBARU',
+                'excerpt' => 'Kini tersedia ratusan judul buku elektronik terbaru lintas program studi yang dapat diakses langsung oleh seluruh sivitas akademika MNC University.',
+                'image' => asset('images/berita/berita-ebook-ai.jpg'),
+                'url' => '#berita-acara',
+                'cta' => 'Baca Selengkapnya',
+            ],
+        ];
+        foreach ($fallbackHeroSlides as $fallbackSlide) {
+            if (count($heroPromoSlides) >= 4) {
+                break;
+            }
+            $heroPromoSlides[] = $fallbackSlide;
+        }
+        $totalHeroSlides = 1 + count($heroPromoSlides);
+        $lastPromoSlide = $heroPromoSlides[count($heroPromoSlides) - 1];
     @endphp
 
     <div class="mx-auto flex w-full min-w-0 max-w-[1570px] flex-col gap-8 sm:gap-10 lg:gap-12 px-3 sm:px-4 lg:px-6 xl:px-8 pt-4 sm:pt-6 lg:pt-8 responsive-desktop-container">
 
-        {{-- Page header / Hero --}}
-        <section aria-labelledby="judul-beranda" class="w-full min-w-0 px-1 sm:px-2 lg:px-4">
-            <div class="grid w-full min-w-0 grid-cols-1 items-start gap-6 pt-1 pb-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px] lg:gap-8 xl:gap-10 lg:pt-2 lg:pb-6">
-                <div class="w-full min-w-0 pt-0.5">
-                    {{-- Logo MNC University di atas Header dan subtext --}}
-                    <div class="mb-3 inline-flex items-center sm:mb-4">
-                        <img src="{{ asset('images/LogoTXT.png') }}" alt="Logo MNC University" class="h-10 sm:h-14 lg:h-16 xl:h-18 w-auto max-w-[180px] sm:max-w-[220px] object-contain" style="max-height: 72px; max-width: 220px;" width="220" height="72">
-                    </div>
+        {{-- Page header / Hero Carousel (Widyatama Peeking Card Style) --}}
+        <section aria-labelledby="judul-beranda" class="w-full min-w-0">
+            <div id="hero-widyatama-carousel" class="relative w-full overflow-hidden py-2 select-none" aria-roledescription="carousel" aria-label="Sorotan Utama Perpustakaan MNC University">
 
-                    @auth
-                        @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
-                            {{-- Role: Super Admin / Pustakawan --}}
-                            <h1 id="judul-beranda" class="text-2xl leading-tight font-semibold text-primary sm:text-3xl md:text-[32px] lg:text-[36px] xl:text-[40px]">
-                                Selamat Bertugas, {{ Auth::user()->nama_lengkap }}!
-                            </h1>
-                            <p class="mt-2.5 sm:mt-3.5 text-xs sm:text-sm md:text-base leading-relaxed text-ink-secondary">
-                                Kelola operasional dan sirkulasi Perpustakaan MNC University. Pantau statistik kunjungan harian pemustaka, perbarui katalog koleksi buku, publikasikan agenda acara, dan kelola rilis berita kampus.
-                            </p>
-                            <div class="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                <a href="{{ route('admin.books.index') }}" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
-                                    <i class="fa-solid fa-book-bookmark text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Kelola Buku (OPAC)</span>
-                                </a>
-                                <a href="{{ route('admin.acara.index') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-calendar-plus text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Kelola Acara &amp; Poster</span>
-                                </a>
-                                <a href="{{ route('admin.users.index') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-users-gear text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Data Pemustaka</span>
-                                </a>
+                {{-- Tombol Navigasi Kiri (<) tepat di batas kartu putih utama --}}
+                <button
+                    type="button"
+                    id="hero-widyatama-prev"
+                    aria-label="Slide sebelumnya"
+                    class="btn-press absolute left-1.5 sm:left-3 lg:left-[4%] lg:-translate-x-1/2 top-1/2 -translate-y-1/2 z-30 flex size-10 sm:size-12 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.12)] transition-all duration-200 hover:scale-105 hover:border-primary/40 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                >
+                    <i class="fa-solid fa-chevron-left text-xs sm:text-sm" aria-hidden="true"></i>
+                </button>
+
+                {{-- Tombol Navigasi Kanan (>) tepat di batas kartu putih utama --}}
+                <button
+                    type="button"
+                    id="hero-widyatama-next"
+                    aria-label="Slide berikutnya"
+                    class="btn-press absolute right-1.5 sm:right-3 lg:right-[4%] lg:translate-x-1/2 top-1/2 -translate-y-1/2 z-30 flex size-10 sm:size-12 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.12)] transition-all duration-200 hover:scale-105 hover:border-primary/40 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                >
+                    <i class="fa-solid fa-chevron-right text-xs sm:text-sm" aria-hidden="true"></i>
+                </button>
+
+                {{-- Track Slide (Clone Last + Slide 0..N + Clone First agar kartu kiri & kanan selalu mengintip) --}}
+                <div id="hero-widyatama-track" class="flex items-stretch gap-3.5 sm:gap-5 lg:gap-6 transition-transform duration-500 ease-out will-change-transform">
+
+                    {{-- CLONE DARI SLIDE TERAKHIR (Untuk efek mengintip di sisi kiri saat berada di Slide 1) --}}
+                    <article data-hero-clone="last" aria-hidden="true" class="hero-widyatama-card w-[90%] sm:w-[91%] lg:w-[92%] shrink-0 rounded-[26px] sm:rounded-[30px] border border-slate-200/80 bg-white p-5 sm:p-8 lg:px-12 lg:py-10 shadow-[0_8px_30px_rgba(15,23,42,0.05)] opacity-60 transition-opacity duration-300">
+                        <div class="grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
+                            <div class="flex flex-col justify-center lg:col-span-7">
+                                <div class="mb-4 flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
+                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                        {{ $lastPromoSlide['badge'] }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                        <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                        {{ $lastPromoSlide['date'] }}
+                                    </span>
+                                </div>
+                                <h2 class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22] line-clamp-3">
+                                    {{ $lastPromoSlide['title'] }}
+                                </h2>
+                                <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600 line-clamp-3">
+                                    {{ $lastPromoSlide['excerpt'] }}
+                                </p>
+                                <div class="mt-6 sm:mt-7">
+                                    <span class="inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm">
+                                        <span>{{ $lastPromoSlide['cta'] }}</span>
+                                        <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                    </span>
+                                </div>
                             </div>
-                        @elseif (Auth::user()->isDosen())
-                            {{-- Role: Dosen / Peneliti --}}
-                            <h1 id="judul-beranda" class="text-2xl leading-tight font-semibold text-primary sm:text-3xl md:text-[32px] lg:text-[36px] xl:text-[40px]">
-                                Selamat Datang, {{ Auth::user()->nama_lengkap }}!
-                            </h1>
-                            <p class="mt-2.5 sm:mt-3.5 text-xs sm:text-sm md:text-base leading-relaxed text-ink-secondary">
-                                Akses seluruh fasilitas referensi riset, jurnal internasional terakreditasi Scopus &amp; SINTA, portal publikasi ilmiah OJS MNC University, serta ajukan usulan pengadaan buku ajar silabus perkuliahan.
-                            </p>
-                            <div class="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                <a href="{{ route('ejournal') }}" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
-                                    <i class="fa-solid fa-newspaper text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>E-Journal Internasional</span>
-                                </a>
-                                <a href="{{ route('ojs') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-layer-group text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Portal OJS Prodi</span>
-                                </a>
-                                <a href="{{ route('repository') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-book-atlas text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Repository Riset</span>
-                                </a>
+                            <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
+                                <div class="w-full max-w-[290px] sm:max-w-[330px] lg:max-w-[360px] aspect-square rounded-[22px] overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm">
+                                    <img
+                                        src="{{ $lastPromoSlide['image'] }}"
+                                        alt=""
+                                        class="h-full w-full object-cover"
+                                        loading="lazy"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
+                                    >
+                                </div>
                             </div>
-                        @else
-                            {{-- Role: Mahasiswa (e.g. Jovin) --}}
-                            <h1 id="judul-beranda" class="text-2xl leading-tight font-semibold text-primary sm:text-3xl md:text-[32px] lg:text-[36px] xl:text-[40px]">
-                                Selamat Datang, {{ Auth::user()->nama_lengkap }}!
-                            </h1>
-                            <p class="mt-2.5 sm:mt-3.5 text-xs sm:text-sm md:text-base leading-relaxed text-ink-secondary">
-                                Temukan referensi tugas akhir, buku teks perkuliahan, dan e-book pembelajaran untuk mendukung studimu di MNC University. Jelajahi katalog buku fisik OPAC dan baca koleksi digital kapan saja.
-                            </p>
-                            <div class="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                <a href="{{ route('opac') }}" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
-                                    <i class="fa-solid fa-magnifying-glass text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Cari Buku di OPAC</span>
-                                </a>
-                                <a href="{{ route('repository') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-graduation-cap text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>Repository Skripsi</span>
-                                </a>
-                                <a href="{{ route('ebook') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-book-open-reader text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                    <span>E-Book Reader</span>
-                                </a>
-                            </div>
-                        @endif
-                    @else
-                        {{-- Guest / Belum Login --}}
-                        <h1 id="judul-beranda" class="text-2xl leading-tight font-semibold text-primary sm:text-3xl md:text-[32px] lg:text-[36px] xl:text-[40px]">
-                            Perpustakaan MNC University
-                        </h1>
-                        <p class="mt-2.5 sm:mt-3.5 text-xs sm:text-sm md:text-base leading-relaxed text-ink-secondary">
-                            Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
-                        </p>
-                        <div class="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                            <a href="#layanan" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
-                                <i class="fa-solid fa-book-bookmark text-xs sm:text-sm" aria-hidden="true"></i>
-                                <span>Pilih Layanan Perpustakaan</span>
-                            </a>
-                            <a href="{{ route('register') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-primary text-primary bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold transition-all hover:bg-primary/5">
-                                <i class="fa-solid fa-user-plus text-xs sm:text-sm"></i>
-                                <span>Daftar Anggota</span>
-                            </a>
-                            <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
-                                <i class="fa-solid fa-location-dot text-primary text-xs sm:text-sm" aria-hidden="true"></i>
-                                <span>Lokasi Kampus</span>
-                            </a>
                         </div>
-                    @endauth
+                    </article>
+
+                    {{-- SLIDE 1 (INDEX 0): SELAMAT DATANG & REKAP PENGUNJUNG --}}
+                    <article data-hero-slide="0" class="hero-widyatama-card relative overflow-hidden w-[90%] sm:w-[91%] lg:w-[92%] shrink-0 rounded-[26px] sm:rounded-[30px] border border-slate-200/80 bg-white p-5 sm:p-8 lg:px-12 lg:py-10 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition-opacity duration-300">
+                        {{-- Siluet Watermark Logo MNC University di Belakang Kartu --}}
+                        <div class="pointer-events-none select-none absolute -left-8 -bottom-10 sm:left-6 sm:-bottom-12 lg:left-[26%] lg:top-1/2 lg:-translate-y-1/2 z-0" aria-hidden="true">
+                            <img
+                                src="{{ asset('images/LogoTXT.png') }}"
+                                alt=""
+                                class="w-[260px] sm:w-[340px] lg:w-[420px] max-w-none object-contain opacity-[0.045] grayscale contrast-125 -rotate-6"
+                            >
+                        </div>
+
+                        <div class="relative z-10 grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
+                            {{-- Kolom Kiri: Sambutan Sesuai Peran User --}}
+                            <div class="flex flex-col justify-center lg:col-span-7">
+                                <div class="mb-3.5 flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
+                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                        Sambutan Perpustakaan
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                        <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                        {{ now()->translatedFormat('d M Y') }}
+                                    </span>
+                                </div>
+
+                                @auth
+                                    @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
+                                        <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
+                                            Selamat Bertugas, {{ Auth::user()->nama_lengkap }}!
+                                        </h1>
+                                        <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
+                                            Kelola operasional dan sirkulasi Perpustakaan MNC University. Pantau statistik kunjungan harian pemustaka, perbarui katalog koleksi buku, publikasikan agenda acara, dan kelola rilis berita kampus.
+                                        </p>
+                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('admin.books.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <span>Kelola Buku (OPAC)</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                                <a href="{{ route('admin.acara.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-calendar-plus text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>Kelola Acara &amp; Poster</span>
+                                                </a>
+                                                <a href="{{ route('admin.users.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-users-gear text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>Data Pemustaka</span>
+                                                </a>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                    <span>Isi Kehadiran Pengunjung</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @elseif (Auth::user()->isDosen())
+                                        <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
+                                            Selamat Datang, {{ Auth::user()->nama_lengkap }}!
+                                        </h1>
+                                        <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
+                                            Akses seluruh fasilitas referensi riset, jurnal internasional terakreditasi Scopus &amp; SINTA, portal publikasi ilmiah OJS MNC University, serta ajukan usulan pengadaan buku ajar silabus perkuliahan.
+                                        </p>
+                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('ejournal') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <span>E-Journal Internasional</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                                <a href="{{ route('ojs') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-layer-group text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>Portal OJS Prodi</span>
+                                                </a>
+                                                <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-book-atlas text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>Repository Riset</span>
+                                                </a>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                    <span>Isi Kehadiran Pengunjung</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
+                                            Selamat Datang, {{ Auth::user()->nama_lengkap }}!
+                                        </h1>
+                                        <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
+                                            Temukan referensi tugas akhir, buku teks perkuliahan, dan e-book pembelajaran untuk mendukung studimu di MNC University. Jelajahi katalog buku fisik OPAC dan baca koleksi digital kapan saja.
+                                        </p>
+                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('opac') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <span>Cari Buku di OPAC</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                                <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-graduation-cap text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>Repository Skripsi</span>
+                                                </a>
+                                                <a href="{{ route('ebook') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                    <i class="fa-solid fa-book-open-reader text-primary text-xs" aria-hidden="true"></i>
+                                                    <span>E-Book Reader</span>
+                                                </a>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                    <span>Isi Kehadiran Pengunjung</span>
+                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @else
+                                    <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
+                                        Perpustakaan MNC University
+                                    </h1>
+                                    <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
+                                        Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
+                                    </p>
+                                    <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
+                                        <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                            <a href="#layanan" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                <span>Pilih Layanan Perpustakaan</span>
+                                                <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{{ route('register') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-primary transition-all hover:bg-primary/5">
+                                                <i class="fa-solid fa-user-plus text-xs"></i>
+                                                <span>Daftar Anggota</span>
+                                            </a>
+                                        </div>
+                                        <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                            <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                                <span>Isi Kehadiran Pengunjung</span>
+                                                <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="https://maps.google.com/maps?q=MNC%20University" target="_blank" rel="noopener" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-location-dot text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Lokasi Kampus</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endauth
+                            </div>
+
+                            {{-- Kolom Kanan: Frame Kotak Rounded berisi Data Rekap Pengunjung --}}
+                            <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
+                                <div class="w-full max-w-[360px] lg:max-w-[380px] rounded-[22px] border border-slate-200/90 bg-slate-50/70 p-4 sm:p-5 shadow-xs">
+                                    <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#0b2a5b]/10 text-[#0b2a5b]">
+                                                <i class="fa-solid fa-chart-simple text-sm" aria-hidden="true"></i>
+                                            </span>
+                                            <div>
+                                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aktivitas Pemustaka</span>
+                                                <h2 class="text-sm sm:text-base font-bold text-[#0b1f3a]">Statistik Kunjungan</h2>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500 border border-slate-200/70">
+                                            <i class="fa-solid fa-clock-rotate-left text-[10px] text-[#f59e0b]"></i>
+                                            Terkini
+                                        </span>
+                                    </div>
+
+                                    <dl class="mt-3 flex flex-col gap-2.5">
+                                        <div class="flex items-center justify-between rounded-xl border border-blue-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                                                    <i class="fa-solid fa-user-clock text-xs" aria-hidden="true"></i>
+                                                </span>
+                                                <div>
+                                                    <dt class="text-xs font-bold text-slate-800">Hari ini</dt>
+                                                    <span class="text-[10px] text-slate-500">Kunjungan unik hari ini</span>
+                                                </div>
+                                            </div>
+                                            <dd class="text-lg sm:text-xl font-extrabold text-blue-700">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
+                                        </div>
+
+                                        <div class="flex items-center justify-between rounded-xl border border-purple-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[#7C3AED]">
+                                                    <i class="fa-solid fa-calendar-check text-xs" aria-hidden="true"></i>
+                                                </span>
+                                                <div>
+                                                    <dt class="text-xs font-bold text-slate-800">Bulan ini</dt>
+                                                    <span class="text-[10px] text-slate-500">{{ now()->translatedFormat('F Y') }}</span>
+                                                </div>
+                                            </div>
+                                            <dd class="text-lg sm:text-xl font-extrabold text-[#7C3AED]">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
+                                        </div>
+
+                                        <div class="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                                                    <i class="fa-solid fa-users text-xs" aria-hidden="true"></i>
+                                                </span>
+                                                <div>
+                                                    <dt class="text-xs font-bold text-slate-800">Total Kunjungan</dt>
+                                                    <span class="text-[10px] text-slate-500">Akumulasi pengunjung</span>
+                                                </div>
+                                            </div>
+                                            <dd class="text-lg sm:text-xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
+                                        </div>
+                                    </dl>
+
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 pt-2.5 text-[11px] text-slate-500">
+                                        @if (isset($isDbConnected) && ! $isDbConnected)
+                                            <span class="flex items-center gap-1.5 text-amber-600 font-medium">
+                                                <i class="fa-solid fa-circle-exclamation text-amber-500 text-xs" aria-hidden="true"></i>
+                                                Database offline
+                                            </span>
+                                        @else
+                                            <span class="flex items-center gap-1.5">
+                                                <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
+                                                Pembaruan otomatis
+                                            </span>
+                                        @endif
+                                        <span class="font-semibold text-[#0b2a5b] flex items-center gap-1">
+                                            <i class="fa-solid fa-building-columns text-xs" aria-hidden="true"></i>
+                                            MNCU Library
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    {{-- SLIDE 2..5 (INDEX 1..4): SOROTAN BERITA & AGENDA ACARA PERSIS UI WIDYATAMA --}}
+                    @foreach ($heroPromoSlides as $sIdx => $slide)
+                        <article data-hero-slide="{{ $sIdx + 1 }}" class="hero-widyatama-card w-[90%] sm:w-[91%] lg:w-[92%] shrink-0 rounded-[26px] sm:rounded-[30px] border border-slate-200/80 bg-white p-5 sm:p-8 lg:px-12 lg:py-10 shadow-[0_8px_30px_rgba(15,23,42,0.05)] opacity-60 transition-opacity duration-300">
+                            <div class="grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
+                                {{-- Kolom Kiri: Pill Kategori + Tanggal, Judul Kapital Bold Navy, Kutipan, Tombol Pill Navy --}}
+                                <div class="flex flex-col justify-center lg:col-span-7">
+                                    <div class="mb-4 flex flex-wrap items-center gap-3">
+                                        <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
+                                            <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                            {{ $slide['badge'] }}
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                            <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                            {{ $slide['date'] }}
+                                        </span>
+                                    </div>
+
+                                    <h2 class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22] line-clamp-3">
+                                        {{ $slide['title'] }}
+                                    </h2>
+
+                                    <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600 line-clamp-3">
+                                        {{ $slide['excerpt'] }}
+                                    </p>
+
+                                    <div class="mt-6 sm:mt-7">
+                                        <a href="{{ $slide['url'] }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                            <span>{{ $slide['cta'] }}</span>
+                                            <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {{-- Kolom Kanan: Gambar Kotak / Square Rounded di Dalam Kartu --}}
+                                <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
+                                    <div class="w-full max-w-[290px] sm:max-w-[330px] lg:max-w-[360px] aspect-square rounded-[22px] overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm">
+                                        <img
+                                            src="{{ $slide['image'] }}"
+                                            alt="{{ $slide['title'] }}"
+                                            class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                            loading="lazy"
+                                            onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+
+                    {{-- CLONE DARI SLIDE PERTAMA (Untuk efek mengintip di sisi kanan saat berada di Slide Terakhir) --}}
+                    <article data-hero-clone="first" aria-hidden="true" class="hero-widyatama-card relative overflow-hidden w-[90%] sm:w-[91%] lg:w-[92%] shrink-0 rounded-[26px] sm:rounded-[30px] border border-slate-200/80 bg-white p-5 sm:p-8 lg:px-12 lg:py-10 shadow-[0_8px_30px_rgba(15,23,42,0.05)] opacity-60 transition-opacity duration-300">
+                        <div class="pointer-events-none select-none absolute -left-8 -bottom-10 sm:left-6 sm:-bottom-12 lg:left-[26%] lg:top-1/2 lg:-translate-y-1/2 z-0" aria-hidden="true">
+                            <img
+                                src="{{ asset('images/LogoTXT.png') }}"
+                                alt=""
+                                class="w-[260px] sm:w-[340px] lg:w-[420px] max-w-none object-contain opacity-[0.045] grayscale contrast-125 -rotate-6"
+                            >
+                        </div>
+                        <div class="relative z-10 grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
+                            <div class="flex flex-col justify-center lg:col-span-7">
+                                <div class="mb-3.5 flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
+                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                        Sambutan Perpustakaan
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                        <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                        {{ now()->translatedFormat('d M Y') }}
+                                    </span>
+                                </div>
+                                <h2 class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
+                                    Perpustakaan MNC University
+                                </h2>
+                                <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
+                                    Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
+                                </p>
+                            </div>
+                            <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
+                                <div class="w-full max-w-[360px] lg:max-w-[380px] rounded-[22px] border border-slate-200/90 bg-slate-50/70 p-4 sm:p-5 shadow-xs">
+                                    <div class="text-sm font-bold text-[#0b1f3a]">Statistik Kunjungan</div>
+                                    <div class="mt-2 text-2xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
                 </div>
 
-                {{-- Statistik Pengunjung menggantikan posisi logo di Hero --}}
-                <div class="w-full min-w-0 rounded-2xl border border-line bg-white p-4 sm:p-5 lg:p-6 shadow-sm">
-                    <div class="flex items-center justify-between border-b border-line pb-3 sm:pb-3.5">
-                        <div class="flex items-center gap-2.5 sm:gap-3">
-                            <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                <i class="fa-solid fa-chart-simple text-sm sm:text-base" aria-hidden="true"></i>
-                            </span>
-                            <div>
-                                <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted">Aktivitas Pemustaka</span>
-                                <h2 class="text-base sm:text-lg font-semibold text-ink">Statistik Kunjungan</h2>
-                            </div>
-                        </div>
-                        <span class="text-[11px] sm:text-xs text-muted flex items-center gap-1.5 shrink-0">
-                            <i class="fa-solid fa-clock-rotate-left text-[10px] text-primary"></i>
-                            Terkini
-                        </span>
-                    </div>
-
-                    <dl class="mt-3.5 sm:mt-4 flex flex-col gap-2.5 sm:gap-3">
-                        <div class="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-blue-400 hover:shadow-xs">
-                            <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 shadow-xs" style="background-color: #dbeafe; color: #2563eb;">
-                                    <i class="fa-solid fa-user-clock text-xs sm:text-sm" aria-hidden="true"></i>
-                                </span>
-                                <div>
-                                    <dt class="text-xs font-bold text-slate-800">Hari ini</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-slate-500">Kunjungan unik hari ini</span>
-                                </div>
-                            </div>
-                            <dd class="text-xl sm:text-2xl font-extrabold text-blue-700">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
-                        </div>
-
-                        <div class="flex items-center justify-between rounded-xl border border-purple-200 bg-purple-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-purple-400 hover:shadow-xs">
-                            <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[#7C3AED] shadow-xs" style="background-color: #f3e8ff; color: #7c3aed;">
-                                    <i class="fa-solid fa-calendar-check text-xs sm:text-sm" aria-hidden="true"></i>
-                                </span>
-                                <div>
-                                    <dt class="text-xs font-bold text-slate-800">Bulan ini</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-slate-500">{{ now()->translatedFormat('F Y') }}</span>
-                                </div>
-                            </div>
-                            <dd class="text-xl sm:text-2xl font-extrabold text-[#7C3AED]">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
-                        </div>
-
-                        <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/50 px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-200 hover:border-emerald-400 hover:shadow-xs">
-                            <div class="flex items-center gap-2.5 sm:gap-3">
-                                <span class="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shadow-xs" style="background-color: #d1fae5; color: #059669;">
-                                    <i class="fa-solid fa-users text-xs sm:text-sm" aria-hidden="true"></i>
-                                </span>
-                                <div>
-                                    <dt class="text-xs font-bold text-slate-800">Total Kunjungan</dt>
-                                    <span class="text-[10px] sm:text-[11px] text-slate-500">Akumulasi pengunjung</span>
-                                </div>
-                            </div>
-                            <dd class="text-xl sm:text-2xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
-                        </div>
-                    </dl>
-
-                    <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2.5 text-[11px] text-muted">
-                        @if (isset($isDbConnected) && ! $isDbConnected)
-                            <span class="flex items-center gap-1.5 text-amber-600 font-medium">
-                                <i class="fa-solid fa-circle-exclamation text-amber-500 text-xs" aria-hidden="true"></i>
-                                Database offline
-                            </span>
-                        @else
-                            <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
-                                Pembaruan otomatis
-                            </span>
-                        @endif
-                        <span class="font-medium text-primary flex items-center gap-1">
-                            <i class="fa-solid fa-building-columns text-xs" aria-hidden="true"></i>
-                            MNC University Library
-                        </span>
-                    </div>
+                {{-- Indikator Titik (Dots) di Bawah Kartu --}}
+                <div id="hero-widyatama-dots" class="mt-4 flex items-center justify-center gap-2" role="tablist" aria-label="Pilih slide sorotan beranda">
+                    @for ($dotIdx = 0; $dotIdx < $totalHeroSlides; $dotIdx++)
+                        <button
+                            type="button"
+                            data-hero-dot="{{ $dotIdx }}"
+                            role="tab"
+                            aria-label="Tampilkan slide {{ $dotIdx + 1 }}"
+                            aria-selected="{{ $dotIdx === 0 ? 'true' : 'false' }}"
+                            class="h-2 rounded-full transition-all duration-300 cursor-pointer {{ $dotIdx === 0 ? 'w-7 bg-[#0b2a5b]' : 'w-2 bg-slate-300 hover:bg-slate-400' }}"
+                        ></button>
+                    @endfor
                 </div>
             </div>
 
+            <script>
+                (function () {
+                    const root = document.getElementById('hero-widyatama-carousel');
+                    const track = document.getElementById('hero-widyatama-track');
+                    const prevBtn = document.getElementById('hero-widyatama-prev');
+                    const nextBtn = document.getElementById('hero-widyatama-next');
+                    const dots = Array.from(document.querySelectorAll('[data-hero-dot]'));
+                    if (!root || !track) return;
+
+                    const cards = Array.from(track.querySelectorAll('.hero-widyatama-card'));
+                    const realCount = {{ $totalHeroSlides }};
+                    let domIndex = 1; // index 0 = clone last, 1..realCount = real slides, realCount+1 = clone first
+                    let isAnimating = false;
+                    let autoTimer = null;
+
+                    function computeOffset(targetDomIdx) {
+                        const card = cards[targetDomIdx];
+                        if (!card) return 0;
+                        const rootWidth = root.clientWidth;
+                        const cardWidth = card.offsetWidth;
+                        const cardLeft = card.offsetLeft;
+                        return -(cardLeft - (rootWidth - cardWidth) / 2);
+                    }
+
+                    function updateActiveState() {
+                        let realIdx = domIndex - 1;
+                        if (realIdx < 0) realIdx = realCount - 1;
+                        if (realIdx >= realCount) realIdx = 0;
+
+                        cards.forEach((card, idx) => {
+                            if (idx === domIndex) {
+                                card.classList.remove('opacity-60');
+                                card.classList.add('opacity-100');
+                            } else {
+                                card.classList.remove('opacity-100');
+                                card.classList.add('opacity-60');
+                            }
+                        });
+
+                        dots.forEach((dot, idx) => {
+                            const active = idx === realIdx;
+                            dot.setAttribute('aria-selected', active ? 'true' : 'false');
+                            dot.className = active
+                                ? 'h-2 w-7 rounded-full bg-[#0b2a5b] transition-all duration-300 cursor-pointer'
+                                : 'h-2 w-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300 cursor-pointer';
+                        });
+                    }
+
+                    function applyTransform(animate = true) {
+                        if (animate) {
+                            track.style.transition = 'transform 500ms cubic-bezier(0.22, 1, 0.36, 1)';
+                        } else {
+                            track.style.transition = 'none';
+                        }
+                        const offset = computeOffset(domIndex);
+                        track.style.transform = `translate3d(${offset}px, 0, 0)`;
+                        updateActiveState();
+                    }
+
+                    function goToDomIndex(nextDomIdx) {
+                        if (isAnimating) return;
+                        isAnimating = true;
+                        domIndex = nextDomIdx;
+                        applyTransform(true);
+                    }
+
+                    track.addEventListener('transitionend', function (e) {
+                        if (e.target !== track) return;
+                        isAnimating = false;
+                        if (domIndex === 0) {
+                            domIndex = realCount;
+                            applyTransform(false);
+                        } else if (domIndex === realCount + 1) {
+                            domIndex = 1;
+                            applyTransform(false);
+                        }
+                    });
+
+                    function nextSlide() {
+                        if (isAnimating) return;
+                        goToDomIndex(domIndex + 1);
+                    }
+
+                    function prevSlide() {
+                        if (isAnimating) return;
+                        goToDomIndex(domIndex - 1);
+                    }
+
+                    function startAuto() {
+                        stopAuto();
+                        autoTimer = setInterval(nextSlide, 5500);
+                    }
+
+                    function stopAuto() {
+                        if (autoTimer) {
+                            clearInterval(autoTimer);
+                            autoTimer = null;
+                        }
+                    }
+
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', function () {
+                            prevSlide();
+                            startAuto();
+                        });
+                    }
+
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', function () {
+                            nextSlide();
+                            startAuto();
+                        });
+                    }
+
+                    dots.forEach((dot, idx) => {
+                        dot.addEventListener('click', function () {
+                            if (isAnimating) return;
+                            goToDomIndex(idx + 1);
+                            startAuto();
+                        });
+                    });
+
+                    // Drag / Swipe support
+                    let startX = 0;
+                    let isDragging = false;
+
+                    root.addEventListener('pointerdown', function (e) {
+                        if (e.target.closest('a, button')) return;
+                        isDragging = true;
+                        startX = e.clientX;
+                        stopAuto();
+                    });
+
+                    window.addEventListener('pointerup', function (e) {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        const diff = e.clientX - startX;
+                        if (Math.abs(diff) > 45) {
+                            if (diff < 0) nextSlide();
+                            else prevSlide();
+                        }
+                        startAuto();
+                    });
+
+                    root.addEventListener('mouseenter', stopAuto);
+                    root.addEventListener('mouseleave', startAuto);
+
+                    window.addEventListener('resize', function () {
+                        isAnimating = false;
+                        applyTransform(false);
+                    });
+
+                    requestAnimationFrame(function () {
+                        applyTransform(false);
+                        startAuto();
+                    });
+                })();
+            </script>
+
             {{-- Garis biru di bawah hero --}}
-            <div class="mt-4 pt-4 pb-2 sm:mt-6 sm:pt-6 sm:pb-3 lg:mt-8 lg:pt-8 lg:pb-4">
+            <div class="mt-3 pt-3 pb-2 sm:mt-4 sm:pt-4 sm:pb-3">
                 <div class="h-0.5 w-full bg-primary/80"></div>
             </div>
         </section>

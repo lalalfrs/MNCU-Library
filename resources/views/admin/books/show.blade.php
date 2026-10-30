@@ -27,6 +27,16 @@
 
                 <div class="flex flex-wrap items-center gap-2.5">
                     <a
+                        href="{{ route('admin.books.cetak-label', $book->id_buku) }}"
+                        target="_blank"
+                        class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-blue-300 bg-blue-50 px-4 text-xs font-semibold text-blue-800 shadow-xs hover:bg-blue-100 transition-all sm:text-sm"
+                        title="Cetak Stiker Label Barcode Buku (8x5 cm) / PDF"
+                    >
+                        <i class="fa-solid fa-barcode text-xs text-blue-700"></i>
+                        <span>Cetak Stiker (8x5 cm)</span>
+                    </a>
+
+                    <a
                         href="{{ route('opac', ['buku' => $book->id_buku]) }}"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -54,6 +64,29 @@
                     </a>
                 </div>
             </div>
+
+            {{-- Alert Tautan Cepat Cetak Stiker Setelah Penambahan Buku Baru --}}
+            @if (session('cetak_label_url'))
+                <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-emerald-300 bg-emerald-50/90 p-4 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+                            <i class="fa-solid fa-barcode text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-emerald-950 sm:text-sm">Buku &amp; Eksemplar Berhasil Ditambahkan ke Katalog!</p>
+                            <p class="text-[11px] text-emerald-800">Label stiker barcode fisik (ukuran 8 cm × 5 cm) siap dicetak langsung atau disimpan sebagai file PDF.</p>
+                        </div>
+                    </div>
+                    <a
+                        href="{{ session('cetak_label_url') }}"
+                        target="_blank"
+                        class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 transition-all shrink-0"
+                    >
+                        <i class="fa-solid fa-print"></i>
+                        <span>Cetak Stiker (8x5 cm) Sekarang</span>
+                    </a>
+                </div>
+            @endif
         </div>
 
 
@@ -97,6 +130,10 @@
                         <div class="flex items-center justify-between">
                             <span class="text-muted">Jumlah Halaman:</span>
                             <span class="font-medium text-ink">{{ $book->jumlah_halaman ? "{$book->jumlah_halaman} halaman" : '-' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-muted">Dimensi Fisik:</span>
+                            <span class="font-medium text-ink">{{ $book->dimensi ?: '-' }}</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-muted">ISBN:</span>
@@ -388,6 +425,16 @@
                                         </td>
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
                                             <div class="inline-flex items-center gap-1.5">
+                                                {{-- Tombol Cetak Stiker Barcode Eksemplar --}}
+                                                <a
+                                                    href="{{ route('admin.books.cetak-label', ['buku' => $book->id_buku, 'eksemplar' => $ek->id_eksemplar]) }}"
+                                                    target="_blank"
+                                                    class="inline-flex size-7 items-center justify-center rounded-lg border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                                                    title="Cetak Stiker Barcode Eksemplar Ini (8x5 cm)"
+                                                >
+                                                    <i class="fa-solid fa-barcode text-xs"></i>
+                                                </a>
+
                                                 {{-- Tombol Modal Edit Eksemplar Lengkap --}}
                                                 <button
                                                     type="button"

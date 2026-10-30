@@ -72,14 +72,14 @@ class AcaraAdminController extends Controller
             'tautan_pendaftaran' => ['nullable', 'url', 'max:255'],
             'kuota' => ['nullable', 'integer', 'min:1'],
             'gambar_acara' => ['nullable', 'string', 'max:255'],
-            'gambar_acara_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'gambar_acara_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:200'],
             'is_active' => ['nullable', 'boolean'],
         ], [
             'nama_acara.required' => 'Nama acara wajib diisi.',
             'kategori_acara.required' => 'Kategori acara wajib diisi.',
             'tanggal_mulai.required' => 'Waktu pelaksanaan acara wajib diisi.',
             'gambar_acara_file.mimes' => 'Format file poster/foto harus berupa PNG, JPG, JPEG, atau WEBP.',
-            'gambar_acara_file.max' => 'Ukuran file poster/foto maksimal 5 MB.',
+            'gambar_acara_file.max' => 'Ukuran file poster/foto maksimal 200 KB.',
         ]);
 
         if ($request->hasFile('gambar_acara_file')) {
@@ -129,7 +129,7 @@ class AcaraAdminController extends Controller
             'tautan_pendaftaran' => ['nullable', 'url', 'max:255'],
             'kuota' => ['nullable', 'integer', 'min:1'],
             'gambar_acara' => ['nullable', 'string', 'max:255'],
-            'gambar_acara_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'gambar_acara_file' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:200'],
             'hapus_gambar' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ], [
@@ -137,7 +137,7 @@ class AcaraAdminController extends Controller
             'kategori_acara.required' => 'Kategori acara wajib diisi.',
             'tanggal_mulai.required' => 'Waktu pelaksanaan acara wajib diisi.',
             'gambar_acara_file.mimes' => 'Format file poster/foto harus berupa PNG, JPG, JPEG, atau WEBP.',
-            'gambar_acara_file.max' => 'Ukuran file poster/foto maksimal 5 MB.',
+            'gambar_acara_file.max' => 'Ukuran file poster/foto maksimal 200 KB.',
         ]);
 
         if ($request->boolean('hapus_gambar')) {

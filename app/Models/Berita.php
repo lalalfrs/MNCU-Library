@@ -112,7 +112,7 @@ class Berita extends Model
         return Attribute::make(
             get: function () {
                 if (empty($this->gambar_berita)) {
-                    return null;
+                    return asset('images/berita/berita-digital-library.jpg');
                 }
                 if (str_starts_with($this->gambar_berita, 'http://') || str_starts_with($this->gambar_berita, 'https://')) {
                     return $this->gambar_berita;
@@ -123,8 +123,11 @@ class Berita extends Model
                 if (str_starts_with($this->gambar_berita, 'storage/')) {
                     return asset($this->gambar_berita);
                 }
+                if (file_exists(storage_path('app/public/'.$this->gambar_berita))) {
+                    return asset('storage/'.$this->gambar_berita);
+                }
 
-                return asset('storage/'.$this->gambar_berita);
+                return asset('images/berita/berita-digital-library.jpg');
             },
             set: fn ($value) => ['gambar_berita' => $value],
         );

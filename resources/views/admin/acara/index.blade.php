@@ -101,7 +101,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
                                         @if ($event->image)
-                                            <img src="{{ $event->image }}" alt="{{ $event->nama_acara }}" class="size-12 rounded-lg object-cover border border-line shrink-0">
+                                            <img src="{{ $event->image }}" alt="{{ $event->nama_acara }}" class="size-12 rounded-lg object-cover border border-line shrink-0" onerror="this.onerror=null; this.src='{{ asset('images/acara/acara-01.jpg') }}';">
                                         @else
                                             <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-subtle border border-line text-muted">
                                                 <i class="fa-regular fa-calendar-check text-base"></i>

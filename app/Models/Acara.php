@@ -131,7 +131,7 @@ class Acara extends Model
         return Attribute::make(
             get: function () {
                 if (empty($this->gambar_acara)) {
-                    return null;
+                    return asset('images/acara/acara-01.jpg');
                 }
                 if (str_starts_with($this->gambar_acara, 'http://') || str_starts_with($this->gambar_acara, 'https://')) {
                     return $this->gambar_acara;
@@ -142,8 +142,11 @@ class Acara extends Model
                 if (str_starts_with($this->gambar_acara, 'storage/')) {
                     return asset($this->gambar_acara);
                 }
+                if (file_exists(storage_path('app/public/'.$this->gambar_acara))) {
+                    return asset('storage/'.$this->gambar_acara);
+                }
 
-                return asset('storage/'.$this->gambar_acara);
+                return asset('images/acara/acara-01.jpg');
             },
             set: fn ($value) => ['gambar_acara' => $value],
         );
@@ -153,6 +156,7 @@ class Acara extends Model
     {
         return Attribute::make(
             get: fn () => $this->image,
+            set: fn ($value) => ['gambar_acara' => $value],
         );
     }
 

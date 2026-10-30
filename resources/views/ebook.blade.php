@@ -100,6 +100,7 @@
                                         alt="{{ $book['title'] }}"
                                         loading="lazy"
                                         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/buku/default-cover.jpg') }}';"
                                     >
                                     <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-lg bg-[#E11D48]/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
                                         <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
