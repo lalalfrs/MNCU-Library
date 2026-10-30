@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\GuestLogController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -35,8 +36,9 @@ Route::middleware('auth')->group(function (): void {
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
-// Beranda Utama
+// Beranda Utama & Buku Tamu Pengunjung
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
+Route::post('/buku-tamu', [GuestLogController::class, 'store'])->name('guest-log.store');
 
 // Profil & Informasi Perpustakaan
 Route::view('/tentang-kami', 'tentang-kami')->name('tentang-kami');

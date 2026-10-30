@@ -184,8 +184,12 @@
                             Pusat sumber belajar dan referensi akademik sivitas MNC University. Jelajahi katalog buku, repository skripsi dan riset, jurnal internasional terindeks, serta koleksi e-book resmi.
                         </p>
                         <div class="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                            <a href="#layanan" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
-                                <i class="fa-solid fa-book-bookmark text-xs sm:text-sm" aria-hidden="true"></i>
+                            <a href="#buku-tamu" class="btn-press btn-sheen inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all hover:bg-primary-dark">
+                                <i class="fa-solid fa-clipboard-user text-xs sm:text-sm" aria-hidden="true"></i>
+                                <span>Isi Buku Tamu</span>
+                            </a>
+                            <a href="#layanan" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-medium text-ink shadow-xs transition-all hover:border-primary/40 hover:bg-subtle hover:text-primary">
+                                <i class="fa-solid fa-book-bookmark text-primary text-xs sm:text-sm" aria-hidden="true"></i>
                                 <span>Pilih Layanan Perpustakaan</span>
                             </a>
                             <a href="{{ route('register') }}" class="btn-press inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-xl border border-primary text-primary bg-white px-3.5 sm:px-4.5 text-xs sm:text-sm font-semibold transition-all hover:bg-primary/5">
@@ -284,6 +288,9 @@
                 <div class="h-0.5 w-full bg-primary/80"></div>
             </div>
         </section>
+
+        {{-- Buku Tamu / Absensi Pengunjung --}}
+        @include('partials.buku-tamu')
 
         {{-- Komponen card: layanan --}}
         <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-line bg-white p-6 lg:p-8">
