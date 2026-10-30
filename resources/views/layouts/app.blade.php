@@ -35,7 +35,41 @@
         @include('partials.navbar')
         @include('partials.sidebar')
 
-        <main id="konten" class="flex flex-1 flex-col page-transition-wrapper">
+        <main id="konten" class="flex w-full min-w-0 max-w-full flex-1 flex-col page-transition-wrapper">
+            @php
+                $databaseAlert = session('database_error') ?? ($dbErrorMessage ?? null);
+                if (! $databaseAlert && request()->query('db_error')) {
+                    $databaseAlert = 'Database belum terhubung. Pastikan layanan database (MySQL / XAMPP) sudah dijalankan.';
+                }
+            @endphp
+
+            @if ($databaseAlert)
+                <div id="database-alert-banner" class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 rounded-2xl border border-red-200 bg-red-50/95 p-4 text-xs text-red-900 shadow-sm sm:text-sm">
+                        <div class="flex items-start sm:items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                                <i class="fa-solid fa-triangle-exclamation text-base" aria-hidden="true"></i>
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-red-900 text-sm sm:text-base">Koneksi Database Belum Terhubung</h3>
+                                <p class="text-red-700 text-xs sm:text-sm leading-relaxed mt-0.5">
+                                    {{ $databaseAlert }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <a href="{{ route('beranda') }}" class="btn-press inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-red-700 transition-colors">
+                                <i class="fa-solid fa-rotate-right text-xs"></i>
+                                <span>Coba Lagi</span>
+                            </a>
+                            <button type="button" onclick="document.getElementById('database-alert-banner').remove()" class="inline-flex size-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-100 hover:text-red-800 transition-colors" title="Tutup pemberitahuan" aria-label="Tutup pemberitahuan">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if (session('success'))
                 <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
                     <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 shadow-sm sm:text-sm">
@@ -43,7 +77,21 @@
                             <i class="fa-solid fa-circle-check text-emerald-600"></i>
                             <span>{{ session('success') }}</span>
                         </div>
-                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900">
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900" aria-label="Tutup pemberitahuan">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mx-auto mt-4 w-full max-w-[1570px] px-3 lg:px-6">
+                    <div class="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 shadow-sm sm:text-sm">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-triangle-exclamation text-red-600"></i>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-700 hover:text-red-900" aria-label="Tutup pemberitahuan">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -57,7 +105,7 @@
                             <i class="fa-solid fa-circle-info text-blue-600"></i>
                             <span>{{ session('info') }}</span>
                         </div>
-                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-blue-700 hover:text-blue-900">
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-blue-700 hover:text-blue-900" aria-label="Tutup pemberitahuan">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>

@@ -19,14 +19,14 @@ class EnsureSuperAdmin
             return redirect()->route('login');
         }
 
-        if (! $user->isSuperAdmin()) {
+        if (! ($user->isSuperAdmin() || $user->isPustakawan())) {
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Akses ditolak: Hanya Super Admin / Kepala Perpustakaan yang memiliki wewenang mengelola data perpustakaan.',
+                    'message' => 'Akses ditolak: Hanya Super Admin atau Pustakawan yang memiliki wewenang mengelola data perpustakaan.',
                 ], 403);
             }
 
-            abort(403, 'Akses terbatas: Anda tidak memiliki wewenang administrator untuk mengubah data. Fitur ini hanya dapat diakses oleh Super Admin (Kepala Perpustakaan).');
+            abort(403, 'Akses terbatas: Anda tidak memiliki wewenang administrator untuk mengubah data. Fitur ini hanya dapat diakses oleh Super Admin (Kepala Perpustakaan) atau Pustakawan.');
         }
 
         return $next($request);

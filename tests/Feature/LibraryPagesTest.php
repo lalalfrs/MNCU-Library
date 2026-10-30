@@ -18,6 +18,23 @@ class LibraryPagesTest extends TestCase
         $response->assertSee('Perpustakaan MNC University');
     }
 
+    public function test_beranda_page_renders_news_and_events_carousel(): void
+    {
+        $this->seed(PerpustakaanSeeder::class);
+
+        $response = $this->get(route('beranda'));
+        $response->assertStatus(200);
+        $response->assertSee('carousel-berita');
+        $response->assertSee('carousel-acara');
+        $response->assertSee('btn-berita-prev');
+        $response->assertSee('btn-berita-next');
+        $response->assertSee('btn-acara-prev');
+        $response->assertSee('btn-acara-next');
+        $response->assertSee('dots-berita');
+        $response->assertSee('dots-acara');
+        $response->assertSee('carousel-item-3');
+    }
+
     public function test_chat_page_is_successful(): void
     {
         $response = $this->get(route('chat'));

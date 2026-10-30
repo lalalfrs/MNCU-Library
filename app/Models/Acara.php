@@ -136,6 +136,12 @@ class Acara extends Model
                 if (str_starts_with($this->gambar_acara, 'http://') || str_starts_with($this->gambar_acara, 'https://')) {
                     return $this->gambar_acara;
                 }
+                if (str_starts_with($this->gambar_acara, 'images/') || file_exists(public_path($this->gambar_acara))) {
+                    return asset($this->gambar_acara);
+                }
+                if (str_starts_with($this->gambar_acara, 'storage/')) {
+                    return asset($this->gambar_acara);
+                }
 
                 return asset('storage/'.$this->gambar_acara);
             },

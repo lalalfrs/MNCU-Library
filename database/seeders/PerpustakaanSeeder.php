@@ -12,6 +12,7 @@ use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
 use App\Models\Kontak;
 use App\Models\KunjunganBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
 use App\Models\Pengguna;
 use App\Models\Penulis;
@@ -115,6 +116,9 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_peran' => 'MNCU00003',
                 'id_prodi' => 'MNCU00002',
+                'is_member' => true,
+                'member_sejak' => '2026-09-01 08:00:00',
+                'nomor_anggota' => 'MNCU00004',
                 'nama_lengkap' => 'Ahmad Fauzi Rahman',
                 'email' => 'fauzi.mhs@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
@@ -125,10 +129,26 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_peran' => 'MNCU00004',
                 'id_prodi' => 'MNCU00005',
+                'is_member' => false,
+                'member_sejak' => null,
+                'nomor_anggota' => null,
                 'nama_lengkap' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
                 'email' => 'hendra.gunawan@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
                 'nomor_identitas' => 'NIDN-0312048501',
+            ],
+            [
+                'id_pengguna' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_peran' => 'MNCU00003',
+                'id_prodi' => 'MNCU00001',
+                'is_member' => true,
+                'member_sejak' => '2026-09-01 08:30:00',
+                'nomor_anggota' => 'MNCU00006',
+                'nama_lengkap' => 'Nabila Putri Ramadhani',
+                'email' => 'nabila.mhs@mncu.ac.id',
+                'kata_sandi' => Hash::make('password123'),
+                'nomor_identitas' => '2024010045',
             ],
         ];
 
@@ -250,7 +270,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2024,
                 'edisi' => 'Edisi Kedua',
                 'deskripsi' => 'Panduan komprehensif implementasi struktur data list, stack, queue, tree, dan graph menggunakan bahasa Python modern.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Coding, Pembelajaran, Pemrograman, Python, Algoritma',
+                'sampul_buku' => 'images/buku/buku-01.jpg',
                 'jumlah_halaman' => 380,
                 'penulis_ids' => ['MNCU00001'],
                 'subjek_ids' => ['MNCU00001'],
@@ -272,7 +293,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2023,
                 'edisi' => 'Edisi Pertama',
                 'deskripsi' => 'Studi integrasi channel digital, analitik perilaku konsumen modern, dan perencanaan kampanye brand omni-channel.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Bisnis, Marketing, Digital, Strategi, Manajemen',
+                'sampul_buku' => 'images/buku/buku-02.jpg',
                 'jumlah_halaman' => 412,
                 'penulis_ids' => ['MNCU00002'],
                 'subjek_ids' => ['MNCU00003'],
@@ -293,7 +315,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2024,
                 'edisi' => 'Edisi Revisi',
                 'deskripsi' => 'Eksplorasi hierarki tipografi, grid system, teori warna, dan komposisi komunikasi visual kontemporer.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Desain, Tipografi, Visual, Kreatif, Komunikasi',
+                'sampul_buku' => 'images/buku/buku-03.jpg',
                 'jumlah_halaman' => 296,
                 'penulis_ids' => ['MNCU00003'],
                 'subjek_ids' => ['MNCU00004'],
@@ -314,7 +337,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2018,
                 'edisi' => '1st Edition',
                 'deskripsi' => 'Karya agung Robert C. Martin tentang prinsip universal arsitektur piranti lunak, batas komponen, dependency rule, dan domain-driven design.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Software Architecture, Clean Code, Rekayasa Perangkat Lunak, Coding',
+                'sampul_buku' => 'images/buku/buku-04.jpg',
                 'jumlah_halaman' => 432,
                 'penulis_ids' => ['MNCU00004'],
                 'subjek_ids' => ['MNCU00002'],
@@ -335,7 +359,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2021,
                 'edisi' => 'Cetakan ke-12',
                 'deskripsi' => 'Metode praktis membentuk kebiasaan baik dan mengikis kebiasaan buruk dengan strategi perubahan 1% setiap hari.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Pengembangan Diri, Produktivitas, Motivasi, Kebiasaan',
+                'sampul_buku' => 'images/buku/buku-05.jpg',
                 'jumlah_halaman' => 356,
                 'penulis_ids' => ['MNCU00005'],
                 'subjek_ids' => ['MNCU00005'],
@@ -357,7 +382,8 @@ class PerpustakaanSeeder extends Seeder
                 'tahun_terbit' => 2010,
                 'edisi' => 'Edisi Khusus',
                 'deskripsi' => 'Karya sastra klasik Indonesia berlatar masa kolonial awal abad ke-20 mengenai perjuangan Minke dan Annelies.',
-                'sampul_buku' => 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80',
+                'kata_kunci' => 'Hiburan, Sastra, Fiksi, Sejarah, Kolonial',
+                'sampul_buku' => 'images/buku/buku-06.jpg',
                 'jumlah_halaman' => 535,
                 'penulis_ids' => ['MNCU00006'],
                 'subjek_ids' => ['MNCU00005'],
@@ -408,10 +434,16 @@ class PerpustakaanSeeder extends Seeder
 
             // Eksemplar
             foreach ($copies as $copy) {
-                $nextEk = EksemplarBuku::count() + 1;
-                EksemplarBuku::updateOrCreate(
-                    ['kode_inventaris' => $copy['kode']],
-                    [
+                $existing = EksemplarBuku::where('kode_inventaris', $copy['kode'])->first();
+                if ($existing) {
+                    $existing->update([
+                        'nomor_panggil' => $copy['panggil'],
+                        'lokasi_rak' => $copy['rak'],
+                        'status' => $copy['status'],
+                    ]);
+                } else {
+                    $nextEk = EksemplarBuku::count() + 1;
+                    EksemplarBuku::create([
                         'id_eksemplar' => sprintf('MNCU%05d', $nextEk),
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
@@ -419,21 +451,23 @@ class PerpustakaanSeeder extends Seeder
                         'nomor_panggil' => $copy['panggil'],
                         'lokasi_rak' => $copy['rak'],
                         'status' => $copy['status'],
-                    ]
-                );
+                    ]);
+                }
             }
 
             // Kunjungan buku
-            $nextKjb = KunjunganBuku::count() + 1;
-            KunjunganBuku::updateOrCreate(
-                ['id_buku' => $buku->id_buku],
-                [
+            $existingKjb = KunjunganBuku::where('id_buku', $buku->id_buku)->first();
+            if ($existingKjb) {
+                $existingKjb->update(['jumlah_kunjungan' => $visits]);
+            } else {
+                $nextKjb = KunjunganBuku::count() + 1;
+                KunjunganBuku::create([
                     'id_kunjungan_buku' => sprintf('MNCU%05d', $nextKjb),
                     'uuid' => (string) Str::uuid(),
                     'id_buku' => $buku->id_buku,
                     'jumlah_kunjungan' => $visits,
-                ]
-            );
+                ]);
+            }
         }
 
         // 11. Table: berita
@@ -477,6 +511,58 @@ class PerpustakaanSeeder extends Seeder
                 'tanggal_publikasi' => now()->subDays(8)->toDateString(),
                 'views_count' => 205,
             ],
+            [
+                'id_berita' => 'MNCU00004',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'judul_berita' => 'Kolaborasi MNC University Library dengan Perpustakaan Nasional RI',
+                'slug' => 'kolaborasi-mncu-library-dengan-perpustakaan-nasional-ri',
+                'kategori_berita' => 'Kerjasama',
+                'deskripsi_berita' => 'Sivitas MNC University kini dapat mengakses jutaan koleksi e-resources nasional secara terintegrasi melalui SSO kampus.',
+                'isi_berita' => 'Perpustakaan MNC University menjalin kemitraan strategis dengan Perpustakaan Nasional Republik Indonesia (Perpusnas) untuk memperluas akses ke repositori jurnal ilmiah internasional dan database penelitian global.',
+                'gambar_berita' => 'images/berita/berita-04.jpg',
+                'tanggal_publikasi' => now()->subDays(11)->toDateString(),
+                'views_count' => 176,
+            ],
+            [
+                'id_berita' => 'MNCU00005',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00002',
+                'judul_berita' => 'Jam Operasional Khusus Selama Pekan Ujian Akhir Semester',
+                'slug' => 'jam-operasional-khusus-selama-pekan-ujian-akhir-semester',
+                'kategori_berita' => 'Pengumuman',
+                'deskripsi_berita' => 'Ruang baca utama dan area diskusi lantai 2 memperpanjang jam layanan hingga pukul 21.00 WIB untuk mendukung persiapan mahasiswa.',
+                'isi_berita' => 'Menyambut pekan ujian akhir semester, perpustakaan memberlakukan perpanjangan jam operasional layanan ruang baca hingga malam hari disertai fasilitas jaringan internet berkecepatan tinggi.',
+                'gambar_berita' => 'images/berita/berita-05.jpg',
+                'tanggal_publikasi' => now()->subDays(14)->toDateString(),
+                'views_count' => 312,
+            ],
+            [
+                'id_berita' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'judul_berita' => 'Penganugerahan Pemustaka Teraktif & Duta Baca Kampus Tahun 2026',
+                'slug' => 'penganugerahan-pemustaka-teraktif-dan-duta-baca-kampus-2026',
+                'kategori_berita' => 'Prestasi',
+                'deskripsi_berita' => 'Selamat kepada para mahasiswa dan dosen dengan frekuensi peminjaman dan kunjungan riset tertinggi periode semester ganjil.',
+                'isi_berita' => 'Program apresiasi tahunan ini diberikan kepada pemustaka yang aktif memanfaatkan katalog buku dan fasilitas referensi digital perpustakaan dalam menunjang karya akademik.',
+                'gambar_berita' => 'images/berita/berita-06.jpg',
+                'tanggal_publikasi' => now()->subDays(18)->toDateString(),
+                'views_count' => 189,
+            ],
+            [
+                'id_berita' => 'MNCU00007',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'judul_berita' => 'Tips Sukses Menembus Jurnal Internasional Bereputasi Scopus & WoS',
+                'slug' => 'tips-sukses-menembus-jurnal-internasional-bereputasi-scopus-dan-wos',
+                'kategori_berita' => 'Tips Riset',
+                'deskripsi_berita' => 'Panduan memilih jurnal target yang tepat, menyusun manuskrip saintifik, dan merespons masukan peer reviewer.',
+                'isi_berita' => 'Artikel panduan praktis dari tim pustakawan e-resources tentang alur penyiapan artikel penelitian berstandar internasional serta pemanfaatan database Scopus secara optimal.',
+                'gambar_berita' => 'images/berita/berita-07.jpg',
+                'tanggal_publikasi' => now()->subDays(22)->toDateString(),
+                'views_count' => 245,
+            ],
         ];
 
         foreach ($beritaList as $item) {
@@ -494,7 +580,7 @@ class PerpustakaanSeeder extends Seeder
                 'kategori_acara' => 'Festival',
                 'ringkasan_acara' => 'Pameran buku terakbar tahun ini dengan diskon menarik, talkshow penulis, dan demo AI tools untuk riset akademik.',
                 'deskripsi_acara' => 'Acara pameran buku tahunan MNC University menghadirkan puluhan penerbit terkemuka, pameran inovasi karya mahasiswa, dan seminar teknologi informasi untuk pendidikan.',
-                'gambar_acara' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+                'gambar_acara' => 'images/acara/acara-01.jpg',
                 'narasumber' => 'Dewi Lestari & Tim AI MNC Group',
                 'tanggal_mulai' => now()->addDays(7)->setTime(9, 0),
                 'tanggal_selesai' => now()->addDays(7)->setTime(16, 0),
@@ -512,13 +598,103 @@ class PerpustakaanSeeder extends Seeder
                 'kategori_acara' => 'Bedah Buku',
                 'ringkasan_acara' => 'Membahas tuntas prinsip perancangan piranti lunak enterprise berskala besar bersama praktisi industri.',
                 'deskripsi_acara' => 'Sesi bedah buku Clean Architecture bersama Principal Engineer terkemuka. Terbuka bagi seluruh mahasiswa program studi Informatika dan Sistem Informasi.',
-                'gambar_acara' => 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+                'gambar_acara' => 'images/acara/acara-02.jpg',
                 'narasumber' => 'Rian Hidayat, M.Kom.',
                 'tanggal_mulai' => now()->addDays(14)->setTime(13, 30),
                 'tanggal_selesai' => now()->addDays(14)->setTime(16, 0),
                 'lokasi_acara' => 'Ruang Multimedia Perpustakaan MNC University',
                 'tautan_pendaftaran' => 'https://bit.ly/bedah-buku-mncu',
                 'kuota' => 80,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00003',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'nama_acara' => 'Workshop: Prompt Engineering & AI Research Tools for Thesis',
+                'slug' => 'workshop-prompt-engineering-ai-research-tools-thesis',
+                'kategori_acara' => 'Workshop',
+                'ringkasan_acara' => 'Praktik etis pemanfaatan asisten AI dalam perumusan tinjauan pustaka dan pengolahan data penelitian skripsi.',
+                'deskripsi_acara' => 'Pelatihan intensif pemanfaatan generative AI secara saintifik, etika pengutipan sumber data, dan teknik verifikasi literatur rujukan.',
+                'gambar_acara' => 'images/acara/acara-03.jpg',
+                'narasumber' => 'Dr. Rian Hidayat, M.Kom.',
+                'tanggal_mulai' => now()->addDays(10)->setTime(10, 0),
+                'tanggal_selesai' => now()->addDays(10)->setTime(12, 30),
+                'lokasi_acara' => 'Lab Komputer 2 & Streaming Zoom',
+                'tautan_pendaftaran' => 'https://bit.ly/workshop-ai-mncu',
+                'kuota' => 100,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00004',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'nama_acara' => 'Seminar Nasional: Tren Desain UI/UX & Interaksi Manusia Komputer',
+                'slug' => 'seminar-nasional-tren-desain-ui-ux-interaksi-manusia-komputer',
+                'kategori_acara' => 'Seminar',
+                'ringkasan_acara' => 'Membangun produk digital yang intuitif dan berpusat pada pengguna bersama praktisi industri teknologi terkemuka.',
+                'deskripsi_acara' => 'Seminar industri membahas metodologi riset pengguna, design system berskala besar, dan tren visual antarmuka modern.',
+                'gambar_acara' => 'images/acara/acara-04.jpg',
+                'narasumber' => 'Siti Nurhaliza, M.Ds. & Lead UI/UX MNC Group',
+                'tanggal_mulai' => now()->addDays(18)->setTime(9, 30),
+                'tanggal_selesai' => now()->addDays(18)->setTime(15, 0),
+                'lokasi_acara' => 'Auditorium Utama Kampus MNC University',
+                'tautan_pendaftaran' => 'https://bit.ly/seminar-uiux-mncu',
+                'kuota' => 200,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00005',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00002',
+                'nama_acara' => 'Kelas Literasi Keuangan & Investasi Cerdas untuk Generasi Muda',
+                'slug' => 'kelas-literasi-keuangan-investasi-cerdas-generasi-muda',
+                'kategori_acara' => 'Kelas Literasi',
+                'ringkasan_acara' => 'Pengelolaan keuangan personal, analisis fundamental saham, dan kesiapan finansial pasca kelulusan sarjana.',
+                'deskripsi_acara' => 'Kelas edukasi finansial terapan untuk membekali mahasiswa dengan wawasan pengelolaan portofolio dan literasi perbankan syariah.',
+                'gambar_acara' => 'images/acara/acara-05.jpg',
+                'narasumber' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+                'tanggal_mulai' => now()->addDays(24)->setTime(14, 0),
+                'tanggal_selesai' => now()->addDays(24)->setTime(16, 30),
+                'lokasi_acara' => 'Ruang Diskusi Terbuka Lantai 2 Perpustakaan',
+                'tautan_pendaftaran' => 'https://bit.ly/literasi-keuangan-mncu',
+                'kuota' => 60,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00006',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00001',
+                'nama_acara' => 'Bincang Penulis: Mengabadikan Sejarah Melalui Karya Sastra',
+                'slug' => 'bincang-penulis-mengabadikan-sejarah-melalui-karya-sastra',
+                'kategori_acara' => 'Bincang Buku',
+                'ringkasan_acara' => 'Diskusi mendalam mengenai narasi budaya nusantara, teknik kepengarangan, dan daya kritis dalam sastra kontemporer.',
+                'deskripsi_acara' => 'Sesi bincang intim bersama sastrawan dan kurator novel sejarah mengenai proses kreatif di balik riset penulisan fiksi sejarah.',
+                'gambar_acara' => 'images/acara/acara-06.jpg',
+                'narasumber' => 'Penulis Tamu Komunitas Sastra Indonesia',
+                'tanggal_mulai' => now()->addDays(28)->setTime(13, 0),
+                'tanggal_selesai' => now()->addDays(28)->setTime(15, 30),
+                'lokasi_acara' => 'Ruang Multimedia Perpustakaan MNC University',
+                'tautan_pendaftaran' => 'https://bit.ly/bincang-sastra-mncu',
+                'kuota' => 75,
+                'is_active' => true,
+            ],
+            [
+                'id_acara' => 'MNCU00007',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00003',
+                'nama_acara' => 'Sosialisasi Pemanfaatan Portal E-Journal Scopus & ScienceDirect',
+                'slug' => 'sosialisasi-pemanfaatan-portal-e-journal-scopus-sciencedirect',
+                'kategori_acara' => 'Pelatihan',
+                'ringkasan_acara' => 'Panduan praktis pencarian artikel jurnal internasional bereputasi tinggi bagi dosen dan mahasiswa tingkat akhir.',
+                'deskripsi_acara' => 'Sesi sosialisasi dan tutorial langsung penelusuran artikel ilmiah, penggunaan boolean operators, dan ekspor citation meta.',
+                'gambar_acara' => 'images/acara/acara-07.jpg',
+                'narasumber' => 'Tim Pustakawan E-Resources MNCU',
+                'tanggal_mulai' => now()->addDays(32)->setTime(10, 0),
+                'tanggal_selesai' => now()->addDays(32)->setTime(11, 30),
+                'lokasi_acara' => 'Hybrid (Ruang Teater Perpustakaan & Zoom)',
+                'tautan_pendaftaran' => 'https://bit.ly/sosialisasi-scopus-mncu',
+                'kuota' => 150,
                 'is_active' => true,
             ],
         ];
@@ -561,5 +737,45 @@ class PerpustakaanSeeder extends Seeder
                 ]
             );
         }
+
+        // 15. Table: peminjaman_buku (Simulasi sirkulasi & kalkulasi keterlambatan tanpa sanksi denda)
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00001'],
+            [
+                'id_peminjaman' => 'PJ00001',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00004',
+                'id_buku' => 'MNCU00001',
+                'id_eksemplar' => 'MNCU00002',
+                'tanggal_pinjam' => now()->subDays(19)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->subDays(5)->toDateString(),
+                'tanggal_kembali' => null,
+                'status' => 'Terlambat',
+                'hari_keterlambatan' => 5,
+                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 14 hari tanpa sanksi denda.',
+                'notifikasi_peringatan_dikirim' => true,
+                'tanggal_notifikasi' => now()->subDays(4),
+            ]
+        );
+        EksemplarBuku::where('id_eksemplar', 'MNCU00002')->update(['status' => 'Dipinjam']);
+
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00002'],
+            [
+                'id_peminjaman' => 'PJ00002',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00006',
+                'id_buku' => 'MNCU00002',
+                'id_eksemplar' => 'MNCU00004',
+                'tanggal_pinjam' => now()->subDays(10)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays(4)->toDateString(),
+                'tanggal_kembali' => now()->subDays(1)->toDateString(),
+                'status' => 'Kembali',
+                'hari_keterlambatan' => 0,
+                'catatan_keterlambatan' => 'Buku kembali dalam kondisi fisik baik dan rapi.',
+                'notifikasi_peringatan_dikirim' => false,
+                'tanggal_notifikasi' => null,
+            ]
+        );
     }
 }

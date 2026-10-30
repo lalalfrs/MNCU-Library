@@ -62,6 +62,17 @@ class ProfileController extends Controller
             $validated['nim'] = null;
         }
 
+        // Penanganan ubah kata sandi opsional tanpa perlu password lama
+        if (! empty($validated['kata_sandi'])) {
+            $hashedPassword = Hash::make($validated['kata_sandi']);
+            $validated['kata_sandi'] = $hashedPassword;
+            if (in_array('password', $user->getFillable(), true) || array_key_exists('password', $user->getAttributes())) {
+                $validated['password'] = $hashedPassword;
+            }
+        } else {
+            unset($validated['kata_sandi']);
+        }
+
         // Sinkronisasi atribut name jika menggunakan tabel users standar
         if (isset($validated['nama_lengkap']) && (in_array('name', $user->getFillable(), true) || array_key_exists('name', $user->getAttributes()))) {
             $validated['name'] = $validated['nama_lengkap'];
@@ -73,26 +84,40 @@ class ProfileController extends Controller
     }
 
     /**
+    /**
+     * Reset / perbarui kata sandi mandiri pengguna langsung dari profil.
+     * Mendukung field password_baru maupun kata_sandi (confirmed, min 6).
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        return $this->resetPassword($request);
+    }
+
+    /**
      * Reset kata sandi pengguna langsung dari profil masing-masing.
-     * Tidak memerlukan kata sandi lama, langsung memasukkan kata sandi baru sebanyak 2 kali.
      */
     public function resetPassword(Request $request): RedirectResponse
     {
+        $field = $request->has('kata_sandi') ? 'kata_sandi' : 'password_baru';
+
         $validated = $request->validate([
-            'password_baru' => ['required', 'string', 'min:6', 'confirmed'],
+            $field => ['required', 'string', 'min:6', 'confirmed'],
         ], [
-            'password_baru.required' => 'Kata sandi baru wajib diisi.',
-            'password_baru.min' => 'Kata sandi baru minimal 6 karakter.',
-            'password_baru.confirmed' => 'Konfirmasi kata sandi baru tidak cocok. Pastikan kedua input kata sandi sama persis.',
+            "{$field}.required" => 'Kata sandi baru wajib diisi.',
+            "{$field}.min" => 'Kata sandi baru minimal 6 karakter.',
+            "{$field}.confirmed" => 'Konfirmasi kata sandi baru tidak cocok. Pastikan kedua input kata sandi sama persis.',
         ]);
 
+        $newPassword = $validated[$field];
         $user = $request->user();
 
-        // Hashing aman menggunakan Bcrypt via Hash::make()
-        $user->kata_sandi = Hash::make($validated['password_baru']);
-        if (isset($user->password) || in_array('password', $user->getFillable(), true)) {
-            $user->password = Hash::make($validated['password_baru']);
+        $hashed = Hash::make($newPassword);
+        $user->kata_sandi = $hashed;
+
+        if (isset($user->password) || in_array('password', $user->getFillable(), true) || array_key_exists('password', $user->getAttributes())) {
+            $user->password = $hashed;
         }
+
         $user->save();
 
         return back()->with('success', 'Kata sandi akun Anda berhasil diperbarui! Silakan gunakan kata sandi baru untuk akses berikutnya.');

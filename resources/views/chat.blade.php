@@ -4,7 +4,7 @@
 @section('description', 'Layanan asisten virtual dan bantuan pemustaka Perpustakaan MNC University. Tanyakan informasi jam operasional, peminjaman buku, katalog OPAC, dan akses e-resources.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 lg:px-6 lg:py-10">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 lg:gap-8 px-3 py-4 sm:px-4 lg:px-6 xl:px-8 lg:py-6 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
@@ -29,7 +29,7 @@
         </div>
 
         {{-- Main Chat Container --}}
-        <div class="grid flex-1 gap-6 lg:grid-cols-[330px_1fr] xl:grid-cols-[380px_1fr]">
+        <div class="grid flex-1 gap-5 lg:gap-6 lg:grid-cols-[290px_1fr] xl:grid-cols-[350px_1fr] 2xl:grid-cols-[380px_1fr]">
             {{-- Sidebar Bantuan & Topik Populer --}}
             <aside class="flex flex-col gap-5 rounded-2xl border border-line bg-white p-5 lg:p-6">
                 <div>

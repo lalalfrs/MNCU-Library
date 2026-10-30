@@ -4,7 +4,7 @@
 @section('description', 'Repository Institusi Perpustakaan MNC University: arsip digital skripsi, tugas akhir mahasiswa, dan publikasi penelitian dosen sivitas akademika.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 lg:px-6 lg:py-10">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 sm:px-4 lg:px-6 xl:px-8 lg:py-10 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">

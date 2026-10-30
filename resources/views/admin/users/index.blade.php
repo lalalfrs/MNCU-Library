@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen User & Pengguna')
-@section('description', 'Kelola data pengguna, peran, hak akses, dan informasi sivitas akademika perpustakaan MNC University.')
+@section('title', 'Manajemen User & Keanggotaan Member')
+@section('description', 'Kelola data pengguna, hak akses peran, promosi status member pemustaka, dan sirkulasi keanggotaan perpustakaan MNC University.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 py-6 lg:px-6 lg:py-8">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
                     <a href="{{ route('beranda') }}" class="hover:text-primary">Beranda</a>
@@ -16,19 +16,61 @@
                     <span class="font-medium text-ink">Manajemen User</span>
                 </nav>
                 <h1 class="mt-1 text-2xl font-bold tracking-tight text-primary sm:text-3xl">
-                    Manajemen Pengguna Perpustakaan
+                    Manajemen Pengguna Perpustakaan &amp; Keanggotaan Member
                 </h1>
                 <p class="mt-0.5 text-xs text-ink-secondary sm:text-sm">
-                    Kelola data pustakawan, mahasiswa, dosen, dan hak akses otentikasi.
+                    Kelola data sivitas akademika, promosi status member mahasiswa & dosen, serta verifikasi keanggotaan peminjaman buku.
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                {{-- Tombol Kembali ke OPAC --}}
+                <a
+                    href="{{ route('opac') }}"
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-xs transition-all hover:bg-subtle hover:text-primary active:scale-[0.98] sm:text-sm"
+                    title="Kembali ke Katalog OPAC"
+                >
+                    <i class="fa-solid fa-arrow-left text-xs text-muted" aria-hidden="true"></i>
+                    <span>Katalog OPAC</span>
+                </a>
+
+                {{-- Tombol Statistik --}}
+                <a
+                    href="{{ route('admin.statistics.index') }}"
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-[0.98] sm:text-sm"
+                    title="Buka Statistik Perpustakaan"
+                >
+                    <i class="fa-solid fa-chart-simple text-xs" aria-hidden="true"></i>
+                    <span>Statistik</span>
+                </a>
+
+                {{-- Tombol Report --}}
+                <a
+                    href="{{ route('admin.reports.index') }}"
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-primary-dark active:scale-[0.98] sm:text-sm"
+                    title="Buka Laporan Perpustakaan (Report)"
+                >
+                    <i class="fa-solid fa-file-lines text-xs" aria-hidden="true"></i>
+                    <span>Report</span>
+                </a>
+
+                {{-- Tombol Tambah Data Member (Sesuai Flowchart) --}}
+                <button
+                    type="button"
+                    onclick="openTambahMemberModal()"
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] sm:text-sm"
+                    title="Tambah Data Member Baru"
+                >
+                    <i class="fa-solid fa-id-card text-xs" aria-hidden="true"></i>
+                    <span>Tambah Data Member</span>
+                </button>
+
+                {{-- Tombol Tambah Pengguna Baru --}}
                 <a
                     href="{{ route('admin.users.create') }}"
-                    class="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-dark active:scale-[0.98] sm:h-11 sm:text-sm"
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-xs transition-all hover:bg-subtle hover:text-primary active:scale-[0.98] sm:text-sm"
                 >
-                    <i class="fa-solid fa-user-plus text-xs"></i>
+                    <i class="fa-solid fa-user-plus text-xs" aria-hidden="true"></i>
                     <span>Tambah Pengguna</span>
                 </a>
             </div>
@@ -55,45 +97,99 @@
             </div>
         @endif
 
+        {{-- Pesan Notifikasi Error Validasi --}}
         @if ($errors->any())
-            <div class="rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-xs sm:text-sm text-rose-900 shadow-xs">
-                <div class="flex items-start gap-3">
-                    <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white">
-                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-semibold text-rose-950">Gagal Memproses Permintaan</p>
-                        <ul class="mt-1 list-disc list-inside space-y-0.5 text-xs text-rose-800">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+            <div class="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50/90 p-4 text-xs font-medium text-red-900 shadow-xs sm:text-sm">
+                <i class="fa-solid fa-circle-exclamation mt-0.5 text-base text-red-600" aria-hidden="true"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-red-950">Terjadi kesalahan validasi:</p>
+                    <ul class="mt-1 list-inside list-disc space-y-0.5 text-red-800">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         @endif
 
+        {{-- Ringkasan Metrik Pengguna & Member --}}
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-medium text-muted">Total Pengguna Terdaftar</span>
+                        <p class="mt-1 text-2xl font-bold text-ink">{{ number_format($totalUsers) }}</p>
+                    </div>
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                        <i class="fa-solid fa-users text-lg" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-line/60 pt-2.5 text-[11px] text-muted">
+                    <span>Semua akun sivitas & pustakawan</span>
+                    <a href="{{ route('admin.users.index') }}" class="font-semibold text-primary hover:underline">Lihat Semua</a>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-emerald-200 bg-white p-4 shadow-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-medium text-emerald-700">Member Resmi Perpustakaan</span>
+                        <p class="mt-1 text-2xl font-bold text-emerald-800">{{ number_format($totalMembers) }}</p>
+                    </div>
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <i class="fa-solid fa-id-card text-lg" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-emerald-100 pt-2.5 text-[11px]">
+                    <span class="text-emerald-700">Memiliki hak peminjaman buku</span>
+                    <a href="{{ route('admin.users.index', array_filter(['status_member' => 'member', 'peran' => $peranId, 'q' => $q])) }}" class="font-semibold text-emerald-700 hover:underline">
+                        Filter Member Aktif
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-amber-200 bg-white p-4 shadow-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-medium text-amber-800">Calon Member (Belum Dipromote)</span>
+                        <p class="mt-1 text-2xl font-bold text-amber-900">{{ number_format($totalNonMembers) }}</p>
+                    </div>
+                    <div class="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                        <i class="fa-solid fa-user-clock text-lg" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-amber-100 pt-2.5 text-[11px]">
+                    <span class="text-amber-800">Perlu aktivasi langsung oleh pustakawan</span>
+                    <a href="{{ route('admin.users.index', array_filter(['status_member' => 'non_member', 'peran' => $peranId, 'q' => $q])) }}" class="font-semibold text-amber-800 hover:underline">
+                        Filter Non-Member
+                    </a>
+                </div>
+            </div>
+        </div>
+
         {{-- Filter & Pencarian Bar --}}
         <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-            <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="relative flex-1">
                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
                     </span>
                     <input
                         type="text"
                         name="q"
                         value="{{ $q }}"
-                        placeholder="Cari nama, email, atau nomor identitas..."
-                        class="h-10 w-full rounded-xl border border-line bg-subtle/50 pr-4 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
+                        placeholder="Cari nama, email, nomor identitas, atau nomor anggota..."
+                        class="h-11 w-full rounded-xl border border-line bg-subtle/50 pr-4 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
                     >
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    {{-- Filter Peran --}}
                     <select
                         name="peran"
                         onchange="this.form.submit()"
-                        class="h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                        aria-label="Filter berdasarkan Peran"
+                        class="h-11 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                     >
                         <option value="">Semua Peran</option>
                         @foreach ($roles as $role)
@@ -103,27 +199,40 @@
                         @endforeach
                     </select>
 
+                    {{-- Filter Status Member (Sesuai Flowchart: Menampilkan Seluruh Data Member) --}}
+                    <select
+                        name="status_member"
+                        onchange="this.form.submit()"
+                        aria-label="Filter berdasarkan Status Keanggotaan"
+                        class="h-11 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                    >
+                        <option value="">Semua Status Keanggotaan</option>
+                        <option value="member" {{ $statusMember === 'member' ? 'selected' : '' }}>Hanya Data Member (Member Aktif)</option>
+                        <option value="non_member" {{ $statusMember === 'non_member' ? 'selected' : '' }}>Bukan Member (Belum Dipromote)</option>
+                    </select>
+
                     <button
                         type="submit"
-                        class="inline-flex h-10 items-center justify-center rounded-xl bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white sm:text-sm"
+                        class="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white sm:text-sm"
                     >
                         Filter
                     </button>
 
-                    @if ($q !== '' || $peranId !== '')
+                    @if ($q !== '' || $peranId !== '' || $statusMember !== '')
                         <a
                             href="{{ route('admin.users.index') }}"
-                            class="inline-flex h-10 items-center justify-center rounded-xl border border-line px-3 text-xs font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:text-sm"
+                            class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-line px-3 text-xs font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:text-sm"
                             title="Reset Filter"
                         >
-                            <i class="fa-solid fa-rotate-left"></i>
+                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                            <span class="sr-only">Reset Filter</span>
                         </a>
                     @endif
                 </div>
             </form>
         </div>
 
-        {{-- Tabel Pengguna --}}
+        {{-- Tabel Pengguna & Data Member --}}
         <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs sm:text-sm">
@@ -131,14 +240,15 @@
                         <tr>
                             <th scope="col" class="px-5 py-3.5">Pengguna</th>
                             <th scope="col" class="px-5 py-3.5">Peran</th>
-                            <th scope="col" class="px-5 py-3.5">Program Studi</th>
-                            <th scope="col" class="px-5 py-3.5">Nomor Identitas</th>
-                            <th scope="col" class="px-5 py-3.5 text-center">Aksi</th>
+                            <th scope="col" class="px-5 py-3.5">Status Keanggotaan</th>
+                            <th scope="col" class="px-5 py-3.5">Prodi &amp; Identitas</th>
+                            <th scope="col" class="px-5 py-3.5 text-center">Aksi Manajemen</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line text-ink">
                         @forelse ($users as $user)
                             <tr class="transition-colors hover:bg-[#F9FAFB]">
+                                {{-- Kolom Pengguna --}}
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
@@ -151,6 +261,8 @@
                                         </div>
                                     </div>
                                 </td>
+
+                                {{-- Kolom Peran --}}
                                 <td class="px-5 py-4 whitespace-nowrap">
                                     @php
                                         $badgeColor = match ($user->peran?->nama_peran) {
@@ -165,48 +277,112 @@
                                         {{ $user->peran?->nama_peran ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-4 whitespace-nowrap text-ink-secondary">
-                                    {{ $user->prodi?->nama_prodi ?? '-' }}
+
+                                {{-- Kolom Status Keanggotaan Member --}}
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    @if ($user->isMember())
+                                        <div class="flex flex-col gap-0.5">
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                                <i class="fa-solid fa-circle-check text-[10px]" aria-hidden="true"></i>
+                                                <span>Member Aktif</span>
+                                            </span>
+                                            <p class="font-mono text-xs font-bold text-ink">
+                                                {{ $user->nomor_anggota ?? '-' }}
+                                            </p>
+                                            <p class="text-[10px] text-muted">
+                                                Sejak: {{ $user->member_sejak ? $user->member_sejak->format('d M Y') : 'Aktif' }}
+                                            </p>
+                                        </div>
+                                    @else
+                                        <div class="flex flex-col gap-0.5">
+                                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                                                <i class="fa-regular fa-circle text-[10px]" aria-hidden="true"></i>
+                                                <span>Bukan Member</span>
+                                            </span>
+                                            <p class="text-[10px] text-muted">Tidak dapat meminjam buku</p>
+                                        </div>
+                                    @endif
                                 </td>
-                                <td class="px-5 py-4 whitespace-nowrap font-mono text-xs text-muted">
-                                    {{ $user->nomor_identitas ?? '-' }}
+
+                                {{-- Kolom Prodi & Identitas --}}
+                                <td class="px-5 py-4 whitespace-nowrap text-xs">
+                                    <p class="font-medium text-ink">{{ $user->prodi?->nama_prodi ?? 'Non-Akademik' }}</p>
+                                    <p class="font-mono text-muted">ID: {{ $user->nomor_identitas ?? '-' }}</p>
                                 </td>
+
+                                {{-- Kolom Aksi --}}
                                 <td class="px-5 py-4 whitespace-nowrap text-center">
-                                    <div class="inline-flex items-center gap-1.5">
+                                    <div class="inline-flex items-center gap-2">
+                                        {{-- Aksi Promote Menjadi Member (Untuk yang belum jadi member) --}}
+                                        @if (! $user->isMember())
+                                            <button
+                                                type="button"
+                                                onclick="openConfirmPromoteModal('{{ $user->id_pengguna }}', '{{ addslashes($user->nama_lengkap) }}', '{{ $user->peran?->nama_peran ?? 'Pemustaka' }}')"
+                                                class="inline-flex size-9 sm:size-10 items-center justify-center rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-700 shadow-xs transition-all hover:bg-emerald-600 hover:text-white hover:scale-105 active:scale-95"
+                                                title="Promote Menjadi Member Perpustakaan"
+                                            >
+                                                <i class="fa-solid fa-user-check text-sm sm:text-base" aria-hidden="true"></i>
+                                                <span class="sr-only">Promote {{ $user->nama_lengkap }} Menjadi Member</span>
+                                            </button>
+                                        @else
+                                            {{-- Aksi Hapus Data Member (Sesuai Flowchart: Hapus data member -> Validasi ada buku dipinjam) --}}
+                                            <form
+                                                action="{{ route('admin.users.demote-member', $user->id_pengguna) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data member {{ addslashes($user->nama_lengkap) }}? Status keanggotaan akan dicabut dan kembali menjadi non-member.')"
+                                                class="inline-block"
+                                            >
+                                                @csrf
+                                                <button
+                                                    type="submit"
+                                                    class="inline-flex size-9 sm:size-10 items-center justify-center rounded-xl border border-amber-300 bg-amber-50 text-amber-700 shadow-xs transition-all hover:bg-amber-600 hover:text-white hover:scale-105 active:scale-95"
+                                                    title="Hapus Data Member (Cabut Keanggotaan)"
+                                                >
+                                                    <i class="fa-solid fa-user-slash text-sm sm:text-base" aria-hidden="true"></i>
+                                                    <span class="sr-only">Hapus status member {{ $user->nama_lengkap }}</span>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        {{-- Tombol Edit --}}
                                         <a
                                             href="{{ route('admin.users.edit', $user->id_pengguna) }}"
-                                            class="inline-flex size-8 items-center justify-center rounded-lg border border-line text-muted transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-                                            title="Ubah Data"
+                                            class="inline-flex size-9 sm:size-10 items-center justify-center rounded-xl border border-line bg-white text-muted shadow-xs transition-all hover:border-primary hover:bg-primary/5 hover:text-primary hover:scale-105 active:scale-95"
+                                            title="Ubah Data Pengguna"
                                         >
-                                            <i class="fa-regular fa-pen-to-square text-xs"></i>
+                                            <i class="fa-regular fa-pen-to-square text-sm sm:text-base" aria-hidden="true"></i>
+                                            <span class="sr-only">Ubah Data</span>
                                         </a>
 
                                         {{-- Skenario 2: Tombol Reset Password oleh Admin --}}
                                         <button
                                             type="button"
                                             onclick="openResetPasswordModal('{{ $user->id_pengguna }}', '{{ addslashes($user->nama_lengkap) }}', '{{ $user->email }}', '{{ $user->peran?->nama_peran ?? 'Pengguna' }}', '{{ $user->nomor_identitas ?? '-' }}', 'Mncu#{{ $user->nomor_identitas ?: substr($user->id_pengguna, -5) }}')"
-                                            class="inline-flex size-8 items-center justify-center rounded-lg border border-amber-200 text-amber-700 transition-colors hover:bg-amber-50 hover:border-amber-300"
+                                            class="inline-flex size-9 sm:size-10 items-center justify-center rounded-xl border border-amber-200 bg-white text-amber-700 shadow-xs transition-all hover:bg-amber-50 hover:border-amber-300 hover:scale-105 active:scale-95"
                                             title="Reset Password Pengguna"
                                             aria-label="Reset Password Pengguna {{ $user->nama_lengkap }}"
                                         >
-                                            <i class="fa-solid fa-key text-xs"></i>
+                                            <i class="fa-solid fa-key text-xs sm:text-sm"></i>
+                                            <span class="sr-only">Reset Password</span>
                                         </button>
 
+                                        {{-- Tombol Hapus Pengguna --}}
                                         @if (Auth::id() !== $user->id_pengguna)
                                             <form
                                                 action="{{ route('admin.users.destroy', $user->id_pengguna) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna {{ $user->nama_lengkap }}?')"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna {{ addslashes($user->nama_lengkap) }} secara permanen dari sistem?')"
                                                 class="inline-block"
                                             >
                                                 @csrf
                                                 @method('DELETE')
                                                 <button
                                                     type="submit"
-                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
-                                                    title="Hapus Pengguna"
+                                                    class="inline-flex size-9 sm:size-10 items-center justify-center rounded-xl border border-red-200 bg-white text-red-600 shadow-xs transition-all hover:bg-red-50 hover:border-red-300 hover:scale-105 active:scale-95"
+                                                    title="Hapus Akun Pengguna"
                                                 >
-                                                    <i class="fa-regular fa-trash-can text-xs"></i>
+                                                    <i class="fa-regular fa-trash-can text-sm sm:text-base" aria-hidden="true"></i>
+                                                    <span class="sr-only">Hapus Pengguna</span>
                                                 </button>
                                             </form>
                                         @endif
@@ -217,9 +393,9 @@
                             <tr>
                                 <td colspan="5" class="px-5 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center gap-2">
-                                        <i class="fa-solid fa-users-slash text-3xl text-muted/40"></i>
+                                        <i class="fa-solid fa-users-slash text-3xl text-muted/40" aria-hidden="true"></i>
                                         <p class="font-medium text-ink">Tidak ada data pengguna ditemukan.</p>
-                                        <p class="text-xs text-muted">Coba ubah kata kunci pencarian atau filter peran.</p>
+                                        <p class="text-xs text-muted">Coba sesuaikan kata kunci pencarian atau filter status keanggotaan.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -233,6 +409,178 @@
                     {{ $users->links() }}
                 </div>
             @endif
+        </div>
+    </div>
+
+    {{-- MODAL 1: Tambah Data Member (Sesuai Flowchart: Menambahkan Data Member -> Isi data user yang ingin jadi member -> Validasi -> User berhasil jadi member) --}}
+    <div
+        id="modal-tambah-member"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-tambah-member-title"
+        class="fixed inset-0 z-[99999] hidden overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs transition-opacity duration-200"
+    >
+        <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
+            <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-white shadow-2xl my-auto">
+                <div class="flex items-center justify-between border-b border-line px-6 py-4.5 bg-slate-50/80">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                            <i class="fa-solid fa-id-card text-base" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h2 id="modal-tambah-member-title" class="text-base font-bold text-ink sm:text-lg">
+                                Tambah Data Member
+                            </h2>
+                            <p class="text-xs text-muted">Promosikan mahasiswa atau dosen menjadi member resmi</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="closeTambahMemberModal()"
+                        class="rounded-lg p-2 text-muted hover:bg-slate-200/60 hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label="Tutup dialog"
+                    >
+                        <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <form id="form-tambah-member" method="POST" action="" class="p-6 space-y-4">
+                    @csrf
+
+                    <div>
+                        <label for="select-candidate-user" class="block text-xs font-semibold text-ink">
+                            Pilih Mahasiswa / Dosen yang Ingin Jadi Member <span class="text-red-500">*</span>
+                        </label>
+                        <p class="mt-0.5 text-[11px] text-muted">
+                            Pemustaka harus menemui pustakawan secara langsung untuk verifikasi identitas (KTM / Kartu Identitas).
+                        </p>
+                        <select
+                            id="select-candidate-user"
+                            required
+                            onchange="updateActionPromote(this.value)"
+                            class="mt-2 h-11 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
+                        >
+                            <option value="">-- Pilih Pemustaka Non-Member --</option>
+                            @foreach ($candidateUsers as $candidate)
+                                <option value="{{ $candidate->id_pengguna }}">
+                                    {{ $candidate->nama_lengkap }} ({{ $candidate->peran?->nama_peran ?? 'Pemustaka' }}) - {{ $candidate->email }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($candidateUsers->isEmpty())
+                            <p class="mt-1 text-xs text-amber-700">
+                                Semua pengguna saat ini sudah terdaftar sebagai member.
+                            </p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label for="input-nomor-anggota" class="block text-xs font-semibold text-ink">
+                            Nomor Anggota Baru <span class="text-muted font-normal">(Opsional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="nomor_anggota"
+                            id="input-nomor-anggota"
+                            placeholder="Kosongkan untuk otomatis ID user (contoh: MNCU00007)"
+                            class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
+                        >
+                        <p class="mt-1 text-[11px] text-muted">
+                            Default nomor anggota disamakan dengan Unique ID Pengguna (contoh: <code class="font-mono text-primary font-semibold">MNCU00007</code>).
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-900">
+                        <p class="font-semibold flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-blue-600" aria-hidden="true"></i>
+                            <span>Ketentuan Keanggotaan:</span>
+                        </p>
+                        <p class="mt-1 text-[11px] text-blue-800">
+                            Setelah berhasil dipromote menjadi member, pengguna dapat langsung meminjam buku fisik di perpustakaan. Pengguna tidak dapat mengajukan keanggotaan secara online mandiri.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-line">
+                        <button
+                            type="button"
+                            onclick="closeTambahMemberModal()"
+                            class="min-h-[44px] rounded-xl border border-line px-4 text-xs font-semibold text-muted hover:bg-slate-100 hover:text-ink sm:text-sm"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            id="btn-submit-promote"
+                            disabled
+                            class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-sm"
+                        >
+                            <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
+                            <span>Jadikan Member</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL 2: Konfirmasi Promote Langsung dari Baris Tabel --}}
+    <div
+        id="modal-confirm-promote"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-confirm-promote-title"
+        class="fixed inset-0 z-[99999] hidden overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs transition-opacity duration-200"
+    >
+        <div class="flex min-h-full items-center justify-center p-2 sm:p-4">
+            <div class="relative w-full max-w-md overflow-hidden rounded-2xl border border-line bg-white shadow-2xl my-auto">
+                <div class="p-6 text-center">
+                    <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <i class="fa-solid fa-id-card text-2xl" aria-hidden="true"></i>
+                    </div>
+                    <h2 id="modal-confirm-promote-title" class="mt-4 text-lg font-bold text-ink">
+                        Promote Menjadi Member
+                    </h2>
+                    <p class="mt-1 text-xs text-muted sm:text-sm">
+                        Apakah Anda ingin mempromosikan <strong id="confirm-user-name" class="text-ink"></strong> (<span id="confirm-user-role"></span>) menjadi member resmi perpustakaan?
+                    </p>
+
+                    <form id="form-confirm-promote" method="POST" action="" class="mt-5 space-y-4 text-left">
+                        @csrf
+                        <div>
+                            <label for="confirm-nomor-anggota" class="block text-xs font-semibold text-ink">
+                                Nomor Anggota (Opsional)
+                            </label>
+                            <input
+                                type="text"
+                                name="nomor_anggota"
+                                id="confirm-nomor-anggota"
+                                placeholder="Kosongkan untuk otomatis ID user"
+                                class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                            >
+                            <p class="mt-1 text-[11px] text-muted">
+                                Default akan otomatis menggunakan Unique ID user (contoh: <span id="confirm-user-id-preview" class="font-mono font-semibold text-primary">MNCU00007</span>).
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2.5 pt-2">
+                            <button
+                                type="button"
+                                onclick="closeConfirmPromoteModal()"
+                                class="min-h-[44px] rounded-xl border border-line px-4 text-xs font-semibold text-muted hover:bg-slate-100 hover:text-ink"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-emerald-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 active:scale-95"
+                            >
+                                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                <span>Ya, Promote Member</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -388,7 +736,7 @@
                             <button
                                 type="button"
                                 onclick="closeResetPasswordModal()"
-                                class="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink-secondary hover:bg-subtle transition-colors"
+                                class="min-h-[44px] rounded-xl border border-line px-4 text-xs font-semibold text-muted hover:bg-slate-100 hover:text-ink transition-colors"
                             >
                                 Batal
                             </button>
@@ -407,9 +755,89 @@
         </div>
     </div>
 
-    {{-- Script Modal Reset Password Admin --}}
+    {{-- Script Dialog & Interaktivitas --}}
     <script>
+        function ensureModalsInBody() {
+            ['modal-tambah-member', 'modal-confirm-promote', 'admin-reset-password-modal'].forEach(id => {
+                const modal = document.getElementById(id);
+                if (modal && modal.parentElement !== document.body) {
+                    document.body.appendChild(modal);
+                }
+            });
+        }
+
+        function openTambahMemberModal() {
+            ensureModalsInBody();
+            const modal = document.getElementById('modal-tambah-member');
+            if (modal) {
+                modal.scrollTop = 0;
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            document.getElementById('select-candidate-user')?.focus();
+        }
+
+        function closeTambahMemberModal() {
+            const modal = document.getElementById('modal-tambah-member');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function updateActionPromote(userId) {
+            const form = document.getElementById('form-tambah-member');
+            const submitBtn = document.getElementById('btn-submit-promote');
+            const inputNo = document.getElementById('input-nomor-anggota');
+            if (userId) {
+                form.action = "{{ url('admin/users') }}/" + encodeURIComponent(userId) + "/promote-member";
+                submitBtn.disabled = false;
+                if (inputNo) {
+                    inputNo.placeholder = 'Kosongkan untuk otomatis ID user (' + userId + ')';
+                }
+            } else {
+                form.action = "";
+                submitBtn.disabled = true;
+                if (inputNo) {
+                    inputNo.placeholder = 'Kosongkan untuk otomatis ID user (contoh: MNCU00007)';
+                }
+            }
+        }
+
+        function openConfirmPromoteModal(userId, userName, userRole) {
+            ensureModalsInBody();
+            const modal = document.getElementById('modal-confirm-promote');
+            const form = document.getElementById('form-confirm-promote');
+            document.getElementById('confirm-user-name').textContent = userName;
+            document.getElementById('confirm-user-role').textContent = userRole;
+            const previewEl = document.getElementById('confirm-user-id-preview');
+            if (previewEl) {
+                previewEl.textContent = userId;
+            }
+            const inputNo = document.getElementById('confirm-nomor-anggota');
+            if (inputNo) {
+                inputNo.value = '';
+                inputNo.placeholder = 'Kosongkan untuk otomatis ID user (' + userId + ')';
+            }
+            form.action = "{{ url('admin/users') }}/" + encodeURIComponent(userId) + "/promote-member";
+
+            if (modal) {
+                modal.scrollTop = 0;
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeConfirmPromoteModal() {
+            const modal = document.getElementById('modal-confirm-promote');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            document.body.classList.remove('overflow-hidden');
+        }
+
         function openResetPasswordModal(id, name, email, role, identity, defaultPass) {
+            ensureModalsInBody();
             const modal = document.getElementById('admin-reset-password-modal');
             const form = document.getElementById('admin-reset-form');
             if (!modal || !form) return;
@@ -422,9 +850,9 @@
             document.getElementById('modal-user-id').textContent = id + (identity !== '-' ? ' • ' + identity : '');
             document.getElementById('preview-default-pass').textContent = defaultPass;
 
-            // Reset tabs to default
             switchResetTab('default');
 
+            modal.scrollTop = 0;
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         }
@@ -433,8 +861,8 @@
             const modal = document.getElementById('admin-reset-password-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
             }
+            document.body.classList.remove('overflow-hidden');
         }
 
         function switchResetTab(mode) {
@@ -486,15 +914,26 @@
             }
         }
 
+        // Tutup modal dengan tombol Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                closeTambahMemberModal();
+                closeConfirmPromoteModal();
                 closeResetPasswordModal();
             }
         });
 
-        document.getElementById('admin-reset-password-modal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeResetPasswordModal();
+        // Tutup modal jika klik di latar belakang
+        ['modal-tambah-member', 'modal-confirm-promote', 'admin-reset-password-modal'].forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal || (e.target.classList && e.target.classList.contains('min-h-full')) || (e.target.classList && e.target.classList.contains('min-h-screen'))) {
+                        closeTambahMemberModal();
+                        closeConfirmPromoteModal();
+                        closeResetPasswordModal();
+                    }
+                });
             }
         });
     </script>

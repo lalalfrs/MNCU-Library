@@ -4,7 +4,7 @@
 @section('description', 'Hubungi Perpustakaan MNC University. Temukan alamat, telepon, email, dan formulir pertanyaan.')
 
 @section('content')
-    <div class="mx-auto flex max-w-[1570px] flex-col gap-12 px-3 pt-4 lg:gap-16 lg:px-6 lg:pt-6">
+    <div class="mx-auto flex max-w-[1570px] flex-col gap-10 sm:gap-12 px-3 sm:px-4 pt-4 lg:gap-14 xl:gap-16 lg:px-6 xl:px-8 lg:pt-6 responsive-desktop-container">
 
         {{-- Page header --}}
         <section aria-labelledby="judul-kontak" class="px-1 lg:px-[26px]">

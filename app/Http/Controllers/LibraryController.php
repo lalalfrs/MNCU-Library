@@ -6,14 +6,18 @@ use App\Models\Buku;
 use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
 use App\Models\KunjunganBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Prodi;
 use App\Models\ProfilPustakawan;
 use App\Models\SubjekBuku;
+use App\Services\PeminjamanService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class LibraryController extends Controller
@@ -123,20 +127,32 @@ class LibraryController extends Controller
             }
         }
 
-        // 5. Box Filter Pencarian Lanjutan (Sesuai Referensi Gambar Desain)
+        // 5. Box Filter Pencarian Lanjutan (Sesuai Referensi Gambar Desain & Layout OPAC)
         $filterPengarang = trim((string) $request->query('filter_pengarang', ''));
+        $filterPenerbit = trim((string) $request->query('filter_penerbit', ''));
+        $filterSubjek = trim((string) $request->query('filter_subjek', ''));
+        $filterKota = trim((string) $request->query('filter_kota', ''));
         $filterIsbn = trim((string) $request->query('filter_isbn', ''));
         $filterDdc = trim((string) $request->query('filter_ddc', ''));
         $filterNomorInduk = trim((string) $request->query('filter_nomor_induk', ''));
-        $filterTahun = (string) $request->query('filter_tahun', 'Semua');
+        $filterTahun = trim((string) $request->query('filter_tahun', 'Semua'));
         $filterLokasi = (string) $request->query('filter_lokasi', 'Semua');
         $filterJenis = (string) $request->query('filter_jenis', (string) $request->query('jenis', 'Semua'));
         $filterProdi = (string) $request->query('filter_prodi', (string) $request->query('prodi', 'Semua'));
-        $statusFilter = (string) $request->query('status', 'Semua');
+        $statusFilter = (string) $request->query('status_filter', (string) $request->query('status', 'Semua'));
 
         // Hitung berapa banyak filter dari Box Filter yang sedang aktif
         $activeFilterCount = 0;
         if (! empty($filterPengarang)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterPenerbit)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterSubjek)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterKota)) {
             $activeFilterCount++;
         }
         if (! empty($filterIsbn)) {
@@ -164,7 +180,7 @@ class LibraryController extends Controller
             $activeFilterCount++;
         }
 
-        // Ambil data buku dengan relasi lengkap
+        // Ambil data buku dengan relasi lengkap termasuk peminjaman aktif & pengajuan pending
         $dbBooks = Buku::with([
             'penulis',
             'jenisBuku',
@@ -173,10 +189,39 @@ class LibraryController extends Controller
             'eksemplar',
             'subjek',
             'kunjungan',
+            'peminjaman' => function ($q): void {
+                $q->whereNull('tanggal_kembali')
+                    ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi', 'Menunggu Persetujuan'])
+                    ->with(['pengguna.peran', 'eksemplar']);
+            },
         ])->get();
 
+        $currentUserId = Auth::check() ? Auth::user()->id_pengguna : null;
+
+        // Ambil peminjaman aktif user yang lewat jadwal pengembalian untuk notifikasi peringatan sesuai flowchart
+        $userOverdueLoans = collect();
+        if ($currentUserId) {
+            $userOverdueLoans = PeminjamanBuku::with(['buku', 'eksemplar'])
+                ->where('id_pengguna', $currentUserId)
+                ->whereNull('tanggal_kembali')
+                ->whereDate('tanggal_jatuh_tempo', '<', Carbon::now()->toDateString())
+                ->get();
+
+            // Otomatis tandai status peringatan terkirim sesuai alur flowchart
+            foreach ($userOverdueLoans as $overdue) {
+                if (! $overdue->notifikasi_peringatan_dikirim) {
+                    $overdue->update([
+                        'status' => $overdue->status === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi' : 'Terlambat',
+                        'hari_keterlambatan' => $overdue->hitungHariTerlambat(),
+                        'notifikasi_peringatan_dikirim' => true,
+                        'tanggal_notifikasi' => Carbon::now(),
+                    ]);
+                }
+            }
+        }
+
         if ($dbBooks->isNotEmpty()) {
-            $catalogItems = $dbBooks->map(function (Buku $buku): array {
+            $catalogItems = $dbBooks->map(function (Buku $buku) use ($currentUserId): array {
                 $authorName = $buku->penulis->pluck('nama_penulis')->join(', ') ?: 'Pustakawan MNC University';
                 $copiesCount = $buku->eksemplar->count();
                 $availableCount = $buku->eksemplar->where('status', 'Tersedia')->count();
@@ -184,6 +229,61 @@ class LibraryController extends Controller
                 $otherCount = $buku->eksemplar->whereNotIn('status', ['Tersedia', 'Dipinjam'])->count();
                 $firstCopy = $buku->eksemplar->first();
                 $hasAvailable = $availableCount > 0;
+
+                // Data peminjam aktif untuk buku ini
+                $activeLoans = $buku->peminjaman->map(function (PeminjamanBuku $loan): array {
+                    $user = $loan->pengguna;
+
+                    return [
+                        'id_peminjaman' => $loan->id_peminjaman,
+                        'id_pengguna' => $loan->id_pengguna,
+                        'id_eksemplar' => $loan->id_eksemplar,
+                        'peminjam_nama' => $user?->nama_lengkap ?? 'Pemustaka',
+                        'peminjam_nim' => $user?->nim ?? $user?->nomor_identitas ?? '-',
+                        'peminjam_role' => $user?->peran?->nama_peran ?? 'Mahasiswa',
+                        'peminjam_email' => $user?->email ?? '-',
+                        'kode_inventaris' => $loan->eksemplar?->kode_inventaris ?? '-',
+                        'nomor_panggil' => $loan->eksemplar?->nomor_panggil ?? '-',
+                        'tanggal_pinjam' => $loan->tanggal_pinjam ? $loan->tanggal_pinjam->format('d M Y') : '-',
+                        'tanggal_jatuh_tempo' => $loan->tanggal_jatuh_tempo ? $loan->tanggal_jatuh_tempo->format('d M Y') : '-',
+                        'tanggal_pengajuan_kembali' => $loan->tanggal_pengajuan_kembali ? $loan->tanggal_pengajuan_kembali->format('d M Y H:i') : null,
+                        'tanggal_pengajuan_pinjam' => $loan->tanggal_pengajuan_pinjam ? $loan->tanggal_pengajuan_pinjam->format('d M Y H:i') : null,
+                        'status' => $loan->status,
+                        'is_menunggu_persetujuan' => $loan->status === 'Menunggu Persetujuan',
+                        'is_menunggu_verifikasi' => $loan->status === 'Menunggu Verifikasi',
+                        'is_terlambat' => $loan->isTerlambat(),
+                        'hari_keterlambatan' => $loan->hitungHariTerlambat(),
+                        'sanksi' => $loan->sanksi,
+                    ];
+                })->values()->all();
+
+                $borrowerNames = collect($activeLoans)->where('status', '!=', 'Menunggu Persetujuan')->pluck('peminjam_nama')->unique()->join(', ');
+
+                // Cek apakah pengguna saat ini sedang meminjam atau memiliki pengajuan untuk buku ini
+                $userActiveLoan = null;
+                if ($currentUserId) {
+                    $foundLoan = $buku->peminjaman->first(function (PeminjamanBuku $l) use ($currentUserId): bool {
+                        return $l->id_pengguna === $currentUserId && $l->tanggal_kembali === null;
+                    });
+                    if ($foundLoan) {
+                        $userActiveLoan = [
+                            'id_peminjaman' => $foundLoan->id_peminjaman,
+                            'id_eksemplar' => $foundLoan->id_eksemplar,
+                            'kode_inventaris' => $foundLoan->eksemplar?->kode_inventaris ?? '-',
+                            'nomor_panggil' => $foundLoan->eksemplar?->nomor_panggil ?? '-',
+                            'lokasi_rak' => $foundLoan->eksemplar?->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
+                            'tanggal_pinjam' => $foundLoan->tanggal_pinjam ? $foundLoan->tanggal_pinjam->format('d M Y') : '-',
+                            'tanggal_jatuh_tempo' => $foundLoan->tanggal_jatuh_tempo ? $foundLoan->tanggal_jatuh_tempo->format('d M Y') : '-',
+                            'status' => $foundLoan->status,
+                            'is_menunggu_persetujuan' => $foundLoan->status === 'Menunggu Persetujuan',
+                            'is_menunggu_verifikasi' => $foundLoan->status === 'Menunggu Verifikasi',
+                            'is_terlambat' => $foundLoan->isTerlambat(),
+                            'hari_keterlambatan' => $foundLoan->hitungHariTerlambat(),
+                            'catatan_pengajuan_kembali' => $foundLoan->catatan_pengajuan_kembali,
+                            'catatan_pengajuan_pinjam' => $foundLoan->catatan_pengajuan_pinjam,
+                        ];
+                    }
+                }
 
                 if ($copiesCount === 0) {
                     $statusLabel = 'Koleksi Digital / Tanpa Eksemplar Fisik';
@@ -218,8 +318,10 @@ class LibraryController extends Controller
                     'isbn' => $buku->isbn ?? '-',
                     'edition' => $buku->edisi ?? 'Edisi Pertama',
                     'pages' => $buku->jumlah_halaman ? "{$buku->jumlah_halaman} hlm" : '-',
-                    'cover_url' => $buku->sampul_buku,
+                    'cover_url' => $buku->sampul_url,
                     'description' => $buku->deskripsi ?: 'Buku referensi akademik koleksi Perpustakaan MNC University.',
+                    'kata_kunci' => $buku->kata_kunci,
+                    'keywords' => $buku->kata_kunci_list,
                     'subjects' => $buku->subjek->pluck('nama_subjek')->all(),
                     'subject_ids' => $buku->subjek->pluck('id_subjek_buku')->all(),
                     'call_number' => $firstCopy?->nomor_panggil ?? '000.00 MNC b',
@@ -229,19 +331,43 @@ class LibraryController extends Controller
                     'copies_available' => $availableCount,
                     'copies_borrowed' => $borrowedCount,
                     'copies_other' => $otherCount,
+                    'active_loans' => $activeLoans,
+                    'borrower_names' => $borrowerNames,
+                    'user_active_loan' => $userActiveLoan,
+                    'is_borrowed_by_user' => $userActiveLoan !== null && ($userActiveLoan['status'] !== 'Menunggu Persetujuan'),
+                    'user_has_pending_borrow' => $userActiveLoan !== null && ($userActiveLoan['status'] === 'Menunggu Persetujuan'),
+                    'pending_borrow_count' => $buku->peminjaman->where('status', 'Menunggu Persetujuan')->count(),
+                    'is_borrowed' => $borrowedCount > 0 || count($activeLoans) > 0,
                     'status' => $hasAvailable ? 'Tersedia' : ($copiesCount > 0 ? 'Dipinjam' : 'Koleksi Digital'),
                     'status_label' => $statusLabel,
                     'visits' => $buku->kunjungan?->jumlah_kunjungan ?? 0,
                     'created_at' => $buku->created_at ? $buku->created_at->toISOString() : '',
                     'updated_at' => $buku->updated_at ? $buku->updated_at->toISOString() : '',
-                    'eksemplar_list' => $buku->eksemplar->map(fn ($ek, $idx) => [
-                        'no' => $idx + 1,
-                        'id_eksemplar' => $ek->id_eksemplar,
-                        'kode_inventaris' => $ek->kode_inventaris,
-                        'nomor_panggil' => $ek->nomor_panggil ?? '-',
-                        'lokasi_rak' => $ek->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
-                        'status' => $ek->status ?? 'Tersedia',
-                    ])->values()->all(),
+                    'eksemplar_list' => $buku->eksemplar->map(function ($ek, $idx) use ($buku): array {
+                        $loan = $buku->peminjaman->firstWhere('id_eksemplar', $ek->id_eksemplar);
+
+                        return [
+                            'no' => $idx + 1,
+                            'id_eksemplar' => $ek->id_eksemplar,
+                            'kode_inventaris' => $ek->kode_inventaris,
+                            'nomor_panggil' => $ek->nomor_panggil ?? '-',
+                            'lokasi_rak' => $ek->lokasi_rak ?? 'Lantai 2, Rak Koleksi',
+                            'status' => $ek->status ?? 'Tersedia',
+                            'peminjam' => $loan ? [
+                                'id_pengguna' => $loan->id_pengguna,
+                                'nama' => $loan->pengguna?->nama_lengkap ?? 'Pemustaka',
+                                'nim' => $loan->pengguna?->nim ?? $loan->pengguna?->nomor_identitas ?? '-',
+                                'role' => $loan->pengguna?->peran?->nama_peran ?? 'Mahasiswa',
+                                'tanggal_pinjam' => $loan->tanggal_pinjam ? $loan->tanggal_pinjam->format('d M Y') : '-',
+                                'tanggal_jatuh_tempo' => $loan->tanggal_jatuh_tempo ? $loan->tanggal_jatuh_tempo->format('d M Y') : '-',
+                                'status' => $loan->status,
+                                'is_menunggu_verifikasi' => $loan->status === 'Menunggu Verifikasi',
+                                'is_terlambat' => $loan->isTerlambat(),
+                                'hari_keterlambatan' => $loan->hitungHariTerlambat(),
+                                'sanksi' => $loan->sanksi,
+                            ] : null,
+                        ];
+                    })->values()->all(),
                 ];
             })->all();
         } else {
@@ -256,6 +382,9 @@ class LibraryController extends Controller
             $fitur,
             $subjekId,
             $filterPengarang,
+            $filterPenerbit,
+            $filterSubjek,
+            $filterKota,
             $filterIsbn,
             $filterDdc,
             $filterNomorInduk,
@@ -271,23 +400,33 @@ class LibraryController extends Controller
                 $subjectsText = implode(' ', $item['subjects'] ?? []);
                 $matchesQuery = match ($kriteria) {
                     'judul' => stripos($item['title'], $query) !== false,
+                    'kata_kunci' => stripos($item['kata_kunci'] ?? '', $query) !== false ||
+                        collect($item['keywords'] ?? [])->contains(fn ($kw) => stripos($kw, $query) !== false),
                     'pengarang' => stripos($item['author'], $query) !== false,
                     'penerbit' => stripos($item['publisher'], $query) !== false || stripos($item['publisher_city'] ?? '', $query) !== false,
-                    'subjek' => stripos($subjectsText, $query) !== false || stripos($item['category_name'] ?? '', $query) !== false,
+                    'subjek' => stripos($subjectsText, $query) !== false || stripos($item['category_name'] ?? '', $query) !== false || stripos($item['kata_kunci'] ?? '', $query) !== false,
                     'nomor_panggil', 'ddc' => (
                         stripos($item['call_number'] ?? '', $query) !== false ||
                         collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false)
                     ),
                     'isbn' => stripos($item['isbn'] ?? '', $query) !== false,
+                    'peminjam' => stripos($item['borrower_names'] ?? '', $query) !== false ||
+                        collect($item['active_loans'] ?? [])->contains(fn ($loan) => (
+                            stripos($loan['peminjam_nama'] ?? '', $query) !== false ||
+                            stripos($loan['peminjam_nim'] ?? '', $query) !== false
+                        )),
                     default => (
                         stripos($item['title'], $query) !== false ||
                         stripos($item['author'], $query) !== false ||
+                        stripos($item['kata_kunci'] ?? '', $query) !== false ||
+                        collect($item['keywords'] ?? [])->contains(fn ($kw) => stripos($kw, $query) !== false) ||
                         stripos($item['call_number'] ?? '', $query) !== false ||
                         stripos($item['isbn'] ?? '', $query) !== false ||
                         stripos($item['publisher'] ?? '', $query) !== false ||
                         stripos($item['description'] ?? '', $query) !== false ||
                         stripos($subjectsText, $query) !== false ||
                         stripos($item['category_name'] ?? '', $query) !== false ||
+                        stripos($item['borrower_names'] ?? '', $query) !== false ||
                         collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['nomor_panggil'] ?? '', $query) !== false)
                     ),
                 };
@@ -301,9 +440,17 @@ class LibraryController extends Controller
                 $matchesSubjek = in_array($subjekId, $item['subject_ids'] ?? [], true) ||
                     collect($item['subjects'] ?? [])->contains(fn ($s) => strcasecmp($s, $subjekId) === 0);
             }
+            if ($matchesSubjek && ! empty($filterSubjek)) {
+                $subjectsJoined = implode(' ', $item['subjects'] ?? []);
+                $matchesSubjek = stripos($subjectsJoined, $filterSubjek) !== false ||
+                    stripos($item['category_name'] ?? '', $filterSubjek) !== false ||
+                    stripos($item['category'] ?? '', $filterSubjek) !== false;
+            }
 
-            // C. Box Filter Pencarian Lanjutan (Referensi Desain Gambar 2)
+            // C. Box Filter Pencarian Lanjutan (Referensi Desain Gambar 2 & Hero Filter)
             $matchesPengarang = empty($filterPengarang) || stripos($item['author'], $filterPengarang) !== false;
+            $matchesPenerbit = empty($filterPenerbit) || stripos($item['publisher'] ?? '', $filterPenerbit) !== false;
+            $matchesKota = empty($filterKota) || stripos($item['publisher_city'] ?? '', $filterKota) !== false;
             $matchesIsbn = empty($filterIsbn) || stripos($item['isbn'] ?? '', $filterIsbn) !== false;
             $matchesDdc = empty($filterDdc) || (
                 stripos($item['call_number'] ?? '', $filterDdc) !== false ||
@@ -312,7 +459,7 @@ class LibraryController extends Controller
             $matchesNomorInduk = empty($filterNomorInduk) || (
                 collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['kode_inventaris'] ?? '', $filterNomorInduk) !== false)
             );
-            $matchesTahun = empty($filterTahun) || $filterTahun === 'Semua' || (string) $item['year'] === (string) $filterTahun;
+            $matchesTahun = empty($filterTahun) || $filterTahun === 'Semua' || stripos((string) $item['year'], (string) $filterTahun) !== false;
             $matchesLokasi = empty($filterLokasi) || $filterLokasi === 'Semua' || (
                 stripos($item['location'] ?? '', $filterLokasi) !== false ||
                 collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['lokasi_rak'] ?? '', $filterLokasi) !== false)
@@ -329,13 +476,15 @@ class LibraryController extends Controller
             if ($statusFilter === 'Tersedia' || $statusFilter === 'Hanya Tersedia') {
                 $matchesStatus = ($item['copies_available'] ?? 0) > 0;
             } elseif ($statusFilter === 'Dipinjam' || $statusFilter === 'Sedang Dipinjam') {
-                $matchesStatus = ($item['copies_borrowed'] ?? 0) > 0 || ($item['copies_available'] ?? 0) === 0;
+                $matchesStatus = ($item['copies_borrowed'] ?? 0) > 0 || count($item['active_loans'] ?? []) > 0 || ! empty($item['is_borrowed']);
             }
 
             return $matchesQuery &&
                 $matchesCategory &&
                 $matchesSubjek &&
                 $matchesPengarang &&
+                $matchesPenerbit &&
+                $matchesKota &&
                 $matchesIsbn &&
                 $matchesDdc &&
                 $matchesNomorInduk &&
@@ -411,6 +560,44 @@ class LibraryController extends Controller
 
         $prodiList = Prodi::orderBy('nama_prodi')->get();
 
+        $selectedBookItem = null;
+        if (! empty($selectedBookId)) {
+            $selectedBookItem = collect($catalogItems)->first(fn ($it) => (string) ($it['id'] ?? '') === (string) $selectedBookId);
+        }
+
+        // Data Statistik Sidebar Kiri (Sesuai Layout OPAC Referensi: Penerbit Teratas, Pengarang Teratas, Subjek Populer, Kota Terbit)
+        $topPublishers = collect($catalogItems)
+            ->pluck('publisher')
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(5)
+            ->all();
+
+        $topAuthors = collect($catalogItems)
+            ->flatMap(fn (array $it) => array_map('trim', explode(',', (string) ($it['author'] ?? ''))))
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(5)
+            ->all();
+
+        $topSubjects = collect($catalogItems)
+            ->flatMap(fn (array $it) => ! empty($it['subjects']) ? $it['subjects'] : [($it['category_name'] ?? 'Umum')])
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(5)
+            ->all();
+
+        $topPublishCities = collect($catalogItems)
+            ->pluck('publisher_city')
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(5)
+            ->all();
+
         return view('opac', [
             'items' => $filteredItems,
             'fitur' => $fitur,
@@ -423,6 +610,9 @@ class LibraryController extends Controller
             'prodi' => $filterProdi,
             'sort' => $sort,
             'filterPengarang' => $filterPengarang,
+            'filterPenerbit' => $filterPenerbit,
+            'filterSubjek' => $filterSubjek,
+            'filterKota' => $filterKota,
             'filterIsbn' => $filterIsbn,
             'filterDdc' => $filterDdc,
             'filterNomorInduk' => $filterNomorInduk,
@@ -432,6 +622,7 @@ class LibraryController extends Controller
             'filterProdi' => $filterProdi,
             'jenisFilter' => $filterJenis,
             'selectedBookId' => $selectedBookId,
+            'selectedBookItem' => $selectedBookItem,
             'statusFilter' => $statusFilter,
             'activeFilterCount' => $activeFilterCount,
             'tahunList' => $tahunList,
@@ -442,7 +633,11 @@ class LibraryController extends Controller
             'totalKoleksi' => $totalKoleksi,
             'totalEksemplarFisik' => $totalEksemplarFisik,
             'totalEksemplarTersedia' => $totalEksemplarTersedia,
-            'selectedBookId' => $selectedBookId,
+            'userOverdueLoans' => $userOverdueLoans,
+            'topPublishers' => $topPublishers,
+            'topAuthors' => $topAuthors,
+            'topSubjects' => $topSubjects,
+            'topPublishCities' => $topPublishCities,
         ]);
     }
 
@@ -471,6 +666,237 @@ class LibraryController extends Controller
             'id_buku' => $buku->id_buku,
             'jumlah_kunjungan' => $kunjungan->fresh()->jumlah_kunjungan,
         ]);
+    }
+
+    /**
+     * Validasi eligibilitas user yang sedang login untuk meminjam buku via website OPAC.
+     */
+    public function cekEligibilitasPeminjaman(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan masuk (login) terlebih dahulu untuk meminjam buku.',
+            ], 401);
+        }
+
+        $peminjamanService = app(PeminjamanService::class);
+        $hasil = $peminjamanService->cekEligibilitas($user->id_pengguna);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'eligible' => $hasil['eligible'],
+                'message' => $hasil['message'],
+                'user' => [
+                    'id_pengguna' => $user->id_pengguna,
+                    'nama_lengkap' => $user->nama_lengkap,
+                    'nim' => $user->nim ?: ($user->nidn ?: $user->nomor_identitas ?: '-'),
+                    'role' => $user->peran?->nama_peran ?: 'Mahasiswa',
+                    'is_member' => $user->isMember(),
+                ],
+                'active_loans' => $hasil['active_loans'],
+            ],
+        ], 200);
+    }
+
+    /**
+     * Catat pengajuan transaksi peminjaman buku mandiri dari website OPAC.
+     * Mengikuti alur validasi admin: status transaksi menjadi 'Menunggu Persetujuan'
+     * dan admin memverifikasi di inbox sebelum eksemplar dialokasikan.
+     */
+    public function pinjamBuku(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan masuk (login) terlebih dahulu untuk meminjam buku.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'id_buku' => 'required|string|exists:buku,id_buku',
+            'id_eksemplar' => 'nullable|string|exists:eksemplar_buku,id_eksemplar',
+            'tanggal_pinjam' => 'nullable|date',
+            'tanggal_jatuh_tempo' => 'nullable|date',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        $peminjamanService = app(PeminjamanService::class);
+
+        $tanggalPinjam = $validated['tanggal_pinjam'] ?? now()->toDateString();
+        $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? Carbon::parse($tanggalPinjam)->addDays(14)->toDateString();
+
+        try {
+            $peminjaman = $peminjamanService->ajukanPeminjaman(
+                $user->id_pengguna,
+                $validated['id_buku'],
+                $validated['id_eksemplar'] ?? null,
+                $tanggalPinjam,
+                $tanggalJatuhTempo,
+                $validated['catatan'] ?? 'Pengajuan peminjaman mandiri via website katalog OPAC'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pengajuan peminjaman buku '{$peminjaman->buku->judul_buku}' berhasil dikirimkan! Menunggu verifikasi dan persetujuan dari Admin Perpustakaan.",
+                'data' => [
+                    'id_peminjaman' => $peminjaman->id_peminjaman,
+                    'judul_buku' => $peminjaman->buku->judul_buku,
+                    'kode_inventaris' => $peminjaman->eksemplar?->kode_inventaris ?? '(Menunggu Alokasi Admin)',
+                    'nomor_panggil' => $peminjaman->eksemplar?->nomor_panggil ?? '-',
+                    'lokasi_rak' => $peminjaman->eksemplar?->lokasi_rak ?? 'Lantai 2, Meja Sirkulasi',
+                    'tanggal_pinjam' => $peminjaman->tanggal_pinjam ? $peminjaman->tanggal_pinjam->format('Y-m-d') : '-',
+                    'tanggal_jatuh_tempo' => $peminjaman->tanggal_jatuh_tempo ? $peminjaman->tanggal_jatuh_tempo->format('Y-m-d') : '-',
+                    'nama_peminjam' => $user->nama_lengkap,
+                    'status' => $peminjaman->status,
+                ],
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Mahasiswa / pemustaka mengajukan pengembalian buku mandiri dari website OPAC.
+     */
+    public function ajukanPengembalianBuku(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan masuk (login) terlebih dahulu untuk mengajukan pengembalian buku.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'id_peminjaman' => 'required|string|exists:peminjaman_buku,id_peminjaman',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        $peminjaman = PeminjamanBuku::findOrFail($validated['id_peminjaman']);
+        if ($peminjaman->id_pengguna !== $user->id_pengguna && ! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses untuk mengajukan pengembalian buku ini.',
+            ], 403);
+        }
+
+        $peminjamanService = app(PeminjamanService::class);
+
+        try {
+            $peminjaman = $peminjamanService->ajukanPengembalian(
+                $validated['id_peminjaman'],
+                $user->id_pengguna,
+                $validated['catatan'] ?? 'Pengajuan pengembalian mandiri via website katalog OPAC'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pengajuan pengembalian buku '{$peminjaman->buku->judul_buku}' berhasil dikirim! Silakan serahkan fisik buku ke meja sirkulasi perpustakaan untuk diverifikasi oleh admin atau pustakawan.",
+                'data' => [
+                    'id_peminjaman' => $peminjaman->id_peminjaman,
+                    'status' => $peminjaman->status,
+                    'is_menunggu_verifikasi' => true,
+                    'judul_buku' => $peminjaman->buku->judul_buku,
+                    'kode_inventaris' => $peminjaman->eksemplar?->kode_inventaris,
+                    'hari_keterlambatan' => $peminjaman->hari_keterlambatan,
+                ],
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Pengembalian buku oleh user sesuai alur flowchart:
+     * 1. Validasi pengembalian buku:
+     *    - Cabang 1: Tidak ada data peminjaman -> Pengembalian buku gagal
+     *    - Cabang 2: Pernah meminjam -> Buku berhasil dikembalikan oleh user -> Status buku akan kembali bertambah
+     *    - Cabang 3: Jika sudah lewat jadwal pengembalian -> Mengirim notifikasi peringatan ke user bahwa waktu telah lewat batas
+     *      -> User melakukan pengembalian buku (Ya) -> Buku berhasil dikembalikan oleh user -> Status buku akan kembali bertambah
+     *      -> User belum melakukan pengembalian buku -> Admin input data keterlambatan
+     */
+    public function kembalikanBukuMandiri(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan masuk (login) terlebih dahulu untuk mengembalikan buku.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'id_peminjaman' => 'nullable|string',
+            'id_buku' => 'nullable|string',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        $idPeminjaman = $validated['id_peminjaman'] ?? null;
+        if (! $idPeminjaman && ! empty($validated['id_buku'])) {
+            $loan = PeminjamanBuku::where('id_pengguna', $user->id_pengguna)
+                ->where('id_buku', $validated['id_buku'])
+                ->whereNull('tanggal_kembali')
+                ->latest()
+                ->first();
+            $idPeminjaman = $loan?->id_peminjaman;
+        }
+
+        if (! $idPeminjaman) {
+            return response()->json([
+                'success' => false,
+                'flowchart_step' => 'pengembalian_gagal',
+                'message' => 'Pengembalian buku gagal: Tidak ada data peminjaman aktif untuk koleksi buku ini.',
+            ], 422);
+        }
+
+        /** @var PeminjamanService $peminjamanService */
+        $peminjamanService = app(PeminjamanService::class);
+
+        $hasil = $peminjamanService->kembalikanBukuOlehUser(
+            $idPeminjaman,
+            $user->id_pengguna,
+            $validated['catatan'] ?? 'Pengembalian buku mandiri oleh pemustaka via website katalog OPAC'
+        );
+
+        if (! $hasil['sukses']) {
+            return response()->json([
+                'success' => false,
+                'flowchart_step' => 'pengembalian_gagal',
+                'message' => $hasil['message'],
+            ], 422);
+        }
+
+        $peminjaman = $hasil['peminjaman'];
+
+        return response()->json([
+            'success' => true,
+            'flowchart_step' => 'kembali_bertambah',
+            'message' => $hasil['message'],
+            'data' => [
+                'id_peminjaman' => $peminjaman->id_peminjaman,
+                'status' => $peminjaman->status,
+                'is_kembali' => true,
+                'status_buku_eksemplar' => 'Tersedia',
+                'judul_buku' => $peminjaman->buku->judul_buku,
+                'kode_inventaris' => $peminjaman->eksemplar?->kode_inventaris,
+                'hari_keterlambatan' => $peminjaman->hari_keterlambatan,
+                'sudah_lewat_jadwal' => $hasil['sudah_lewat_jadwal'],
+                'stok_bertambah' => true,
+            ],
+        ], 200);
     }
 
     /**
@@ -845,11 +1271,12 @@ class LibraryController extends Controller
         }
 
         // 11. Keanggotaan & Kartu Tanda Mahasiswa (KTM)
-        if (str_contains($text, 'anggota') || str_contains($text, 'keanggotaan') || str_contains($text, 'ktm') || str_contains($text, 'kartu')) {
-            return "Informasi Keanggotaan Perpustakaan:\n\n"
-                ."• Seluruh mahasiswa, dosen, dan staf aktif MNC University secara otomatis terdaftar sebagai anggota perpustakaan.\n"
-                ."• Kartu anggota utama menggunakan Kartu Tanda Mahasiswa (KTM) fisik maupun kartu identitas digital pada portal akademik.\n"
-                .'• Jika KTM hilang atau belum dicetak, pemustaka dapat menggunakan Kartu Mahasiswa Sementara dari BAAK untuk transaksi peminjaman buku di loket sirkulasi.';
+        if (str_contains($text, 'anggota') || str_contains($text, 'keanggotaan') || str_contains($text, 'ktm') || str_contains($text, 'kartu') || str_contains($text, 'member')) {
+            return "Informasi Keanggotaan Member Perpustakaan:\n\n"
+                ."• Pada dasarnya mahasiswa dan dosen baru belum berstatus sebagai member perpustakaan.\n"
+                ."• Untuk dapat meminjam koleksi buku fisik di perpustakaan, pemustaka harus berstatus sebagai member aktif.\n"
+                ."• Mahasiswa dan dosen tidak dapat mengajukan request menjadi member melalui website, melainkan harus menemui pustakawan atau super admin secara langsung di Meja Sirkulasi Perpustakaan (Lantai 2) dengan membawa KTM atau Kartu Pegawai aktif.\n"
+                .'• Super admin atau pustakawan akan memvalidasi data dan mempromosikan akun Anda menjadi member aktif sehingga dapat langsung meminjam buku.';
         }
 
         // 12. Usulan Pengadaan Buku Baru

@@ -4,7 +4,7 @@
 @section('description', 'Akses basis data jurnal elektronik internasional dan nasional terakreditasi untuk sivitas akademika MNC University. Menemukan referensi riset terpercaya.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 lg:px-6 lg:py-10">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-8 px-3 py-6 sm:px-4 lg:px-6 xl:px-8 lg:py-10 responsive-desktop-container">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
@@ -58,7 +58,7 @@
         <section aria-labelledby="daftar-database-jurnal">
             <h2 id="daftar-database-jurnal" class="sr-only">Daftar Portal Jurnal Ilmiah</h2>
 
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 lg:gap-6">
                 @foreach ($databases as $db)
                     <article class="flex flex-col justify-between rounded-2xl border border-line bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#2563EB]/40 hover:shadow-raised">
                         <div>

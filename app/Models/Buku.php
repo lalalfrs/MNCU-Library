@@ -33,9 +33,24 @@ class Buku extends Model
         'tahun_terbit',
         'edisi',
         'deskripsi',
+        'kata_kunci',
         'sampul_buku',
         'jumlah_halaman',
     ];
+
+    /**
+     * Mengembalikan daftar kata kunci buku dalam bentuk array string.
+     *
+     * @return array<int, string>
+     */
+    public function getKataKunciListAttribute(): array
+    {
+        if (empty($this->kata_kunci)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $this->kata_kunci))));
+    }
 
     protected function casts(): array
     {
@@ -93,5 +108,29 @@ class Buku extends Model
     public function kunjungan(): HasOne
     {
         return $this->hasOne(KunjunganBuku::class, 'id_buku', 'id_buku');
+    }
+
+    public function peminjaman(): HasMany
+    {
+        return $this->hasMany(PeminjamanBuku::class, 'id_buku', 'id_buku');
+    }
+
+    public function getSampulUrlAttribute(): string
+    {
+        $cover = $this->sampul_buku ?: 'images/buku/default-cover.jpg';
+
+        if (filter_var($cover, FILTER_VALIDATE_URL)) {
+            return $cover;
+        }
+
+        if (str_starts_with($cover, 'images/') || file_exists(public_path($cover))) {
+            return asset($cover);
+        }
+
+        if (str_starts_with($cover, 'storage/')) {
+            return asset($cover);
+        }
+
+        return asset('storage/'.$cover);
     }
 }

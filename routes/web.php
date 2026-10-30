@@ -4,6 +4,9 @@ use App\Http\Controllers\AcaraController;
 use App\Http\Controllers\Admin\AcaraAdminController;
 use App\Http\Controllers\Admin\BeritaAdminController;
 use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\PeminjamanAdminController;
+use App\Http\Controllers\Admin\ReportAdminController;
+use App\Http\Controllers\Admin\StatisticAdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
@@ -34,7 +37,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profil/reset-password', [ProfileController::class, 'resetPassword'])->name('profile.password.update');
+    Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::put('/profil/reset-password', [ProfileController::class, 'resetPassword']);
 });
 
 // Beranda Utama
@@ -59,6 +63,15 @@ Route::match(['get', 'post'], '/chat', [LibraryController::class, 'chat'])->name
 // 5 Layanan Perpustakaan Utama
 Route::get('/opac', [LibraryController::class, 'opac'])->name('opac');
 Route::post('/opac/kunjungan/{buku}', [LibraryController::class, 'recordKunjungan'])->name('opac.kunjungan');
+
+// Layanan Peminjaman & Pengembalian Buku Mandiri via Website OPAC (Sanctum / Web Auth)
+Route::middleware(['auth'])->group(function (): void {
+    Route::get('/opac/cek-eligibilitas', [LibraryController::class, 'cekEligibilitasPeminjaman'])->name('opac.cek-eligibilitas');
+    Route::post('/opac/pinjam', [LibraryController::class, 'pinjamBuku'])->name('opac.pinjam');
+    Route::post('/opac/kembalikan', [LibraryController::class, 'kembalikanBukuMandiri'])->name('opac.kembalikan');
+    Route::post('/opac/ajukan-pengembalian', [LibraryController::class, 'ajukanPengembalianBuku'])->name('opac.ajukan-pengembalian');
+});
+
 Route::get('/repository', [LibraryController::class, 'repository'])->name('repository');
 Route::get('/e-journal', [LibraryController::class, 'ejournal'])->name('ejournal');
 Route::get('/ojs-prodi', [LibraryController::class, 'ojs'])->name('ojs');
@@ -66,12 +79,15 @@ Route::get('/e-book', [LibraryController::class, 'ebook'])->name('ebook');
 
 // Menu Manajemen Perpustakaan (CRUD - Khusus Super Admin / Kepala Perpustakaan)
 Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(function (): void {
-    // 1. Manajemen User
+    // 1. Manajemen User & Keanggotaan Member Perpustakaan
+    Route::post('users/{user}/promote-member', [UserController::class, 'promoteMember'])->name('users.promote-member');
+    Route::post('users/{user}/demote-member', [UserController::class, 'demoteMember'])->name('users.demote-member');
     Route::resource('users', UserController::class);
     Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // 2. Manajemen Buku & Stok Eksemplar
     Route::resource('buku', BookController::class)->names('books');
+    Route::post('buku/{buku}/kata-kunci', [BookController::class, 'updateKataKunci'])->name('books.kata-kunci.update');
     Route::post('buku/{buku}/eksemplar', [BookController::class, 'storeEksemplar'])->name('books.eksemplar.store');
     Route::put('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'updateEksemplar'])->name('books.eksemplar.update');
     Route::delete('buku/{buku}/eksemplar/{eksemplar}', [BookController::class, 'destroyEksemplar'])->name('books.eksemplar.destroy');
@@ -81,4 +97,22 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
 
     // 4. Manajemen Berita
     Route::resource('berita', BeritaAdminController::class)->names('berita');
+
+    // 5. Manajemen Peminjaman & Keterlambatan Sirkulasi Buku
+    Route::get('inbox', [PeminjamanAdminController::class, 'inbox'])->name('inbox');
+    Route::get('peminjaman/cek-eligibilitas/{id_pengguna}', [PeminjamanAdminController::class, 'cekEligibilitasUser'])->name('peminjaman.cek-eligibilitas');
+    Route::resource('peminjaman', PeminjamanAdminController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('peminjaman/{peminjaman}/kembalikan', [PeminjamanAdminController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+    Route::post('peminjaman/{peminjaman}/tolak-pengembalian', [PeminjamanAdminController::class, 'tolakPengembalian'])->name('peminjaman.tolak-pengembalian');
+    Route::post('peminjaman/{peminjaman}/setujui-pinjam', [PeminjamanAdminController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui-pinjam');
+    Route::post('peminjaman/{peminjaman}/tolak-pinjam', [PeminjamanAdminController::class, 'tolakPeminjaman'])->name('peminjaman.tolak-pinjam');
+    Route::post('peminjaman/{peminjaman}/kirim-peringatan', [PeminjamanAdminController::class, 'kirimPeringatan'])->name('peminjaman.kirim-peringatan');
+    Route::post('peminjaman/{peminjaman}/input-keterlambatan', [PeminjamanAdminController::class, 'inputKeterlambatan'])->name('peminjaman.input-keterlambatan');
+
+    // 6. Statistik Perpustakaan Sesuai Flowchart
+    Route::get('statistik', [StatisticAdminController::class, 'index'])->name('statistics.index');
+
+    // 7. Laporan & Rekapitulasi Perpustakaan Sesuai Flowchart
+    Route::get('laporan', [ReportAdminController::class, 'index'])->name('reports.index');
+    Route::get('laporan/export-csv', [ReportAdminController::class, 'exportCsv'])->name('reports.export-csv');
 });

@@ -83,31 +83,38 @@
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-01.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Komputer
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-02.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Bisnis
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-03.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
                                 Desain
                             </button>
                             <button
                                 type="button"
-                                onclick="applySampleCover('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80')"
+                                onclick="applySampleCover('images/buku/buku-05.jpg')"
                                 class="rounded-lg border border-line bg-subtle px-2 py-1 text-[11px] text-ink transition-colors hover:border-primary hover:text-primary"
                             >
-                                Umum
+                                Pengembangan Diri
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applySampleCover('images/buku/default-cover.jpg')"
+                                class="rounded-lg border border-primary/40 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
+                            >
+                                Standar MNCU
                             </button>
                         </div>
                     </div>
@@ -332,6 +339,32 @@
                             >{{ old('deskripsi') }}</textarea>
                         </div>
 
+                        {{-- Kata Kunci (Pencarian OPAC) --}}
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <label for="kata_kunci" class="block text-xs font-semibold text-ink">
+                                    Kata Kunci Pencarian OPAC
+                                </label>
+                                <span class="text-[11px] text-muted">Pisahkan dengan koma</span>
+                            </div>
+                            <div class="relative mt-1.5">
+                                <input
+                                    type="text"
+                                    name="kata_kunci"
+                                    id="kata_kunci"
+                                    value="{{ old('kata_kunci') }}"
+                                    placeholder="Contoh: Coding, Pembelajaran, Python (atau Hiburan, Sastra untuk fiksi)"
+                                    class="h-11 w-full rounded-xl border border-line bg-white pr-9 pl-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none sm:text-sm"
+                                >
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted">
+                                    <i class="fa-solid fa-tags text-xs"></i>
+                                </span>
+                            </div>
+                            <p class="mt-1 text-[11px] text-muted">
+                                Kata kunci ini memudahkan pemustaka mencari buku di OPAC dan akan tampil sebagai tag topik yang dapat diklik.
+                            </p>
+                        </div>
+
                         {{-- Pengaturan Eksemplar Fisik & Stok Awal --}}
                         <div class="space-y-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
                             <div class="flex items-center justify-between">
@@ -450,9 +483,14 @@
                 previewStatusBadge.textContent = 'Memuat...';
                 previewStatusBadge.className = 'inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-medium text-amber-800';
 
+                let testUrl = url;
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+                    testUrl = '{{ asset("") }}' + url.replace(/^\/+/, '');
+                }
+
                 const testImage = new Image();
                 testImage.onload = function () {
-                    previewImg.src = url;
+                    previewImg.src = testUrl;
                     previewImg.classList.remove('hidden');
                     previewPlaceholder.classList.add('hidden');
                     previewStatusBadge.textContent = 'Pratinjau Aktif';
@@ -464,7 +502,7 @@
                     previewStatusBadge.textContent = 'Gambar Gagal Dimuat';
                     previewStatusBadge.className = 'inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-medium text-red-800';
                 };
-                testImage.src = url;
+                testImage.src = testUrl;
             }
 
             coverInput.addEventListener('input', updateCoverPreview);

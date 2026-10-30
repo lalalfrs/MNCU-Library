@@ -83,10 +83,17 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 self-start sm:self-center">
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200 ring-1 ring-inset ring-emerald-400/40">
-                            <i class="fa-solid fa-circle-check text-[10px]" aria-hidden="true"></i>
-                            <span>Status: Aktif</span>
-                        </span>
+                        @if ($user->isMember())
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200 ring-1 ring-inset ring-emerald-400/40">
+                                <i class="fa-solid fa-circle-check text-[10px]" aria-hidden="true"></i>
+                                <span>Status: Member Aktif</span>
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-1 text-xs font-semibold text-amber-200 ring-1 ring-inset ring-amber-300/40">
+                                <i class="fa-solid fa-circle-exclamation text-[10px]" aria-hidden="true"></i>
+                                <span>Status: Belum Menjadi Member</span>
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -148,9 +155,9 @@
                                 <span class="mt-0.5 block text-xs font-semibold text-ink sm:text-sm">Semester Berjalan</span>
                             </div>
                             <div class="pt-2 sm:pt-0 sm:pl-4">
-                                <span class="block text-[11px] font-medium text-muted">Terdaftar Sejak</span>
+                                <span class="block text-[11px] font-medium text-muted">Member Sejak</span>
                                 <span class="mt-0.5 block text-xs font-semibold text-ink sm:text-sm">
-                                    {{ $user->created_at ? $user->created_at->format('d M Y') : '16 Okt 2026' }}
+                                    {{ $user->member_sejak ? $user->member_sejak->format('d M Y') : ($user->isMember() ? ($user->created_at ? $user->created_at->format('d M Y') : '16 Okt 2026') : 'Belum Aktif') }}
                                 </span>
                             </div>
                         </div>
@@ -160,17 +167,43 @@
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-barcode text-3xl text-slate-700" aria-hidden="true"></i>
                                 <div>
-                                    <span class="block text-[10px] font-bold uppercase tracking-wider text-muted">ID Anggota Digital</span>
+                                    <span class="block text-[10px] font-bold uppercase tracking-wider text-muted">Nomor Member Perpustakaan</span>
                                     <span class="font-mono text-xs font-bold text-ink sm:text-sm tracking-wider">
-                                        MNCU-LIB-{{ str_pad((string)($user->id ?? 1), 5, '0', STR_PAD_LEFT) }}
+                                        {{ $user->nomor_anggota ?? ($user->isMember() ? ('MNCU-LIB-' . str_pad((string)($user->id ?? 1), 5, '0', STR_PAD_LEFT)) : 'BELUM-TERDAFTAR') }}
                                     </span>
                                 </div>
                             </div>
-                            <a href="{{ route('profile.edit') }}" class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20">
-                                <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
-                                <span>Perbarui Data Diri</span>
-                            </a>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('profile.edit') }}#ubah-password" class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20">
+                                    <i class="fa-solid fa-key text-amber-600" aria-hidden="true"></i>
+                                    <span>Ubah Kata Sandi</span>
+                                </a>
+                                <a href="{{ route('profile.edit') }}" class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                    <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                                    <span>Perbarui Data Diri</span>
+                                </a>
+                            </div>
                         </div>
+
+                        @if (! $user->isMember())
+                            {{-- Kotak Informasi Aktivasi Keanggotaan Tatap Muka Langsung --}}
+                            <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-xs text-amber-950 sm:text-sm">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-200 text-amber-900">
+                                        <i class="fa-solid fa-triangle-exclamation text-sm" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="flex-1 space-y-1">
+                                        <p class="font-bold text-amber-950">Status Keanggotaan Belum Aktif</p>
+                                        <p class="text-xs text-amber-900 leading-relaxed">
+                                            Untuk meminjam buku fisik di Perpustakaan MNC University, Anda harus menjadi member terlebih dahulu.
+                                        </p>
+                                        <p class="text-xs font-semibold text-amber-950">
+                                            Prosedur Aktivasi Member: Permohonan menjadi member tidak dapat dilakukan melalui website. Silakan kunjungi Meja Sirkulasi Perpustakaan MNC University Lantai 2 secara langsung dan temui pustakawan atau super admin dengan membawa Kartu Identitas (KTM / Kartu Pegawai).
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -235,10 +268,13 @@
                         </a>
                         <button type="button" onclick="openProfileResetModal()" class="flex min-h-[44px] w-full items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50 text-left">
                             <span class="flex items-center gap-3">
-                                <i class="fa-solid fa-key text-primary" aria-hidden="true"></i>
-                                <span>Reset Kata Sandi Akun</span>
+                                <i class="fa-solid fa-key text-amber-600" aria-hidden="true"></i>
+                                <span>Reset / Ubah Kata Sandi</span>
                             </span>
-                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                                <span>Ganti</span>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+                            </span>
                         </button>
                     </div>
                 </div>

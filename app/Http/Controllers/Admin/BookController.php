@@ -8,10 +8,15 @@ use App\Models\BukuPenulis;
 use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
 use App\Models\KategoriBuku;
+use App\Models\PeminjamanBuku;
 use App\Models\Penerbit;
+use App\Models\Pengguna;
 use App\Models\Penulis;
+use App\Services\PeminjamanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -39,6 +44,7 @@ class BookController extends Controller
                 $sub->where('judul_buku', 'like', "%{$q}%")
                     ->orWhere('isbn', 'like', "%{$q}%")
                     ->orWhere('deskripsi', 'like', "%{$q}%")
+                    ->orWhere('kata_kunci', 'like', "%{$q}%")
                     ->orWhereHas('penulis', function ($authorSub) use ($q): void {
                         $authorSub->where('nama_penulis', 'like', "%{$q}%");
                     })
@@ -119,6 +125,7 @@ class BookController extends Controller
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'kata_kunci' => ['nullable', 'string', 'max:500'],
             'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
             'stok_awal' => ['nullable', 'integer', 'min:0', 'max:50'],
             'nomor_panggil_dasar' => ['nullable', 'string', 'max:50'],
@@ -164,14 +171,26 @@ class BookController extends Controller
      */
     public function show(string $id): View
     {
-        $book = Buku::with(['penulis', 'jenisBuku', 'kategoriBuku', 'penerbit', 'eksemplar', 'subjek'])->findOrFail($id);
+        $book = Buku::with([
+            'penulis',
+            'jenisBuku',
+            'kategoriBuku',
+            'penerbit',
+            'eksemplar.peminjamanAktif.pengguna.peran',
+            'subjek',
+        ])->findOrFail($id);
 
         $totalCopies = $book->eksemplar->count();
         $availableCopies = $book->eksemplar->where('status', 'Tersedia')->count();
         $borrowedCopies = $book->eksemplar->where('status', 'Dipinjam')->count();
         $otherCopies = $book->eksemplar->whereNotIn('status', ['Tersedia', 'Dipinjam'])->count();
 
-        return view('admin.books.show', compact('book', 'totalCopies', 'availableCopies', 'borrowedCopies', 'otherCopies'));
+        // Ambil daftar seluruh mahasiswa & pemustaka untuk modal peminjaman eksemplar
+        $users = Pengguna::with('peran')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('admin.books.show', compact('book', 'totalCopies', 'availableCopies', 'borrowedCopies', 'otherCopies', 'users'));
     }
 
     /**
@@ -206,6 +225,7 @@ class BookController extends Controller
             'jumlah_halaman' => ['nullable', 'integer', 'min:1'],
             'sampul_buku' => ['nullable', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'kata_kunci' => ['nullable', 'string', 'max:500'],
             'nama_penulis_manual' => ['nullable', 'string', 'max:150'],
         ], [
             'judul_buku.required' => 'Judul buku wajib diisi.',
@@ -219,6 +239,25 @@ class BookController extends Controller
 
         return redirect()->route('admin.books.index')
             ->with('success', "Katalog buku \"{$book->judul_buku}\" berhasil diperbarui!");
+    }
+
+    /**
+     * Perbarui kata kunci pencarian OPAC untuk buku tertentu langsung dari halaman detail buku admin.
+     */
+    public function updateKataKunci(Request $request, string $id): RedirectResponse
+    {
+        $book = Buku::findOrFail($id);
+
+        $validated = $request->validate([
+            'kata_kunci' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $book->update([
+            'kata_kunci' => $validated['kata_kunci'] ?? null,
+        ]);
+
+        return redirect()->route('admin.books.show', $book->id_buku)
+            ->with('success', "Kata kunci pencarian OPAC untuk buku \"{$book->judul_buku}\" berhasil diperbarui!");
     }
 
     /**
@@ -265,6 +304,79 @@ class BookController extends Controller
         $book = Buku::findOrFail($id);
         $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->findOrFail($idEksemplar);
 
+        $targetStatus = $request->input('status');
+        $oldStatus = $eksemplar->status;
+
+        // Alur 1: Jika admin mengubah status menjadi 'Dipinjam'
+        if ($targetStatus === 'Dipinjam' && $oldStatus !== 'Dipinjam') {
+            $validatedLoan = $request->validate([
+                'id_pengguna' => ['required', 'string', 'exists:pengguna,id_pengguna'],
+                'tanggal_jatuh_tempo' => ['required', 'date', 'after_or_equal:today'],
+                'tanggal_pinjam' => ['nullable', 'date'],
+                'catatan' => ['nullable', 'string', 'max:500'],
+            ], [
+                'id_pengguna.required' => 'Pilih mahasiswa atau user yang meminjam buku.',
+                'id_pengguna.exists' => 'Data mahasiswa peminjam tidak valid.',
+                'tanggal_jatuh_tempo.required' => 'Tanggal batas pengembalian (jatuh tempo) wajib ditentukan.',
+                'tanggal_jatuh_tempo.after_or_equal' => 'Tanggal pengembalian tidak boleh sebelum hari ini.',
+            ]);
+
+            // Update metadata eksemplar jika diubah
+            $eksemplar->update([
+                'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
+                'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
+            ]);
+
+            $peminjamanService = app(PeminjamanService::class);
+            $tanggalPinjam = $validatedLoan['tanggal_pinjam'] ?? now()->toDateString();
+            $tanggalJatuhTempo = $validatedLoan['tanggal_jatuh_tempo'];
+
+            try {
+                $peminjaman = $peminjamanService->buatPeminjaman(
+                    $validatedLoan['id_pengguna'],
+                    $eksemplar->id_eksemplar,
+                    $tanggalPinjam,
+                    $tanggalJatuhTempo,
+                    $validatedLoan['catatan'] ?? 'Peminjaman dicatat oleh admin melalui menu eksemplar'
+                );
+
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->with('success', "Eksemplar \"{$eksemplar->kode_inventaris}\" berhasil dipinjamkan kepada {$peminjaman->pengguna->nama_lengkap}. Status diubah menjadi Dipinjam.");
+            } catch (ValidationException $e) {
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->withErrors($e->errors())
+                    ->with('error', $e->getMessage());
+            }
+        }
+
+        // Alur 2: Jika admin mengubah status dari 'Dipinjam' menjadi 'Tersedia' (Pengembalian Buku)
+        if ($oldStatus === 'Dipinjam' && $targetStatus === 'Tersedia') {
+            $activeLoan = PeminjamanBuku::where('id_eksemplar', $eksemplar->id_eksemplar)
+                ->whereNull('tanggal_kembali')
+                ->latest('id_peminjaman')
+                ->first();
+
+            if ($activeLoan) {
+                $peminjamanService = app(PeminjamanService::class);
+                $peminjamanService->prosesPengembalian(
+                    $activeLoan->id_peminjaman,
+                    'Buku dikembalikan melalui pembaruan status eksemplar di admin panel'
+                );
+
+                // Update metadata eksemplar jika diubah
+                $eksemplar->update([
+                    'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                    'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
+                    'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
+                ]);
+
+                return redirect()->route('admin.books.show', $book->id_buku)
+                    ->with('success', "Buku berhasil dikembalikan oleh {$activeLoan->pengguna->nama_lengkap}. Status eksemplar \"{$eksemplar->kode_inventaris}\" kembali Tersedia di rak.");
+            }
+        }
+
+        // Perubahan status umum selain meminjam baru
         $validated = $request->validate([
             'kode_inventaris' => ['required', 'string', 'max:50', 'unique:eksemplar_buku,kode_inventaris,'.$eksemplar->id_eksemplar.',id_eksemplar'],
             'nomor_panggil' => ['nullable', 'string', 'max:50'],
@@ -290,10 +402,19 @@ class BookController extends Controller
         $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->findOrFail($idEksemplar);
         $kode = $eksemplar->kode_inventaris;
 
-        $eksemplar->delete();
+        try {
+            DB::transaction(function () use ($eksemplar): void {
+                // Bersihkan riwayat peminjaman terkait eksemplar ini agar tidak melanggar foreign key restrict
+                PeminjamanBuku::where('id_eksemplar', $eksemplar->id_eksemplar)->delete();
+                $eksemplar->delete();
+            });
 
-        return redirect()->route('admin.books.show', $book->id_buku)
-            ->with('success', "Eksemplar \"{$kode}\" berhasil dihapus dari inventaris.");
+            return redirect()->route('admin.books.show', $book->id_buku)
+                ->with('success', "Eksemplar \"{$kode}\" berhasil dihapus dari inventaris.");
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.books.show', $book->id_buku)
+                ->with('error', "Gagal menghapus eksemplar \"{$kode}\": {$e->getMessage()}");
+        }
     }
 
     /**
@@ -328,21 +449,48 @@ class BookController extends Controller
     }
 
     /**
-     * Hapus koleksi buku dari database.
+     * Hapus koleksi buku dari database beserta seluruh eksemplar dan riwayat peminjamannya.
      */
     public function destroy(string $id): RedirectResponse
     {
-        $book = Buku::findOrFail($id);
+        $book = Buku::with('eksemplar')->findOrFail($id);
         $judul = $book->judul_buku;
 
-        // Lepas relasi pivot penulis dan subjek jika ada
-        BukuPenulis::where('id_buku', $book->id_buku)->delete();
-        $book->subjek()->detach();
-        $book->eksemplar()->delete();
+        try {
+            DB::transaction(function () use ($book): void {
+                $eksemplarIds = $book->eksemplar->pluck('id_eksemplar')->filter()->values()->all();
 
-        $book->delete();
+                // 1. Bersihkan seluruh transaksi/riwayat peminjaman terkait buku atau eksemplarnya
+                PeminjamanBuku::where('id_buku', $book->id_buku)
+                    ->when(! empty($eksemplarIds), function ($query) use ($eksemplarIds): void {
+                        $query->orWhereIn('id_eksemplar', $eksemplarIds);
+                    })
+                    ->delete();
 
-        return redirect()->route('admin.books.index')
-            ->with('success', "Buku \"{$judul}\" berhasil dihapus dari katalog.");
+                // 2. Hapus log kunjungan buku jika ada
+                $book->kunjungan()->delete();
+
+                // 3. Lepas relasi pivot penulis dan subjek
+                BukuPenulis::where('id_buku', $book->id_buku)->delete();
+                $book->subjek()->detach();
+
+                // 4. Hapus seluruh eksemplar fisik buku
+                $book->eksemplar()->delete();
+
+                // 5. Hapus file sampul jika diupload kustom lokal
+                if ($book->sampul_buku && str_starts_with($book->sampul_buku, 'images/buku/uploads/') && file_exists(public_path($book->sampul_buku))) {
+                    @unlink(public_path($book->sampul_buku));
+                }
+
+                // 6. Hapus katalog buku
+                $book->delete();
+            });
+
+            return redirect()->route('admin.books.index')
+                ->with('success', "Buku \"{$judul}\" beserta seluruh eksemplar dan riwayat sirkulasinya berhasil dihapus.");
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.books.index')
+                ->with('error', "Gagal menghapus buku \"{$judul}\": {$e->getMessage()}");
+        }
     }
 }

@@ -235,8 +235,11 @@
             if (urlInput) {
                 urlInput.addEventListener('input', function(e) {
                     const url = e.target.value.trim();
-                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                        previewImg.src = url;
+                    if (url) {
+                        const finalUrl = (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'))
+                            ? url
+                            : '{{ asset("") }}' + url.replace(/^\/+/, '');
+                        previewImg.src = finalUrl;
                         previewImg.classList.remove('hidden');
                         placeholderImg.classList.add('hidden');
                         if (hapusCheckbox) hapusCheckbox.checked = false;
