@@ -34,7 +34,7 @@
                     </span>
                     <div>
                         <h2 class="text-sm font-bold text-ink sm:text-base">Pilih Mahasiswa &amp; Validasi Eligibilitas</h2>
-                        <p class="text-[11px] text-muted">Mahasiswa yang masih memiliki pinjaman buku belum dikembalikan tidak dapat meminjam buku baru.</p>
+                        <p class="text-[11px] text-muted">Setiap member aktif dapat meminjam maksimal 3 buku sekaligus.</p>
                     </div>
                 </div>
 
@@ -53,7 +53,8 @@
                             <option value="">-- Cari atau Pilih Mahasiswa / Pemustaka --</option>
                             @foreach ($users as $user)
                                 @php
-                                    $hasUnreturned = $user->memilikiTanggunganPinjaman();
+                                    $activeLoanCount = $user->jumlahPinjamanAktif();
+                                    $reachedMax = $user->mencapaiBatasPinjaman();
                                     $isMember = $user->isMember();
                                 @endphp
                                 <option
@@ -62,10 +63,11 @@
                                     data-nim="{{ $user->nim ?? $user->nomor_identitas ?? '-' }}"
                                     data-email="{{ $user->email }}"
                                     data-is-member="{{ $isMember ? '1' : '0' }}"
-                                    data-unreturned="{{ $hasUnreturned ? '1' : '0' }}"
+                                    data-active-count="{{ $activeLoanCount }}"
+                                    data-unreturned="{{ $reachedMax ? '1' : '0' }}"
                                     @selected(old('id_pengguna', $selectedUserId) == $user->id_pengguna)
                                 >
-                                    {{ $user->nama_lengkap }} ({{ $user->nim ? 'NIM: '.$user->nim : $user->email }}) [{{ $user->peran?->nama_peran ?? 'Pemustaka' }}] {{ ! $isMember ? '⛔ Bukan Member' : ($hasUnreturned ? '⚠️ Ada Tanggungan Pinjaman' : '✓ Member Aktif - Siap Pinjam') }}
+                                    {{ $user->nama_lengkap }} ({{ $user->nim ? 'NIM: '.$user->nim : $user->email }}) [{{ $user->peran?->nama_peran ?? 'Pemustaka' }}] {{ ! $isMember ? '⛔ Bukan Member' : ($reachedMax ? "⚠️ Kuota Penuh ({$activeLoanCount}/3 Buku)" : "✓ Member Aktif ({$activeLoanCount}/3 Buku) - Siap Pinjam") }}
                                 </option>
                             @endforeach
                         </select>
@@ -94,8 +96,8 @@
                                 <i class="fa-solid fa-circle-check text-base text-emerald-600" aria-hidden="true"></i>
                                 <span>Member Memenuhi Syarat (Eligible)</span>
                             </div>
-                            <p class="text-emerald-700">
-                                Pengguna terdaftar sebagai member aktif dan tidak ada tanggungan buku yang belum dikembalikan. Berhak meminjam koleksi buku perpustakaan.
+                            <p id="eligibility-passed-desc" class="text-emerald-700">
+                                Pengguna terdaftar sebagai member aktif dan masih memiliki kuota peminjaman tersedia (maksimal 3 buku).
                             </p>
                         </div>
                     </div>
@@ -288,18 +290,23 @@
                     box.className = 'rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs transition-all';
                     blocked.classList.add('hidden');
                     passed.classList.remove('hidden');
+                    const passedDesc = document.getElementById('eligibility-passed-desc');
+                    if (passedDesc && data.data.message) {
+                        passedDesc.textContent = data.data.message;
+                    }
                     btnSubmit.disabled = false;
                     btnSubmit.title = '';
                 } else {
-                    // Blocked (Bukan member ATAU Ada buku belum dikembalikan)
+                    // Blocked (Bukan member ATAU Kuota 3 buku penuh)
                     box.className = 'rounded-xl border border-rose-300 bg-rose-50/90 p-4 text-xs transition-all';
                     passed.classList.add('hidden');
                     blocked.classList.remove('hidden');
                     btnSubmit.disabled = true;
-                    btnSubmit.title = data.message || 'User tidak memenuhi syarat untuk meminjam buku';
+                    const errMessage = (data.data && data.data.message) ? data.data.message : (data.message || 'User tidak memenuhi syarat untuk meminjam buku');
+                    btnSubmit.title = errMessage;
 
                     const errDesc = document.getElementById('eligibility-error-desc');
-                    errDesc.textContent = data.message || 'Pengguna belum memenuhi syarat untuk meminjam buku.';
+                    errDesc.textContent = errMessage;
 
                     if (data.data && Array.isArray(data.data.active_loans) && data.data.active_loans.length > 0) {
                         loansList.innerHTML = '<strong>Daftar Buku Belum Dikembalikan:</strong><ul class="mt-1 list-disc list-inside space-y-0.5">' +

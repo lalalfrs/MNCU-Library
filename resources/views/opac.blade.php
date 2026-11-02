@@ -69,7 +69,7 @@
                 @endif
             </div>
 
-            {{-- Judul Tengah Hero & Kartu Form Pencarian --}}
+            {{-- Judul Tengah Hero & Kartu Form Pencarian Simplified (Gaya Visual Sebelumnya) --}}
             <div class="mx-auto max-w-5xl">
                 <div class="text-center mb-6 sm:mb-8">
                     <h1 id="judul-utama-opac" class="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl flex items-center justify-center gap-3 flex-wrap">
@@ -81,11 +81,11 @@
                     </p>
                 </div>
 
-                {{-- Kartu Pencarian Utama & Filter Cepat (Glass Card) --}}
-                <div class="rounded-2xl bg-white/98 p-4 sm:p-6 lg:p-7 text-ink shadow-2xl border border-white/30 backdrop-blur-md">
+                {{-- Kartu Pencarian Utama Simplified (Glass Card Gaya Sebelumnya) --}}
+                <div class="rounded-2xl bg-white/98 p-4 sm:p-6 text-ink shadow-2xl border border-white/30 backdrop-blur-md">
                     <h2 id="judul-filter-opac" class="sr-only">Form Pencarian dan Filter Katalog OPAC</h2>
 
-                    <form action="{{ route('opac') }}" method="GET" class="flex flex-col gap-3.5" id="main-opac-form">
+                    <form action="{{ route('opac') }}" method="GET" class="flex flex-col gap-3" id="main-opac-form">
                         <input type="hidden" name="fitur" value="{{ $fitur }}">
                         @if (! empty($subjekId))
                             <input type="hidden" name="subjek_id" value="{{ $subjekId }}">
@@ -95,16 +95,13 @@
                         @endif
 
                         {{-- Input tersembunyi untuk sinkronisasi dengan Modal Filter Pencarian Lanjutan --}}
-                        <input type="hidden" name="filter_isbn" id="hidden-filter-isbn" value="{{ $filterIsbn }}">
                         <input type="hidden" name="filter_ddc" id="hidden-filter-ddc" value="{{ $filterDdc }}">
                         <input type="hidden" name="filter_nomor_induk" id="hidden-filter-nomor-induk" value="{{ $filterNomorInduk }}">
-                        <input type="hidden" name="filter_lokasi" id="hidden-filter-lokasi" value="{{ $filterLokasi }}">
-                        <input type="hidden" name="filter_jenis" id="hidden-filter-jenis" value="{{ $filterJenis }}">
                         <input type="hidden" name="filter_prodi" id="hidden-filter-prodi" value="{{ $filterProdi }}">
                         <input type="hidden" name="status_filter" id="hidden-filter-status" value="{{ $statusFilter }}">
                         <input type="hidden" name="sort" id="hidden-opac-sort" value="{{ $sort }}">
 
-                        {{-- Baris 1: Kriteria Pencarian (3 Kolom), Kata Kunci (6 Kolom), Tombol Cari & Filter Lanjutan (3 Kolom) --}}
+                        {{-- Baris Utama Pencarian: Kriteria (3 Kolom), Kata Kunci (6 Kolom), Tombol Cari & Filter Spesifik (3 Kolom) --}}
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
                             <div class="md:col-span-3">
                                 <label for="opac-kriteria" class="sr-only">Kriteria Pencarian</label>
@@ -164,10 +161,10 @@
 
                                 <button
                                     type="button"
-                                    onclick="openFilterModal()"
+                                    onclick="toggleAdvancedResult()"
                                     class="relative inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink hover:border-primary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary shrink-0"
-                                    title="Buka Box Filter Pencarian Lanjutan (ISBN, DDC, Rak, Prodi, Status)"
-                                    aria-label="Buka Filter Pencarian Lanjutan"
+                                    title="Buka Filter Pencarian Spesifik"
+                                    aria-label="Buka Filter Pencarian Spesifik"
                                 >
                                     <i class="fa-solid fa-sliders text-xs text-primary" aria-hidden="true"></i>
                                     <span class="hidden sm:inline">Filter</span>
@@ -180,58 +177,115 @@
                             </div>
                         </div>
 
-                        {{-- Baris 2: 4 Input Filter Cepat (Pengarang, Penerbit, Subjek, Tahun) Sesuai Layout Referensi OPAC --}}
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-4">
-                            <div>
-                                <label for="hero-filter-pengarang" class="sr-only">Filter Pengarang</label>
-                                <input
-                                    type="text"
-                                    id="hero-filter-pengarang"
-                                    name="filter_pengarang"
-                                    value="{{ $filterPengarang }}"
-                                    placeholder="Filter Pengarang..."
-                                    class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        {{-- Panel Expandable: Pencarian Spesifik (Dengan Style Input Sebelumnya) --}}
+                        <div id="advanced-search-result" class="hidden rounded-xl border border-line bg-subtle/40 p-4 text-left text-ink transition-all duration-200">
+                            <div class="flex items-center justify-between border-b border-line pb-2.5 mb-3">
+                                <span class="text-xs font-bold text-ink flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sliders text-primary text-xs" aria-hidden="true"></i>
+                                    <span>Pencarian Spesifik</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onclick="openFilterModal()"
+                                    class="text-[11px] font-semibold text-primary hover:underline inline-flex items-center gap-1"
                                 >
+                                    <span>Buka Box Filter Lengkap</span>
+                                    <i class="fa-solid fa-up-right-from-square text-[10px]" aria-hidden="true"></i>
+                                </button>
                             </div>
-                            <div>
-                                <label for="hero-filter-penerbit" class="sr-only">Filter Penerbit</label>
-                                <input
-                                    type="text"
-                                    id="hero-filter-penerbit"
-                                    name="filter_penerbit"
-                                    value="{{ $filterPenerbit ?? '' }}"
-                                    placeholder="Filter Penerbit..."
-                                    class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+
+                            <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+                                <div>
+                                    <label for="hero-filter-pengarang" class="mb-1 block text-[11px] font-semibold text-ink-secondary">Pengarang</label>
+                                    <input
+                                        type="text"
+                                        id="hero-filter-pengarang"
+                                        name="filter_pengarang"
+                                        value="{{ $filterPengarang }}"
+                                        placeholder="Filter Pengarang..."
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="hero-filter-penerbit" class="mb-1 block text-[11px] font-semibold text-ink-secondary">Penerbit</label>
+                                    <input
+                                        type="text"
+                                        id="hero-filter-penerbit"
+                                        name="filter_penerbit"
+                                        value="{{ $filterPenerbit ?? '' }}"
+                                        placeholder="Filter Penerbit..."
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="hero-filter-subjek" class="mb-1 block text-[11px] font-semibold text-ink-secondary">Subjek</label>
+                                    <input
+                                        type="text"
+                                        id="hero-filter-subjek"
+                                        name="filter_subjek"
+                                        value="{{ $filterSubjek ?? '' }}"
+                                        placeholder="Filter Subjek..."
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="hidden-filter-isbn" class="mb-1 block text-[11px] font-semibold text-ink-secondary">ISBN / ISSN</label>
+                                    <input
+                                        type="text"
+                                        id="hidden-filter-isbn"
+                                        name="filter_isbn"
+                                        value="{{ $filterIsbn }}"
+                                        placeholder="Nomor ISBN..."
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="hidden-filter-lokasi" class="mb-1 block text-[11px] font-semibold text-ink-secondary">Lokasi Rak</label>
+                                    <select
+                                        id="hidden-filter-lokasi"
+                                        name="filter_lokasi"
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                    >
+                                        <option value="Semua">Semua Lokasi</option>
+                                        @foreach ($lokasiList as $lok)
+                                            <option value="{{ $lok }}" @selected($filterLokasi == $lok)>{{ $lok }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="hidden-filter-jenis" class="mb-1 block text-[11px] font-semibold text-ink-secondary">Jenis Koleksi</label>
+                                    <select
+                                        id="hidden-filter-jenis"
+                                        name="filter_jenis"
+                                        class="h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                    >
+                                        <option value="Semua">Semua Jenis Koleksi</option>
+                                        @foreach ($types as $tp)
+                                            <option value="{{ $tp }}" @selected($filterJenis == $tp)>{{ $tp }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="hero-filter-tahun" name="filter_tahun" value="{{ ($filterTahun !== 'Semua') ? $filterTahun : '' }}">
+                            <datalist id="opac-tahun-datalist">
+                                @foreach ($tahunList as $thn)
+                                    <option value="{{ $thn }}"></option>
+                                @endforeach
+                            </datalist>
+                        </div>
+
+                        {{-- Baris Pintasan Kata Kunci Populer (Quick Search) --}}
+                        <div class="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
+                            <span class="text-muted font-medium text-[11px] mr-1">Pencarian Cepat:</span>
+                            @foreach (['Algoritma', 'Manajemen', 'Desain', 'Komunikasi', 'Basis Data', 'Akuntansi'] as $quickKw)
+                                <a
+                                    href="{{ route('opac', ['q' => $quickKw]) }}"
+                                    class="rounded-lg border border-line bg-subtle/70 px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                                 >
-                            </div>
-                            <div>
-                                <label for="hero-filter-subjek" class="sr-only">Filter Subjek</label>
-                                <input
-                                    type="text"
-                                    id="hero-filter-subjek"
-                                    name="filter_subjek"
-                                    value="{{ $filterSubjek ?? '' }}"
-                                    placeholder="Filter Subjek..."
-                                    class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                >
-                            </div>
-                            <div>
-                                <label for="hero-filter-tahun" class="sr-only">Filter Tahun Terbit</label>
-                                <input
-                                    type="text"
-                                    id="hero-filter-tahun"
-                                    name="filter_tahun"
-                                    list="opac-tahun-datalist"
-                                    value="{{ ($filterTahun !== 'Semua') ? $filterTahun : '' }}"
-                                    placeholder="Filter Tahun..."
-                                    class="h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                >
-                                <datalist id="opac-tahun-datalist">
-                                    @foreach ($tahunList as $thn)
-                                        <option value="{{ $thn }}"></option>
-                                    @endforeach
-                                </datalist>
-                            </div>
+                                    {{ $quickKw }}
+                                </a>
+                            @endforeach
                         </div>
 
                         {{-- Tag Filter Aktif: Memudahkan pengguna melihat dan menghapus filter yang sedang berjalan --}}
@@ -302,17 +356,31 @@
                                     </span>
                                 @endif
 
-                                @if ($filterLokasi !== 'Semua' && ! empty($filterLokasi))
+                                @if (! empty($filterTahunDari) || ! empty($filterTahunSampai))
                                     <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
-                                        Lokasi: {{ $filterLokasi }}
+                                        Rentang Tahun: {{ $filterTahunDari ?: '...' }} - {{ $filterTahunSampai ?: '...' }}
+                                        <a href="{{ route('opac', array_merge(request()->except(['filter_tahun_dari', 'filter_tahun_sampai']), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500" aria-label="Hapus rentang tahun"><i class="fa-solid fa-xmark"></i></a>
+                                    </span>
+                                @endif
+
+                                @if (! empty($filterLokasiList))
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                        Lokasi: {{ implode(', ', $filterLokasiList) }}
                                         <a href="{{ route('opac', array_merge(request()->except('filter_lokasi'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500" aria-label="Hapus filter lokasi"><i class="fa-solid fa-xmark"></i></a>
                                     </span>
                                 @endif
 
-                                @if ($filterJenis !== 'Semua' && ! empty($filterJenis))
+                                @if (! empty($filterJenisList))
                                     <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
-                                        Jenis: {{ $filterJenis }}
+                                        Jenis: {{ implode(', ', $filterJenisList) }}
                                         <a href="{{ route('opac', array_merge(request()->except('filter_jenis'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500" aria-label="Hapus filter jenis"><i class="fa-solid fa-xmark"></i></a>
+                                    </span>
+                                @endif
+
+                                @if (! empty($filterKategoriList))
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-ink">
+                                        Kategori: {{ implode(', ', $filterKategoriList) }}
+                                        <a href="{{ route('opac', array_merge(request()->except('filter_kategori'), ['fitur' => $fitur])) }}" class="ml-1 text-muted hover:text-red-500" aria-label="Hapus filter kategori"><i class="fa-solid fa-xmark"></i></a>
                                     </span>
                                 @endif
 
@@ -492,12 +560,12 @@
             </div>
         @endif
 
-        {{-- Tata Letak Utama 2 Kolom: Sidebar Statistik & Facet Kiri (3 Kolom) + Daftar Katalog Kanan (9 Kolom) --}}
+        {{-- Tata Letak Utama 2 Kolom: Sidebar Statistik & Filter Kiri (3 Kolom) + Daftar Katalog Kanan (9 Kolom) --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 items-start">
-            {{-- Kolom Kiri (Sidebar Section): Statistik Koleksi, Penerbit Teratas, Pengarang Teratas, Subjek Populer, Kota Terbit --}}
-            <aside aria-label="Statistik dan Kategori Katalog OPAC" class="lg:col-span-3 order-2 lg:order-1">
+            {{-- Kolom Kiri (Sidebar Section dengan Style Kartu Sebelumnya: Header Biru Tua Gradasi MNCU) --}}
+            <aside aria-label="Statistik dan Filter Katalog OPAC" class="lg:col-span-3 order-2 lg:order-1">
                 <div class="lg:sticky lg:top-24 flex flex-col gap-5">
-                    {{-- 1. Statistik Koleksi --}}
+                    {{-- 1. Statistik Koleksi (Style Sebelumnya) --}}
                     <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
                         <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
                             <i class="fa-solid fa-chart-pie text-sm" aria-hidden="true"></i>
@@ -526,115 +594,290 @@
                         </div>
                     </div>
 
-                    {{-- 2. Penerbit Teratas --}}
-                    @if (! empty($topPublishers))
-                        <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                            <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
-                                <i class="fa-solid fa-building text-sm" aria-hidden="true"></i>
-                                <h3 class="text-sm sm:text-base font-semibold">Penerbit Teratas</h3>
+                    {{-- 2. Filter Pencarian / Penyaringan Koleksi (Isi Filter Baru dengan Style Kartu Sebelumnya) --}}
+                    <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+                        <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-sliders text-sm" aria-hidden="true"></i>
+                                <h3 class="text-sm sm:text-base font-semibold">Filter Pencarian</h3>
                             </div>
-                            <div class="px-4 py-2 divide-y divide-dashed divide-line">
-                                @foreach ($topPublishers as $pubName => $pubCount)
-                                    <div class="flex items-center justify-between gap-2 py-2.5">
-                                        <a
-                                            href="{{ route('opac', ['filter_penerbit' => $pubName]) }}"
-                                            class="truncate text-xs sm:text-sm text-ink-secondary hover:text-primary hover:font-medium transition-colors"
-                                            title="Filter koleksi penerbit {{ $pubName }}"
-                                        >
-                                            {{ $pubName }}
-                                        </a>
-                                        <span class="shrink-0 rounded-full bg-subtle border border-line px-2.5 py-0.5 text-xs font-semibold text-ink-secondary">
-                                            {{ $pubCount }}
-                                        </span>
-                                    </div>
-                                @endforeach
-                            </div>
+                            @if ($activeFilterCount > 0 || ! empty($query))
+                                <a
+                                    href="{{ route('opac', ['fitur' => $fitur]) }}"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-white/25 transition-colors"
+                                    title="Reset semua penyaringan"
+                                >
+                                    <i class="fa-solid fa-rotate-left text-[10px]" aria-hidden="true"></i>
+                                    <span>Reset</span>
+                                </a>
+                            @endif
                         </div>
-                    @endif
 
-                    {{-- 3. Pengarang Teratas --}}
-                    @if (! empty($topAuthors))
-                        <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                            <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
-                                <i class="fa-solid fa-user-pen text-sm" aria-hidden="true"></i>
-                                <h3 class="text-sm sm:text-base font-semibold">Pengarang Teratas</h3>
-                            </div>
-                            <div class="px-4 py-2 divide-y divide-dashed divide-line">
-                                @foreach ($topAuthors as $authorName => $authorCount)
-                                    <div class="flex items-center justify-between gap-2 py-2.5">
-                                        <a
-                                            href="{{ route('opac', ['filter_pengarang' => $authorName]) }}"
-                                            class="truncate text-xs sm:text-sm text-ink-secondary hover:text-primary hover:font-medium transition-colors"
-                                            title="Filter koleksi pengarang {{ $authorName }}"
-                                        >
-                                            {{ $authorName }}
-                                        </a>
-                                        <span class="shrink-0 rounded-full bg-subtle border border-line px-2.5 py-0.5 text-xs font-semibold text-ink-secondary">
-                                            {{ $authorCount }}
-                                        </span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
+                        <form action="{{ route('opac') }}" method="GET" id="sidebar-refine-form" class="p-4 divide-y divide-dashed divide-line">
+                            <input type="hidden" name="fitur" value="{{ $fitur }}">
+                            <input type="hidden" name="q" value="{{ $query }}">
+                            <input type="hidden" name="kriteria" value="{{ $kriteria }}">
+                            <input type="hidden" name="sort" value="{{ $sort }}">
+                            @if (! empty($subjekId))
+                                <input type="hidden" name="subjek_id" value="{{ $subjekId }}">
+                            @endif
 
-                    {{-- 4. Subjek Populer --}}
-                    @if (! empty($topSubjects))
-                        <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                            <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
-                                <i class="fa-solid fa-tags text-sm" aria-hidden="true"></i>
-                                <h3 class="text-sm sm:text-base font-semibold">Subjek Populer</h3>
-                            </div>
-                            <div class="px-4 py-2 divide-y divide-dashed divide-line">
-                                @foreach ($topSubjects as $subjectName => $subjectCount)
-                                    <div class="flex items-center justify-between gap-2 py-2.5">
-                                        <a
-                                            href="{{ route('opac', ['filter_subjek' => $subjectName]) }}"
-                                            class="truncate text-xs sm:text-sm text-ink-secondary hover:text-primary hover:font-medium transition-colors"
-                                            title="Filter koleksi subjek {{ $subjectName }}"
-                                        >
-                                            {{ $subjectName }}
-                                        </a>
-                                        <span class="shrink-0 rounded-full bg-subtle border border-line px-2.5 py-0.5 text-xs font-semibold text-ink-secondary">
-                                            {{ $subjectCount }}
-                                        </span>
+                            {{-- 1. Tahun Penerbitan --}}
+                            <div class="py-3 first:pt-0">
+                                <button
+                                    type="button"
+                                    onclick="toggleSidebarCollapse('collapse-opac-year', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Tahun Penerbitan</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="collapse-opac-year" class="mt-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex-1">
+                                            <label for="sidebar-tahun-dari" class="sr-only">Dari Tahun</label>
+                                            <input
+                                                type="number"
+                                                id="sidebar-tahun-dari"
+                                                name="filter_tahun_dari"
+                                                value="{{ $filterTahunDari ?? '' }}"
+                                                placeholder="Dari ({{ ! empty($tahunList) ? min($tahunList) : 2018 }})"
+                                                class="h-9 w-full rounded-xl border border-line bg-subtle/60 px-2.5 text-center text-xs text-ink focus:border-primary focus:bg-white focus:outline-none"
+                                            >
+                                        </div>
+                                        <span class="text-muted font-semibold">-</span>
+                                        <div class="flex-1">
+                                            <label for="sidebar-tahun-sampai" class="sr-only">Sampai Tahun</label>
+                                            <input
+                                                type="number"
+                                                id="sidebar-tahun-sampai"
+                                                name="filter_tahun_sampai"
+                                                value="{{ $filterTahunSampai ?? '' }}"
+                                                placeholder="Sampai ({{ ! empty($tahunList) ? max($tahunList) : 2026 }})"
+                                                class="h-9 w-full rounded-xl border border-line bg-subtle/60 px-2.5 text-center text-xs text-ink focus:border-primary focus:bg-white focus:outline-none"
+                                            >
+                                        </div>
                                     </div>
-                                @endforeach
+                                </div>
                             </div>
-                        </div>
-                    @endif
 
-                    {{-- 5. Kota Terbit --}}
-                    @if (! empty($topPublishCities))
-                        <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-                            <div class="flex items-center gap-2.5 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
-                                <i class="fa-solid fa-location-dot text-sm" aria-hidden="true"></i>
-                                <h3 class="text-sm sm:text-base font-semibold">Kota Terbit</h3>
-                            </div>
-                            <div class="px-4 py-2 divide-y divide-dashed divide-line">
-                                @foreach ($topPublishCities as $cityName => $cityCount)
-                                    <div class="flex items-center justify-between gap-2 py-2.5">
-                                        <a
-                                            href="{{ route('opac', ['filter_kota' => $cityName]) }}"
-                                            class="truncate text-xs sm:text-sm text-ink-secondary hover:text-primary hover:font-medium transition-colors"
-                                            title="Filter koleksi kota terbit {{ $cityName }}"
+                            {{-- 2. Ketersediaan --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleSidebarCollapse('collapse-opac-availability', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Ketersediaan</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="collapse-opac-availability" class="mt-2.5 space-y-2">
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name="status_filter"
+                                            value="Semua"
+                                            @checked($statusFilter === 'Semua' || empty($statusFilter))
+                                            class="size-4 border-line text-primary focus:ring-primary/20"
                                         >
-                                            {{ $cityName }}
-                                        </a>
-                                        <span class="shrink-0 rounded-full bg-subtle border border-line px-2.5 py-0.5 text-xs font-semibold text-ink-secondary">
-                                            {{ $cityCount }}
-                                        </span>
-                                    </div>
-                                @endforeach
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Semua Koleksi</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name="status_filter"
+                                            value="Tersedia"
+                                            @checked($statusFilter === 'Tersedia')
+                                            class="size-4 border-line text-primary focus:ring-primary/20"
+                                        >
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Tersedia di Rak ({{ $totalEksemplarTersedia }})</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name="status_filter"
+                                            value="Dipinjam"
+                                            @checked($statusFilter === 'Dipinjam')
+                                            class="size-4 border-line text-primary focus:ring-primary/20"
+                                        >
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Sedang Dipinjam</span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    @endif
+
+                            {{-- 3. Jenis Koleksi / Format Fisik --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleSidebarCollapse('collapse-opac-gmd', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Jenis Koleksi</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="collapse-opac-gmd" class="mt-2.5 space-y-2">
+                                    @foreach ($types as $idx => $tp)
+                                        <label class="flex items-center gap-2.5 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                name="filter_jenis[]"
+                                                value="{{ $tp }}"
+                                                @checked(in_array($tp, $filterJenisList ?? [], true))
+                                                class="size-4 rounded border-line text-primary focus:ring-primary/20"
+                                            >
+                                            <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $tp }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- 4. Subjek Keilmuan --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleSidebarCollapse('collapse-opac-subjects', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Subjek Keilmuan</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="collapse-opac-subjects" class="mt-2.5 space-y-2">
+                                    @php
+                                        $sidebarSubjects = $subjekList->pluck('nama_subjek')->all();
+                                        if (empty($sidebarSubjects)) {
+                                            $sidebarSubjects = array_keys($topSubjects ?? []);
+                                        }
+                                        $primarySubjects = array_slice($sidebarSubjects, 0, 5);
+                                        $extraSubjects = array_slice($sidebarSubjects, 5);
+                                    @endphp
+                                    @foreach ($primarySubjects as $subjName)
+                                        <label class="flex items-center gap-2.5 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                name="filter_kategori[]"
+                                                value="{{ $subjName }}"
+                                                @checked(in_array($subjName, $filterKategoriList ?? [], true))
+                                                class="size-4 rounded border-line text-primary focus:ring-primary/20"
+                                            >
+                                            <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $subjName }}</span>
+                                        </label>
+                                    @endforeach
+
+                                    @if (count($extraSubjects) > 0)
+                                        <div id="more-opac-subjects" class="hidden space-y-2 pt-1">
+                                            @foreach ($extraSubjects as $subjName)
+                                                <label class="flex items-center gap-2.5 cursor-pointer group">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="filter_kategori[]"
+                                                        value="{{ $subjName }}"
+                                                        @checked(in_array($subjName, $filterKategoriList ?? [], true))
+                                                        class="size-4 rounded border-line text-primary focus:ring-primary/20"
+                                                    >
+                                                    <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $subjName }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onclick="toggleMoreItems('more-opac-subjects', this)"
+                                            class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                                        >
+                                            <span>Lihat Lebih Banyak</span>
+                                            <i class="fa-solid fa-plus text-[9px]"></i>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- 5. Lokasi Rak Koleksi --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleSidebarCollapse('collapse-opac-lokasi', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="false"
+                                >
+                                    <span>Lokasi Rak</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 {{ ! empty($filterLokasiList) ? 'rotate-180' : '' }}" data-chevron></i>
+                                </button>
+                                <div id="collapse-opac-lokasi" class="mt-2.5 space-y-2 {{ empty($filterLokasiList) ? 'hidden' : '' }}">
+                                    @foreach ($lokasiList as $lok)
+                                        <label class="flex items-center gap-2.5 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                name="filter_lokasi[]"
+                                                value="{{ $lok }}"
+                                                @checked(in_array($lok, $filterLokasiList ?? [], true))
+                                                class="size-4 rounded border-line text-primary focus:ring-primary/20"
+                                            >
+                                            <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $lok }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- 6. Fakultas / Program Studi --}}
+                            @if ($prodiList->isNotEmpty())
+                                <div class="py-3">
+                                    <button
+                                        type="button"
+                                        onclick="toggleSidebarCollapse('collapse-opac-prodi', this)"
+                                        class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                        aria-expanded="false"
+                                    >
+                                        <span>Program Studi</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 {{ ($filterProdi !== 'Semua' && ! empty($filterProdi)) ? 'rotate-180' : '' }}" data-chevron></i>
+                                    </button>
+                                    <div id="collapse-opac-prodi" class="mt-2.5 space-y-2 {{ ($filterProdi === 'Semua' || empty($filterProdi)) ? 'hidden' : '' }}">
+                                        <label class="flex items-center gap-2.5 cursor-pointer group">
+                                            <input
+                                                type="radio"
+                                                name="filter_prodi"
+                                                value="Semua"
+                                                @checked($filterProdi === 'Semua' || empty($filterProdi))
+                                                class="size-4 border-line text-primary focus:ring-primary/20"
+                                            >
+                                            <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Semua Program Studi</span>
+                                        </label>
+                                        @foreach ($prodiList as $prd)
+                                            <label class="flex items-center gap-2.5 cursor-pointer group">
+                                                <input
+                                                    type="radio"
+                                                    name="filter_prodi"
+                                                    value="{{ $prd->nama_prodi }}"
+                                                    @checked($filterProdi === $prd->nama_prodi)
+                                                    class="size-4 border-line text-primary focus:ring-primary/20"
+                                                >
+                                                <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $prd->nama_prodi }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Tombol Terapkan Filter (Style Sebelumnya) --}}
+                            <div class="pt-3.5">
+                                <button
+                                    type="submit"
+                                    class="btn-press btn-sheen flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                    <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
+                                    <span>Terapkan Filter</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </aside>
 
-            {{-- Kolom Kanan (Catalog Section): Header Urutan & Daftar Kartu Buku 2 Kolom Horizontal --}}
+            {{-- Kolom Kanan (Catalog Section): Header Urutan & Daftar Kartu Buku 2 Kolom Horizontal (Style Sebelumnya) --}}
             <section aria-labelledby="daftar-koleksi-opac" class="lg:col-span-9 order-1 lg:order-2 min-w-0">
-                {{-- Header Section Katalog, Pilihan Urutan & Switcher Tampilan --}}
+                {{-- Header Section Katalog, Pilihan Urutan & Switcher Tampilan (Style Sebelumnya) --}}
                 <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-3.5">
                     <div>
                         <h2 id="daftar-koleksi-opac" class="text-lg sm:text-xl font-bold text-ink flex items-center gap-2.5">
@@ -655,7 +898,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
-                        {{-- Dropdown Sort By --}}
+                        {{-- Dropdown Sort By (Style Sebelumnya) --}}
                         <div class="relative">
                             <label for="opac-sort" class="sr-only">Urutkan Berdasarkan</label>
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted">
@@ -675,7 +918,7 @@
                             </select>
                         </div>
 
-                        {{-- Switcher Tampilan: Grid (2 Kolom) vs Baris (1 Kolom) --}}
+                        {{-- Switcher Tampilan: Grid (2 Kolom) vs Baris (1 Kolom) (Style Sebelumnya) --}}
                         <div class="inline-flex items-center rounded-xl border border-line bg-white p-1 shadow-xs" role="group" aria-label="Pilihan Tata Letak Katalog">
                             <button
                                 type="button"
@@ -1545,7 +1788,7 @@
                         <div class="min-w-0 flex-1">
                             <h4 class="text-sm font-bold text-rose-900">User Tidak Bisa Meminjam Buku!</h4>
                             <p id="borrow-blocked-message" class="mt-1 text-xs text-rose-800 leading-relaxed font-medium">
-                                Anda masih memiliki buku pinjaman yang belum dikembalikan. Sesuai alur sirkulasi perpustakaan, Anda harus mengembalikan buku yang sedang dipinjam terlebih dahulu sebelum dapat meminjam koleksi baru.
+                                Anda telah mencapai batas maksimal peminjaman (3 buku). Silakan kembalikan salah satu buku yang sedang dipinjam terlebih dahulu sebelum meminjam koleksi baru.
                             </p>
                         </div>
                     </div>
@@ -1586,7 +1829,7 @@
                         <i class="fa-solid fa-circle-check text-emerald-600 text-sm shrink-0 mt-0.5"></i>
                         <div class="min-w-0">
                             <span class="font-bold text-emerald-900">Eligibilitas Terverifikasi:</span>
-                            <span class="text-emerald-800">Anda tidak memiliki tanggungan buku pinjaman aktif dan memenuhi syarat untuk meminjam koleksi ini.</span>
+                            <span id="borrow-eligible-message" class="text-emerald-800">Anda memenuhi syarat untuk meminjam koleksi ini (kuota maksimal 3 buku).</span>
                         </div>
                     </div>
 
@@ -1954,8 +2197,41 @@
         }
 
         // =========================================================================
-        // 1. KONTROL BOX FILTER PENCARIAN (MODAL SEPERTI GAMBAR 2)
+        // 1. KONTROL PENCARIAN SPESIFIK, ACCORDION SIDEBAR & MODAL FILTER
         // =========================================================================
+        function toggleAdvancedResult() {
+            const panel = document.getElementById('advanced-search-result');
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                document.getElementById('hero-filter-pengarang')?.focus();
+            }
+        }
+
+        function toggleSidebarCollapse(targetId, btn) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const isHidden = target.classList.toggle('hidden');
+            if (btn) {
+                btn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+                const chevron = btn.querySelector('[data-chevron]');
+                if (chevron) {
+                    chevron.classList.toggle('rotate-180', !isHidden);
+                }
+            }
+        }
+
+        function toggleMoreItems(targetId, btn) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const isHidden = target.classList.toggle('hidden');
+            if (btn) {
+                btn.innerHTML = isHidden
+                    ? '<span>Lihat Lebih Banyak</span> <i class="fa-solid fa-plus text-[9px]"></i>'
+                    : '<span>Sembunyikan</span> <i class="fa-solid fa-minus text-[9px]"></i>';
+            }
+        }
+
         function openFilterModal() {
             ensureModalsInBody();
             const modal = document.getElementById('search-filter-modal');
@@ -2470,6 +2746,15 @@
 
                 const eligData = res.data || {};
                 if (eligData.eligible) {
+                    const eligMsgEl = document.getElementById('borrow-eligible-message');
+                    if (eligMsgEl) {
+                        const activeCount = typeof eligData.active_loans_count === 'number' ? eligData.active_loans_count : (eligData.active_loans ? eligData.active_loans.length : 0);
+                        const maxLoans = eligData.max_loans || 3;
+                        const remaining = Math.max(0, maxLoans - activeCount);
+                        eligMsgEl.textContent = activeCount > 0
+                            ? `Sedang meminjam ${activeCount} dari maksimal ${maxLoans} buku (sisa kuota: ${remaining} buku).`
+                            : `Anda memenuhi syarat untuk meminjam koleksi ini (kuota tersedia: ${maxLoans} dari ${maxLoans} buku).`;
+                    }
                     renderBorrowForm(item, eligData.user);
                 } else {
                     renderBorrowBlocked(eligData);

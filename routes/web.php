@@ -63,8 +63,9 @@ Route::match(['get', 'post'], '/chat', [LibraryController::class, 'chat'])->name
 Route::get('/opac', [LibraryController::class, 'opac'])->name('opac');
 Route::post('/opac/kunjungan/{buku}', [LibraryController::class, 'recordKunjungan'])->name('opac.kunjungan');
 
-// Layanan Peminjaman & Pengembalian Buku Mandiri via Website OPAC (Sanctum / Web Auth)
+// Layanan Peminjaman, Pengembalian & Inbox Notifikasi Buku Mandiri (Sanctum / Web Auth)
 Route::middleware(['auth'])->group(function (): void {
+    Route::get('/inbox', [LibraryController::class, 'inbox'])->name('inbox');
     Route::get('/opac/cek-eligibilitas', [LibraryController::class, 'cekEligibilitasPeminjaman'])->name('opac.cek-eligibilitas');
     Route::post('/opac/pinjam', [LibraryController::class, 'pinjamBuku'])->name('opac.pinjam');
     Route::post('/opac/kembalikan', [LibraryController::class, 'kembalikanBukuMandiri'])->name('opac.kembalikan');

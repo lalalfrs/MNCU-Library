@@ -75,20 +75,49 @@ class PeminjamanTest extends TestCase
     }
 
     /**
-     * Sesuai flowchart: Jika ada buku belum dikembalikan, user TIDAK BISA meminjam buku.
+     * Setiap user boleh meminjam maksimal 3 buku:
+     * Mahasiswa masih dapat meminjam buku ke-2 dan ke-3, namun ditolak pada buku ke-4.
      */
-    public function test_eligibility_validation_blocks_student_with_unreturned_books(): void
+    public function test_eligibility_validation_allows_up_to_three_books_and_blocks_fourth(): void
     {
-        // Coba pinjam untuk mahasiswa yang masih punya tanggungan (MNCU00004)
-        $response = $this->actingAs($this->admin)->post(route('admin.peminjaman.store'), [
+        // Fauzi (MNCU00004) baru memiliki 1 buku pinjaman aktif (PJ00001) dari seeder
+        $this->assertEquals(1, $this->studentHasLoan->jumlahPinjamanAktif());
+        $this->assertFalse($this->studentHasLoan->mencapaiBatasPinjaman());
+
+        $availableCopies = EksemplarBuku::where('status', 'Tersedia')->take(3)->get();
+        $this->assertCount(3, $availableCopies);
+
+        // Pinjam buku ke-2 -> Berhasil
+        $res2 = $this->actingAs($this->admin)->post(route('admin.peminjaman.store'), [
             'id_pengguna' => $this->studentHasLoan->id_pengguna,
-            'id_eksemplar' => $this->availableExemplar->id_eksemplar,
+            'id_eksemplar' => $availableCopies[0]->id_eksemplar,
+            'tanggal_pinjam' => now()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
+        ]);
+        $res2->assertRedirect(route('admin.peminjaman.index'));
+        $this->assertEquals(2, $this->studentHasLoan->fresh()->jumlahPinjamanAktif());
+
+        // Pinjam buku ke-3 -> Berhasil
+        $res3 = $this->actingAs($this->admin)->post(route('admin.peminjaman.store'), [
+            'id_pengguna' => $this->studentHasLoan->id_pengguna,
+            'id_eksemplar' => $availableCopies[1]->id_eksemplar,
+            'tanggal_pinjam' => now()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
+        ]);
+        $res3->assertRedirect(route('admin.peminjaman.index'));
+        $this->assertEquals(3, $this->studentHasLoan->fresh()->jumlahPinjamanAktif());
+        $this->assertTrue($this->studentHasLoan->fresh()->mencapaiBatasPinjaman());
+
+        // Coba pinjam buku ke-4 -> Ditolak karena sudah mencapai batas maksimal 3 buku
+        $res4 = $this->actingAs($this->admin)->post(route('admin.peminjaman.store'), [
+            'id_pengguna' => $this->studentHasLoan->id_pengguna,
+            'id_eksemplar' => $availableCopies[2]->id_eksemplar,
             'tanggal_pinjam' => now()->toDateString(),
             'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
         ]);
 
-        $response->assertSessionHasErrors('id_pengguna');
-        $this->assertTrue($this->studentHasLoan->memilikiTanggunganPinjaman());
+        $res4->assertSessionHasErrors('id_pengguna');
+        $this->assertEquals(3, $this->studentHasLoan->fresh()->jumlahPinjamanAktif());
     }
 
     /**
@@ -189,29 +218,62 @@ class PeminjamanTest extends TestCase
     }
 
     /**
-     * Sanctum API: Cek eligibilitas mahasiswa meminjam buku.
+     * Sanctum API: Cek eligibilitas mahasiswa meminjam buku (batas maksimal 3 buku).
      */
     public function test_sanctum_api_cek_eligibilitas_endpoint(): void
     {
         Sanctum::actingAs($this->admin);
 
-        // 1. Mahasiswa yang punya tanggungan (MNCU00004) -> 422 Non-eligible
+        // 1. Mahasiswa dengan 1 pinjaman aktif (MNCU00004) masih eligible (sisa kuota 2 dari 3 buku)
+        $responseOneLoan = $this->getJson("/api/peminjaman/cek-eligibilitas/{$this->studentHasLoan->id_pengguna}");
+        $responseOneLoan->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'eligible' => true,
+                    'active_loans_count' => 1,
+                    'max_loans' => 3,
+                    'remaining_quota' => 2,
+                ],
+            ]);
+
+        // Tambahkan 2 pinjaman aktif lagi sehingga mencapai 3 buku
+        $extraCopies = EksemplarBuku::where('status', 'Tersedia')->take(2)->get();
+        foreach ($extraCopies as $copy) {
+            PeminjamanBuku::create([
+                'id_pengguna' => $this->studentHasLoan->id_pengguna,
+                'id_buku' => $copy->id_buku,
+                'id_eksemplar' => $copy->id_eksemplar,
+                'tanggal_pinjam' => now()->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
+                'status' => 'Dipinjam',
+            ]);
+            $copy->update(['status' => 'Dipinjam']);
+        }
+
+        // 2. Mahasiswa yang sudah mencapai 3 pinjaman aktif -> 422 Non-eligible
         $responseBlocked = $this->getJson("/api/peminjaman/cek-eligibilitas/{$this->studentHasLoan->id_pengguna}");
         $responseBlocked->assertStatus(422)
             ->assertJson([
                 'success' => true,
                 'data' => [
                     'eligible' => false,
+                    'active_loans_count' => 3,
+                    'max_loans' => 3,
+                    'remaining_quota' => 0,
                 ],
             ]);
 
-        // 2. Mahasiswa tanpa tanggungan (MNCU00006) -> 200 Eligible
+        // 3. Mahasiswa tanpa tanggungan (MNCU00006) -> 200 Eligible
         $responsePassed = $this->getJson("/api/peminjaman/cek-eligibilitas/{$this->studentNoLoan->id_pengguna}");
         $responsePassed->assertStatus(200)
             ->assertJson([
                 'success' => true,
                 'data' => [
                     'eligible' => true,
+                    'active_loans_count' => 0,
+                    'max_loans' => 3,
+                    'remaining_quota' => 3,
                 ],
             ]);
     }

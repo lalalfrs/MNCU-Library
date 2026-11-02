@@ -290,28 +290,19 @@
                                         <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
                                             Kelola operasional dan sirkulasi Perpustakaan MNC University. Pantau statistik kunjungan harian pemustaka, perbarui katalog koleksi buku, publikasikan agenda acara, dan kelola rilis berita kampus.
                                         </p>
-                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('admin.books.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <span>Kelola Buku (OPAC)</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                                <a href="{{ route('admin.acara.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-calendar-plus text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>Kelola Acara &amp; Poster</span>
-                                                </a>
-                                                <a href="{{ route('admin.users.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-users-gear text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>Data Pemustaka</span>
-                                                </a>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                    <span>Isi Kehadiran Pengunjung</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                            </div>
+                                        <div class="mt-6 sm:mt-7 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                            <a href="{{ route('admin.books.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                <span>Kelola Buku (OPAC)</span>
+                                                <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{{ route('admin.acara.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-calendar-plus text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Kelola Acara &amp; Poster</span>
+                                            </a>
+                                            <a href="{{ route('admin.users.index') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-users-gear text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Data Pemustaka</span>
+                                            </a>
                                         </div>
                                     @elseif (Auth::user()->isDosen())
                                         <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
@@ -320,28 +311,19 @@
                                         <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
                                             Akses seluruh fasilitas referensi riset, jurnal internasional terakreditasi Scopus &amp; SINTA, portal publikasi ilmiah OJS MNC University, serta ajukan usulan pengadaan buku ajar silabus perkuliahan.
                                         </p>
-                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('ejournal') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <span>E-Journal Internasional</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                                <a href="{{ route('ojs') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-layer-group text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>Portal OJS Prodi</span>
-                                                </a>
-                                                <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-book-atlas text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>Repository Riset</span>
-                                                </a>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                    <span>Isi Kehadiran Pengunjung</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                            </div>
+                                        <div class="mt-6 sm:mt-7 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                            <a href="{{ route('ejournal') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                <span>E-Journal Internasional</span>
+                                                <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{{ route('ojs') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-layer-group text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Portal OJS Prodi</span>
+                                            </a>
+                                            <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-book-atlas text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Repository Riset</span>
+                                            </a>
                                         </div>
                                     @else
                                         <h1 id="judul-beranda" class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
@@ -350,28 +332,19 @@
                                         <p class="mt-3.5 text-xs sm:text-sm lg:text-[15px] leading-[1.7] text-slate-600">
                                             Temukan referensi tugas akhir, buku teks perkuliahan, dan e-book pembelajaran untuk mendukung studimu di MNC University. Jelajahi katalog buku fisik OPAC dan baca koleksi digital kapan saja.
                                         </p>
-                                        <div class="mt-6 sm:mt-7 flex flex-col items-start gap-2.5 sm:gap-3">
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('opac') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <span>Cari Buku di OPAC</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                                <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-graduation-cap text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>Repository Skripsi</span>
-                                                </a>
-                                                <a href="{{ route('ebook') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
-                                                    <i class="fa-solid fa-book-open-reader text-primary text-xs" aria-hidden="true"></i>
-                                                    <span>E-Book Reader</span>
-                                                </a>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                                                <a href="{{ route('kehadiran.index') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
-                                                    <i class="fa-solid fa-clipboard-user text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                    <span>Isi Kehadiran Pengunjung</span>
-                                                    <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
-                                                </a>
-                                            </div>
+                                        <div class="mt-6 sm:mt-7 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                                            <a href="{{ route('opac') }}" class="btn-press inline-flex items-center gap-2.5 rounded-full bg-[#0b2a5b] hover:bg-primary-dark px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-all">
+                                                <span>Cari Buku di OPAC</span>
+                                                <i class="fa-solid fa-arrow-right text-xs text-[#f59e0b]" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{{ route('repository') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-graduation-cap text-primary text-xs" aria-hidden="true"></i>
+                                                <span>Repository Skripsi</span>
+                                            </a>
+                                            <a href="{{ route('ebook') }}" class="btn-press inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-all hover:border-primary/40 hover:text-primary">
+                                                <i class="fa-solid fa-book-open-reader text-primary text-xs" aria-hidden="true"></i>
+                                                <span>E-Book Reader</span>
+                                            </a>
                                         </div>
                                     @endif
                                 @else

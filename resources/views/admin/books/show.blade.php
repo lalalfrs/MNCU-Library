@@ -691,7 +691,7 @@
                         <i class="fa-solid fa-circle-check text-emerald-600 text-sm mt-0.5 shrink-0"></i>
                         <div>
                             <span class="font-bold text-emerald-900 block">Mahasiswa Memenuhi Syarat (Eligible)</span>
-                            <span class="text-[11px] text-emerald-800">Tidak ada tanggungan buku pinjaman aktif. Peminjaman dapat dicatat ke sistem.</span>
+                            <span id="loan-eligibility-eligible-msg" class="text-[11px] text-emerald-800">Kuota peminjaman tersedia (maksimal 3 buku). Peminjaman dapat dicatat ke sistem.</span>
                         </div>
                     </div>
                 </div>
@@ -889,6 +889,10 @@
                 if (data.eligible) {
                     eligibleBox.classList.remove('hidden');
                     blockedBox.classList.add('hidden');
+                    const eligibleMsgEl = document.getElementById('loan-eligibility-eligible-msg');
+                    if (eligibleMsgEl && data.message) {
+                        eligibleMsgEl.textContent = data.message;
+                    }
                     submitBtn.disabled = false;
                 } else {
                     blockedBox.classList.remove('hidden');

@@ -11,16 +11,20 @@ use Illuminate\Validation\ValidationException;
 
 class PeminjamanService
 {
+    public const MAKSIMAL_PINJAMAN = 3;
+
     /**
-     * Validasi eligibilitas mahasiswa / pemustaka untuk meminjam buku sesuai flowchart:
-     * - Jika ada buku belum dikembalikan -> User tidak bisa meminjam buku.
-     * - Tidak ada buku yang belum dikembalikan -> Memenuhi syarat (Eligible).
+     * Validasi eligibilitas mahasiswa / pemustaka untuk meminjam buku:
+     * - Setiap member aktif dapat meminjam maksimal 3 buku sekaligus.
+     * - Jika jumlah buku belum dikembalikan sudah mencapai 3 buku -> User tidak bisa meminjam buku.
+     * - Jika jumlah buku belum dikembalikan kurang dari 3 buku -> Memenuhi syarat (Eligible).
      *
-     * @return array{eligible: bool, message: string, user: Pengguna, active_loans: array<int, mixed>}
+     * @return array{eligible: bool, message: string, user: Pengguna, active_loans: array<int, mixed>, active_loans_count: int, max_loans: int, remaining_quota: int}
      */
     public function cekEligibilitas(string $idPengguna): array
     {
         $user = Pengguna::with('peran')->findOrFail($idPengguna);
+        $maxLoans = self::MAKSIMAL_PINJAMAN;
 
         // 1. Validasi status keanggotaan member perpustakaan
         if (! $user->isMember()) {
@@ -29,6 +33,9 @@ class PeminjamanService
                 'message' => 'User tidak bisa meminjam buku: Pengguna belum terdaftar sebagai member resmi perpustakaan. Mahasiswa atau dosen harus menemui pustakawan atau super admin secara langsung untuk aktivasi keanggotaan.',
                 'user' => $user,
                 'active_loans' => [],
+                'active_loans_count' => 0,
+                'max_loans' => $maxLoans,
+                'remaining_quota' => 0,
             ];
         }
 
@@ -39,20 +46,33 @@ class PeminjamanService
             ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
             ->get();
 
-        if ($activeLoans->isNotEmpty()) {
+        $activeCount = $activeLoans->count();
+
+        if ($activeCount >= $maxLoans) {
             return [
                 'eligible' => false,
-                'message' => 'User tidak bisa meminjam buku: Member masih memiliki '.$activeLoans->count().' buku pinjaman yang belum dikembalikan.',
+                'message' => 'User tidak bisa meminjam buku: Member telah mencapai batas maksimal peminjaman ('.$maxLoans.' buku) yang belum dikembalikan.',
                 'user' => $user,
                 'active_loans' => $activeLoans->toArray(),
+                'active_loans_count' => $activeCount,
+                'max_loans' => $maxLoans,
+                'remaining_quota' => 0,
             ];
         }
 
+        $remainingQuota = $maxLoans - $activeCount;
+        $message = $activeCount > 0
+            ? "Member memenuhi syarat dan dapat meminjam buku (sedang meminjam {$activeCount} dari maksimal {$maxLoans} buku, sisa kuota {$remainingQuota} buku)."
+            : "Member memenuhi syarat dan dapat meminjam buku (maksimal {$maxLoans} buku).";
+
         return [
             'eligible' => true,
-            'message' => 'Member memenuhi syarat dan dapat meminjam buku.',
+            'message' => $message,
             'user' => $user,
-            'active_loans' => [],
+            'active_loans' => $activeLoans->toArray(),
+            'active_loans_count' => $activeCount,
+            'max_loans' => $maxLoans,
+            'remaining_quota' => $remainingQuota,
         ];
     }
 
@@ -125,7 +145,7 @@ class PeminjamanService
         ?string $tanggalJatuhTempo = null,
         ?string $catatan = null
     ): PeminjamanBuku {
-        // 1. Cek eligibilitas user
+        // 1. Cek eligibilitas user (member aktif & kuota pinjaman aktif < 3 buku)
         $eligibilitas = $this->cekEligibilitas($idPengguna);
         if (! $eligibilitas['eligible']) {
             throw ValidationException::withMessages([
@@ -133,7 +153,19 @@ class PeminjamanService
             ]);
         }
 
-        // 2. Cek apakah user sudah memiliki permohonan pending untuk buku ini
+        // 2. Cek apakah total pinjaman aktif + pengajuan pending sudah mencapai batas 3 buku
+        $totalAktifDanPending = PeminjamanBuku::where('id_pengguna', $idPengguna)
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi', 'Menunggu Persetujuan'])
+            ->count();
+
+        if ($totalAktifDanPending >= self::MAKSIMAL_PINJAMAN) {
+            throw ValidationException::withMessages([
+                'id_pengguna' => ['User tidak bisa meminjam buku: Anda telah mencapai batas maksimal '.self::MAKSIMAL_PINJAMAN.' buku (termasuk pinjaman aktif dan pengajuan yang sedang menunggu persetujuan).'],
+            ]);
+        }
+
+        // 3. Cek apakah user sudah memiliki permohonan pending untuk buku ini
         $existingPending = PeminjamanBuku::where('id_pengguna', $idPengguna)
             ->where('id_buku', $idBuku)
             ->where('status', 'Menunggu Persetujuan')
@@ -197,6 +229,18 @@ class PeminjamanService
         if ($peminjaman->status !== 'Menunggu Persetujuan') {
             throw ValidationException::withMessages([
                 'id_peminjaman' => ['Transaksi peminjaman ini tidak dalam status Menunggu Persetujuan.'],
+            ]);
+        }
+
+        // Pastikan pemohon belum melampaui kuota maksimal 3 buku aktif
+        $activeCount = PeminjamanBuku::where('id_pengguna', $peminjaman->id_pengguna)
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->count();
+
+        if ($activeCount >= self::MAKSIMAL_PINJAMAN) {
+            throw ValidationException::withMessages([
+                'id_peminjaman' => ["Pemohon {$peminjaman->pengguna->nama_lengkap} telah mencapai batas maksimal peminjaman (".self::MAKSIMAL_PINJAMAN.' buku aktif).'],
             ]);
         }
 
@@ -466,31 +510,46 @@ class PeminjamanService
     }
 
     /**
-     * Perbarui status keterlambatan untuk seluruh transaksi peminjaman aktif yang melewati jatuh tempo.
-     * Otomatis mengirim / mencatat notifikasi peringatan bahwa batas waktu peminjaman telah lewat.
+     * Perbarui status keterlambatan dan kirim notifikasi pengingat H-1 (24 jam sebelum deadline)
+     * maupun lewat jatuh tempo untuk seluruh transaksi peminjaman aktif.
      */
-    public function sinkronisasiStatusKeterlambatan(): int
+    public function sinkronisasiStatusKeterlambatan(?string $idPengguna = null): int
     {
         $today = Carbon::now()->toDateString();
+        $tomorrow = Carbon::now()->addDay()->toDateString();
 
-        $overdueLoans = PeminjamanBuku::whereNull('tanggal_kembali')
-            ->where(function ($q): void {
-                $q->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi']);
-            })
-            ->whereDate('tanggal_jatuh_tempo', '<', $today)
-            ->get();
+        $query = PeminjamanBuku::whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->whereDate('tanggal_jatuh_tempo', '<=', $tomorrow);
+
+        if ($idPengguna !== null) {
+            $query->where('id_pengguna', $idPengguna);
+        }
+
+        $alertLoans = $query->get();
 
         $updatedCount = 0;
-        foreach ($overdueLoans as $loan) {
+        foreach ($alertLoans as $loan) {
             $hariTerlambat = $loan->hitungHariTerlambat(Carbon::now());
-            $newStatus = $loan->status === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi' : 'Terlambat';
-            $loan->update([
-                'status' => $newStatus,
-                'hari_keterlambatan' => $hariTerlambat,
-                'notifikasi_peringatan_dikirim' => true,
-                'tanggal_notifikasi' => $loan->tanggal_notifikasi ?: Carbon::now(),
-            ]);
-            $updatedCount++;
+            $isOverdue = Carbon::parse($loan->tanggal_jatuh_tempo)->startOfDay()->lt(Carbon::now()->startOfDay());
+
+            if ($isOverdue) {
+                $newStatus = $loan->status === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi' : 'Terlambat';
+                $loan->update([
+                    'status' => $newStatus,
+                    'hari_keterlambatan' => $hariTerlambat,
+                    'notifikasi_peringatan_dikirim' => true,
+                    'tanggal_notifikasi' => $loan->tanggal_notifikasi ?: Carbon::now(),
+                ]);
+                $updatedCount++;
+            } elseif (! $loan->notifikasi_peringatan_dikirim) {
+                // Menyentuh H-1 (24 jam sebelum deadline) atau Hari-H jatuh tempo
+                $loan->update([
+                    'notifikasi_peringatan_dikirim' => true,
+                    'tanggal_notifikasi' => $loan->tanggal_notifikasi ?: Carbon::now(),
+                ]);
+                $updatedCount++;
+            }
         }
 
         return $updatedCount;

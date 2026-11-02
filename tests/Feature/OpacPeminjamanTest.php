@@ -55,10 +55,44 @@ class OpacPeminjamanTest extends TestCase
     }
 
     /**
-     * Mahasiswa yang masih memiliki buku belum dikembalikan diblokir dari peminjaman baru sesuai flowchart.
+     * Mahasiswa masih dapat meminjam selama jumlah pinjaman aktif kurang dari 3 buku,
+     * dan diblokir ketika sudah mencapai batas maksimal 3 buku belum dikembalikan.
      */
-    public function test_student_with_unreturned_loans_is_blocked_from_borrowing(): void
+    public function test_student_can_borrow_up_to_three_books_and_is_blocked_at_three_active_loans(): void
     {
+        // Fauzi (studentHasLoan) baru memiliki 1 buku pinjaman aktif -> masih eligible (sisa kuota 2 buku)
+        $eligOne = $this->actingAs($this->studentHasLoan)
+            ->getJson(route('opac.cek-eligibilitas'));
+
+        $eligOne->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'eligible' => true,
+                    'active_loans_count' => 1,
+                    'max_loans' => 3,
+                    'remaining_quota' => 2,
+                ],
+            ]);
+
+        // Tambahkan 2 pinjaman aktif lagi sehingga mencapai batas 3 buku
+        $extraCopies = EksemplarBuku::where('status', 'Tersedia')
+            ->where('id_eksemplar', '!=', $this->availableExemplar->id_eksemplar)
+            ->take(2)
+            ->get();
+
+        foreach ($extraCopies as $copy) {
+            PeminjamanBuku::create([
+                'id_pengguna' => $this->studentHasLoan->id_pengguna,
+                'id_buku' => $copy->id_buku,
+                'id_eksemplar' => $copy->id_eksemplar,
+                'tanggal_pinjam' => now()->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays(14)->toDateString(),
+                'status' => 'Dipinjam',
+            ]);
+            $copy->update(['status' => 'Dipinjam']);
+        }
+
         $response = $this->actingAs($this->studentHasLoan)
             ->getJson(route('opac.cek-eligibilitas'));
 
@@ -67,15 +101,18 @@ class OpacPeminjamanTest extends TestCase
             'success' => true,
             'data' => [
                 'eligible' => false,
+                'active_loans_count' => 3,
+                'max_loans' => 3,
+                'remaining_quota' => 0,
             ],
         ]);
 
         $responseData = $response->json('data');
         $this->assertFalse($responseData['eligible']);
-        $this->assertStringContainsString('User tidak bisa meminjam buku', $responseData['message']);
-        $this->assertNotEmpty($responseData['active_loans']);
+        $this->assertStringContainsString('batas maksimal peminjaman (3 buku)', $responseData['message']);
+        $this->assertCount(3, $responseData['active_loans']);
 
-        // Jika mencoba mengirim form peminjaman, sistem menolak dengan kode 422
+        // Jika mencoba mengirim form peminjaman ke-4, sistem menolak dengan kode 422
         $borrowResponse = $this->actingAs($this->studentHasLoan)
             ->postJson(route('opac.pinjam'), [
                 'id_buku' => $this->targetBook->id_buku,
@@ -570,5 +607,35 @@ class OpacPeminjamanTest extends TestCase
         $freshLoan = $overdueLoan->fresh();
         $this->assertEquals('Peringatan tertulis ke mahasiswa dan penangguhan peminjaman 7 hari', $freshLoan->sanksi);
         $this->assertStringContainsString('Terlambat 4 hari', (string) $freshLoan->catatan_keterlambatan);
+    }
+
+    /**
+     * Setiap pemustaka memiliki Inbox dan menerima notifikasi otomatis ketika
+     * peminjaman buku menyentuh H-1 (24 jam sebelum deadline pengembalian).
+     */
+    public function test_user_inbox_receives_h_minus_1_deadline_notification_24_hours_before_due_date(): void
+    {
+        $activeLoan = PeminjamanBuku::where('id_pengguna', $this->studentHasLoan->id_pengguna)
+            ->whereNull('tanggal_kembali')
+            ->firstOrFail();
+
+        $activeLoan->update([
+            'tanggal_jatuh_tempo' => now()->addDay()->toDateString(),
+            'status' => 'Dipinjam',
+            'hari_keterlambatan' => 0,
+            'notifikasi_peringatan_dikirim' => false,
+            'tanggal_notifikasi' => null,
+        ]);
+
+        $inboxResponse = $this->actingAs($this->studentHasLoan)->get(route('inbox'));
+
+        $inboxResponse->assertStatus(200);
+        $inboxResponse->assertSee('Inbox & Notifikasi Peminjaman');
+        $inboxResponse->assertSee('Pengingat H-1 (24 Jam Sebelum Deadline)');
+        $inboxResponse->assertSee($activeLoan->buku->judul_buku);
+
+        $freshLoan = $activeLoan->fresh();
+        $this->assertTrue((bool) $freshLoan->notifikasi_peringatan_dikirim);
+        $this->assertNotNull($freshLoan->tanggal_notifikasi);
     }
 }

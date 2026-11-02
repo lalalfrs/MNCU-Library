@@ -45,47 +45,94 @@
                     <span>Login</span>
                 </a>
             @else
-                @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
-                    {{-- Tombol & Notifikasi Inbox Pengajuan Pengembalian Buku --}}
-                    <div class="relative">
-                        <button
-                            type="button"
-                            id="inbox-notification-button"
-                            class="relative inline-flex size-9 sm:size-10 lg:size-11 items-center justify-center rounded-xl border border-line bg-white text-ink hover:bg-subtle hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 btn-press"
-                            aria-label="Kotak Masuk Pengajuan Pengembalian"
-                            title="Kotak Masuk Pengajuan Pengembalian Buku"
-                        >
-                            <i class="fa-solid fa-inbox text-sm sm:text-base text-primary"></i>
-                            @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
-                                <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow-xs">
-                                    {{ $inboxPendingCount > 99 ? '99+' : $inboxPendingCount }}
+                @php
+                    $isStaffNav = Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan();
+                    $totalBadgeCount = $isStaffNav
+                        ? (($inboxPendingCount ?? 0) + ($userInboxAlertCount ?? 0))
+                        : ($userInboxAlertCount ?? 0);
+                @endphp
+
+                {{-- Tombol & Dropdown Inbox untuk Seluruh User (Notifikasi H-1 / 24 Jam Deadline & Validasi Admin) --}}
+                <div class="relative">
+                    <button
+                        type="button"
+                        id="inbox-notification-button"
+                        class="relative inline-flex size-9 sm:size-10 lg:size-11 items-center justify-center rounded-xl border border-line bg-white text-ink hover:bg-subtle hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 btn-press"
+                        aria-label="Kotak Masuk & Notifikasi Peminjaman"
+                        title="Kotak Masuk & Notifikasi Pengingat H-1 Peminjaman"
+                    >
+                        <i class="fa-solid fa-inbox text-sm sm:text-base text-primary"></i>
+                        @if ($totalBadgeCount > 0)
+                            <span class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow-xs">
+                                {{ $totalBadgeCount > 99 ? '99+' : $totalBadgeCount }}
+                            </span>
+                        @endif
+                    </button>
+
+                    {{-- Dropdown Preview Notifikasi Inbox --}}
+                    <div
+                        id="inbox-notification-dropdown"
+                        class="absolute right-0 mt-2 hidden w-80 sm:w-88 rounded-2xl border border-line bg-white p-3 shadow-raised z-50 animate-in fade-in zoom-in-95 duration-150"
+                        role="menu"
+                    >
+                        <div class="flex items-center justify-between border-b border-line pb-2.5 px-1">
+                            <div class="flex items-center gap-2">
+                                <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                    <i class="fa-solid fa-bell text-xs"></i>
                                 </span>
-                            @endif
-                        </button>
-
-                        {{-- Dropdown Preview Notifikasi Inbox --}}
-                        <div
-                            id="inbox-notification-dropdown"
-                            class="absolute right-0 mt-2 hidden w-80 sm:w-88 rounded-2xl border border-line bg-white p-3 shadow-raised z-50 animate-in fade-in zoom-in-95 duration-150"
-                            role="menu"
-                        >
-                            <div class="flex items-center justify-between border-b border-line pb-2.5 px-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                        <i class="fa-solid fa-inbox text-xs"></i>
-                                    </span>
-                                    <div>
-                                        <p class="text-xs font-bold text-ink">Inbox Pengembalian</p>
-                                        <p class="text-[10px] text-muted">{{ $inboxPendingCount ?? 0 }} permohonan menunggu validasi</p>
-                                    </div>
+                                <div>
+                                    <p class="text-xs font-bold text-ink">
+                                        {{ $isStaffNav ? 'Inbox Sirkulasi & Notifikasi' : 'Inbox Notifikasi Peminjaman' }}
+                                    </p>
+                                    <p class="text-[10px] text-muted">
+                                        @if ($isStaffNav)
+                                            {{ $inboxPendingCount ?? 0 }} validasi &bull; {{ $userInboxAlertCount ?? 0 }} pengingat H-1
+                                        @else
+                                            {{ $userInboxAlertCount ?? 0 }} pengingat H-1 (24 jam) / jatuh tempo
+                                        @endif
+                                    </p>
                                 </div>
-                                <a href="{{ route('admin.inbox') }}" class="text-[11px] font-semibold text-primary hover:underline">
-                                    Buka Semua
-                                </a>
                             </div>
+                            <a href="{{ $isStaffNav ? route('admin.inbox') : route('inbox') }}" class="text-[11px] font-semibold text-primary hover:underline">
+                                Buka Semua
+                            </a>
+                        </div>
 
-                            <div class="divide-y divide-line/60 max-h-64 overflow-y-auto py-1">
-                                @forelse ($inboxPendingItems ?? [] as $pendingItem)
+                        <div class="divide-y divide-line/60 max-h-64 overflow-y-auto py-1">
+                            {{-- 1. Notifikasi Peringatan H-1 (24 Jam Sebelum Deadline) & Jatuh Tempo Milik User --}}
+                            @foreach ($userInboxAlerts ?? [] as $alertLoan)
+                                @php
+                                    $sisaHari = $alertLoan->hitungSisaHariDeadline();
+                                    $isOverdue = $alertLoan->isTerlambat();
+                                @endphp
+                                <a href="{{ route('inbox') }}" class="group block p-2 rounded-xl hover:bg-amber-50/70 transition-colors">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <p class="text-xs font-bold text-ink group-hover:text-primary transition-colors line-clamp-1">
+                                            {{ $alertLoan->buku?->judul_buku ?? 'Koleksi Buku' }}
+                                        </p>
+                                        <span class="text-[9px] font-bold {{ $isOverdue ? 'text-white bg-rose-600' : 'text-amber-900 bg-amber-200' }} rounded px-1.5 py-0.5 shrink-0">
+                                            {{ $isOverdue ? 'Terlambat' : ($sisaHari === 0 ? '<= 24 Jam' : 'H-1 (24 Jam)') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] {{ $isOverdue ? 'text-rose-700 font-medium' : 'text-amber-900' }} mt-0.5">
+                                        @if ($isOverdue)
+                                            Lewat deadline pengembalian ({{ $alertLoan->hitungHariTerlambat() }} hari)
+                                        @elseif ($sisaHari === 0)
+                                            Batas akhir pengembalian hari ini (&le; 24 jam)
+                                        @else
+                                            Pengingat H-1: 24 jam sebelum deadline kembali
+                                        @endif
+                                    </p>
+                                    <p class="text-[10px] text-muted mt-1 flex items-center justify-between">
+                                        <span>No: {{ $alertLoan->eksemplar?->kode_inventaris ?: '-' }}</span>
+                                        <span>Tempo: {{ $alertLoan->tanggal_jatuh_tempo ? $alertLoan->tanggal_jatuh_tempo->format('d M Y') : '-' }}</span>
+                                    </p>
+                                </a>
+                            @endforeach
+
+                            {{-- 2. Khusus Admin & Pustakawan: Daftar Permohonan Validasi Sirkulasi --}}
+                            @if ($isStaffNav)
+                                @foreach ($inboxPendingItems ?? [] as $pendingItem)
                                     @php
                                         $isPinjam = $pendingItem->status === 'Menunggu Persetujuan';
                                         $targetTab = $isPinjam ? 'pinjam' : 'kembali';
@@ -107,22 +154,29 @@
                                             <span>{{ $pendingItem->tanggal_pengajuan_pinjam ? $pendingItem->tanggal_pengajuan_pinjam->diffForHumans() : ($pendingItem->tanggal_pengajuan_kembali ? $pendingItem->tanggal_pengajuan_kembali->diffForHumans() : 'Baru saja') }}</span>
                                         </p>
                                     </a>
-                                @empty
-                                    <div class="py-6 text-center text-xs text-muted">
-                                        <i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>
-                                        <span>Tidak ada permohonan pinjam atau kembali pending</span>
-                                    </div>
-                                @endforelse
-                            </div>
+                                @endforeach
+                            @endif
 
-                            <div class="border-t border-line pt-2 text-center">
-                                <a href="{{ route('admin.inbox') }}" class="block w-full rounded-xl bg-primary/10 py-1.5 text-center text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
-                                    Buka Inbox Validasi Lengkap
+                            @if (($userInboxAlertCount ?? 0) === 0 && (! $isStaffNav || ($inboxPendingCount ?? 0) === 0))
+                                <div class="py-6 text-center text-xs text-muted">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>
+                                    <span>Tidak ada notifikasi deadline H-1 atau antrean baru</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="border-t border-line pt-2 flex flex-col gap-1.5 text-center">
+                            <a href="{{ route('inbox') }}" class="block w-full rounded-xl bg-primary/10 py-1.5 text-center text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                Buka Inbox Notifikasi Saya
+                            </a>
+                            @if ($isStaffNav)
+                                <a href="{{ route('admin.inbox') }}" class="block w-full rounded-xl bg-amber-100/80 py-1.5 text-center text-xs font-bold text-amber-900 hover:bg-amber-500 hover:text-white transition-colors">
+                                    Buka Inbox Validasi Admin
                                 </a>
-                            </div>
+                            @endif
                         </div>
                     </div>
-                @endif
+                </div>
 
                 <div class="relative">
                     <button
@@ -201,6 +255,17 @@
                         @endif
 
                         <div class="py-1">
+                            <a href="{{ route('inbox') }}" class="flex items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-bell text-amber-600 w-4"></i>
+                                    <span>Inbox &amp; Notifikasi Pinjaman</span>
+                                </div>
+                                @if (! empty($userInboxAlertCount) && $userInboxAlertCount > 0)
+                                    <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
+                                        {{ $userInboxAlertCount }}
+                                    </span>
+                                @endif
+                            </a>
                             <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
                                 <i class="fa-solid fa-user-circle text-primary w-4"></i>
                                 <span>Profil Saya</span>

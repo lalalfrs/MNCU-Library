@@ -108,6 +108,52 @@ class PeminjamanBuku extends Model
     }
 
     /**
+     * Hitung sisa hari menuju batas pengembalian (jatuh tempo).
+     * Nilai 1 berarti H-1 (24 jam sebelum deadline), 0 berarti jatuh tempo hari ini, negatif berarti terlambat.
+     */
+    public function hitungSisaHariDeadline(?Carbon $tanggalCek = null): int
+    {
+        if (! $this->tanggal_jatuh_tempo) {
+            return 999;
+        }
+
+        $today = ($tanggalCek ? $tanggalCek->copy() : Carbon::now())->startOfDay();
+        $tempo = Carbon::parse($this->tanggal_jatuh_tempo)->startOfDay();
+
+        return (int) $today->diffInDays($tempo, false);
+    }
+
+    /**
+     * Apakah peminjaman ini menyentuh H-1 (24 jam sebelum deadline) atau jatuh tempo hari ini?
+     */
+    public function isMendekatiDeadline(?Carbon $tanggalCek = null): bool
+    {
+        if ($this->tanggal_kembali !== null || ! $this->tanggal_jatuh_tempo) {
+            return false;
+        }
+
+        $sisaHari = $this->hitungSisaHariDeadline($tanggalCek);
+
+        return $sisaHari >= 0 && $sisaHari <= 1;
+    }
+
+    /**
+     * Apakah peminjaman ini wajib menampilkan notifikasi peringatan di Inbox User (H-1 / 24 jam sebelum deadline atau sudah terlambat)?
+     */
+    public function perluNotifikasiDeadline(?Carbon $tanggalCek = null): bool
+    {
+        if ($this->tanggal_kembali !== null || ! $this->tanggal_jatuh_tempo) {
+            return false;
+        }
+
+        if (! in_array($this->status, ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'], true)) {
+            return false;
+        }
+
+        return $this->hitungSisaHariDeadline($tanggalCek) <= 1 || $this->isTerlambat();
+    }
+
+    /**
      * Apakah peminjaman ini tergolong terlambat?
      */
     public function isTerlambat(): bool
@@ -159,5 +205,15 @@ class PeminjamanBuku extends Model
                 $sub->where('status', 'Terlambat')
                     ->orWhereDate('tanggal_jatuh_tempo', '<', Carbon::now()->toDateString());
             });
+    }
+
+    /**
+     * Scope untuk peminjaman aktif yang sudah menyentuh H-1 (24 jam sebelum deadline) atau telah melewati jatuh tempo.
+     */
+    public function scopeMendekatiAtauLewatDeadline(Builder $query): Builder
+    {
+        return $query->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->whereDate('tanggal_jatuh_tempo', '<=', Carbon::now()->addDay()->toDateString());
     }
 }

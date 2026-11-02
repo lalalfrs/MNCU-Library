@@ -33,9 +33,31 @@ class BookController extends Controller
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
-        $kategoriId = trim((string) $request->query('kategori', ''));
-        $jenisId = trim((string) $request->query('jenis', ''));
+        $rawKategori = $request->query('kategori', '');
+        $kategoriList = is_array($rawKategori)
+            ? array_values(array_filter(array_map('trim', $rawKategori), fn ($v) => $v !== ''))
+            : ($rawKategori !== '' ? [trim((string) $rawKategori)] : []);
+        $kategoriId = is_array($rawKategori) ? ($kategoriList[0] ?? '') : trim((string) $rawKategori);
+
+        $rawJenis = $request->query('jenis', '');
+        $jenisList = is_array($rawJenis)
+            ? array_values(array_filter(array_map('trim', $rawJenis), fn ($v) => $v !== ''))
+            : ($rawJenis !== '' ? [trim((string) $rawJenis)] : []);
+        $jenisId = is_array($rawJenis) ? ($jenisList[0] ?? '') : trim((string) $rawJenis);
+
+        $rawLokasi = $request->query('lokasi', '');
+        $lokasiFilterList = is_array($rawLokasi)
+            ? array_values(array_filter(array_map('trim', $rawLokasi), fn ($v) => $v !== ''))
+            : ($rawLokasi !== '' ? [trim((string) $rawLokasi)] : []);
+        $lokasiFilter = is_array($rawLokasi) ? ($lokasiFilterList[0] ?? '') : trim((string) $rawLokasi);
+
         $statusStok = trim((string) $request->query('stok', ''));
+        $tahunDari = trim((string) $request->query('tahun_dari', ''));
+        $tahunSampai = trim((string) $request->query('tahun_sampai', ''));
+        $filterJudul = trim((string) $request->query('filter_judul', ''));
+        $filterPengarang = trim((string) $request->query('filter_pengarang', ''));
+        $filterIsbn = trim((string) $request->query('filter_isbn', ''));
+        $sort = trim((string) $request->query('sort', 'terbaru'));
 
         // Statistik Inventaris Global Perpustakaan
         $totalBooks = Buku::count();
@@ -43,7 +65,7 @@ class BookController extends Controller
         $availableCopies = EksemplarBuku::where('status', 'Tersedia')->count();
         $borrowedCopies = EksemplarBuku::where('status', 'Dipinjam')->count();
 
-        $query = Buku::with(['jenisBuku', 'kategoriBuku', 'penerbit', 'penulis', 'eksemplar'])->latest();
+        $query = Buku::with(['jenisBuku', 'kategoriBuku', 'penerbit', 'penulis', 'eksemplar']);
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q): void {
@@ -61,12 +83,40 @@ class BookController extends Controller
             });
         }
 
-        if ($kategoriId !== '') {
-            $query->where('id_kategori_buku', $kategoriId);
+        if ($filterJudul !== '') {
+            $query->where('judul_buku', 'like', "%{$filterJudul}%");
         }
 
-        if ($jenisId !== '') {
-            $query->where('id_jenis_buku', $jenisId);
+        if ($filterPengarang !== '') {
+            $query->whereHas('penulis', function ($authorSub) use ($filterPengarang): void {
+                $authorSub->where('nama_penulis', 'like', "%{$filterPengarang}%");
+            });
+        }
+
+        if ($filterIsbn !== '') {
+            $query->where('isbn', 'like', "%{$filterIsbn}%");
+        }
+
+        if (! empty($kategoriList)) {
+            $query->whereIn('id_kategori_buku', $kategoriList);
+        }
+
+        if (! empty($jenisList)) {
+            $query->whereIn('id_jenis_buku', $jenisList);
+        }
+
+        if (! empty($lokasiFilterList)) {
+            $query->whereHas('eksemplar', function ($ekSub) use ($lokasiFilterList): void {
+                $ekSub->whereIn('lokasi_rak', $lokasiFilterList);
+            });
+        }
+
+        if ($tahunDari !== '' && is_numeric($tahunDari)) {
+            $query->where('tahun_terbit', '>=', (int) $tahunDari);
+        }
+
+        if ($tahunSampai !== '' && is_numeric($tahunSampai)) {
+            $query->where('tahun_terbit', '<=', (int) $tahunSampai);
         }
 
         if ($statusStok === 'tersedia') {
@@ -81,19 +131,42 @@ class BookController extends Controller
             $query->doesntHave('eksemplar');
         }
 
+        match ($sort) {
+            'judul_asc' => $query->orderBy('judul_buku'),
+            'judul_desc' => $query->orderByDesc('judul_buku'),
+            'tahun_desc' => $query->orderByDesc('tahun_terbit'),
+            'tahun_asc' => $query->orderBy('tahun_terbit'),
+            default => $query->latest(),
+        };
+
         $books = $query->paginate(12)->withQueryString();
-        $categories = KategoriBuku::orderBy('nama_kategori')->get();
-        $types = JenisBuku::orderBy('nama_jenis_buku')->get();
+        $categories = KategoriBuku::withCount('buku')->orderBy('nama_kategori')->get();
+        $types = JenisBuku::withCount('buku')->orderBy('nama_jenis_buku')->get();
+        $lokasiList = EksemplarBuku::whereNotNull('lokasi_rak')->distinct()->orderBy('lokasi_rak')->pluck('lokasi_rak')->all();
+        if (empty($lokasiList)) {
+            $lokasiList = ['Lantai 2, Rak Komputer 03', 'Lantai 2, Rak Komputer 04', 'Lantai 2, Rak Ekonomi 01', 'Lantai 2, Rak Desain 02', 'Lantai 1, Rak Umum 01'];
+        }
         $viewMode = in_array($request->query('view'), ['grid', 'table'], true) ? $request->query('view') : 'table';
 
         return view('admin.books.index', compact(
             'books',
             'categories',
             'types',
+            'lokasiList',
             'q',
             'kategoriId',
+            'kategoriList',
             'jenisId',
+            'jenisList',
+            'lokasiFilter',
+            'lokasiFilterList',
             'statusStok',
+            'tahunDari',
+            'tahunSampai',
+            'filterJudul',
+            'filterPengarang',
+            'filterIsbn',
+            'sort',
             'viewMode',
             'totalBooks',
             'totalCopies',

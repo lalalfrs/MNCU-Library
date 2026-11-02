@@ -5,7 +5,7 @@
 
 @section('content')
     <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container">
-        {{-- Breadcrumb & Header --}}
+        {{-- Breadcrumb & Header (Style Visual Sebelumnya) --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted sm:text-sm">
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        {{-- 4 Kartu Metrik Inventaris Stok Global --}}
+        {{-- 4 Kartu Metrik Inventaris Stok Global (Style Visual Sebelumnya) --}}
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
                 <div class="flex items-center gap-2.5">
@@ -118,81 +118,366 @@
             </div>
         </div>
 
-        {{-- Filter & Pencarian Bar --}}
+        {{-- Simplified Search Bar & Pencarian Spesifik (Dengan Style Kartu Sebelumnya) --}}
+        @php
+            $hasAdminActiveFilter = $q !== '' || ! empty($kategoriList) || ! empty($jenisList) || ! empty($lokasiFilterList) || ($statusStok ?? '') !== '' || ($tahunDari ?? '') !== '' || ($tahunSampai ?? '') !== '' || ($filterJudul ?? '') !== '' || ($filterPengarang ?? '') !== '' || ($filterIsbn ?? '') !== '';
+        @endphp
         <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-            <form method="GET" action="{{ route('admin.books.index') }}" id="filter-form" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <form method="GET" action="{{ route('admin.books.index') }}" id="filter-form" class="flex flex-col gap-3">
                 <input type="hidden" name="view" id="filter-view-input" value="{{ $viewMode }}">
+                <input type="hidden" name="sort" id="filter-sort-input" value="{{ $sort ?? 'terbaru' }}">
 
-                <div class="relative flex-1">
-                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                    </span>
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ $q }}"
-                        placeholder="Cari judul buku, ISBN, pengarang, nomor barcode, atau nomor panggil..."
-                        class="h-10 w-full rounded-xl border border-line bg-subtle/50 pr-4 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
-                    >
+                <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                    <div class="relative flex-1">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ $q }}"
+                            placeholder="Cari judul buku, ISBN, pengarang, nomor barcode, atau nomor panggil..."
+                            class="h-10 w-full rounded-xl border border-line bg-subtle/50 pr-9 pl-10 text-xs text-ink placeholder:text-muted focus:border-primary focus:bg-white focus:outline-none sm:text-sm"
+                        >
+                        @if ($q !== '')
+                            <a
+                                href="{{ route('admin.books.index', array_merge(request()->except('q'), ['view' => $viewMode])) }}"
+                                class="absolute right-2.5 top-1/2 -translate-y-1/2 flex size-6 items-center justify-center rounded-md text-muted hover:bg-slate-200 hover:text-ink transition-colors"
+                                title="Bersihkan Kata Kunci"
+                            >
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button
+                            type="submit"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark sm:text-sm"
+                        >
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>Cari</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onclick="toggleAdminAdvancedSearch()"
+                            class="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary sm:text-sm"
+                            title="Buka Pencarian Spesifik"
+                        >
+                            <i class="fa-solid fa-sliders text-xs text-primary"></i>
+                            <span>Filter</span>
+                        </button>
+
+                        @if ($hasAdminActiveFilter)
+                            <a
+                                href="{{ route('admin.books.index', ['view' => $viewMode]) }}"
+                                class="inline-flex h-10 items-center justify-center rounded-xl border border-line px-3 text-xs font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:text-sm"
+                                title="Reset Filter"
+                            >
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2">
-                    <select
-                        name="kategori"
-                        onchange="this.form.submit()"
-                        class="h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
-                    >
-                        <option value="">Semua Kategori</option>
-                        @foreach ($categories as $cat)
-                            <option value="{{ $cat->id_kategori_buku }}" {{ $kategoriId === $cat->id_kategori_buku ? 'selected' : '' }}>
-                                {{ $cat->nama_kategori }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <select
-                        name="jenis"
-                        onchange="this.form.submit()"
-                        class="h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
-                    >
-                        <option value="">Semua Format</option>
-                        @foreach ($types as $type)
-                            <option value="{{ $type->id_jenis_buku }}" {{ $jenisId === $type->id_jenis_buku ? 'selected' : '' }}>
-                                {{ $type->nama_jenis_buku }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <select
-                        name="stok"
-                        onchange="this.form.submit()"
-                        class="h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
-                    >
-                        <option value="">Semua Status Stok</option>
-                        <option value="tersedia" {{ ($statusStok ?? '') === 'tersedia' ? 'selected' : '' }}>Stok Siap Pinjam</option>
-                        <option value="habis" {{ ($statusStok ?? '') === 'habis' ? 'selected' : '' }}>Semua Dipinjam / Habis</option>
-                        <option value="kosong" {{ ($statusStok ?? '') === 'kosong' ? 'selected' : '' }}>Belum Ada Eksemplar</option>
-                    </select>
-
-                    <button
-                        type="submit"
-                        class="inline-flex h-10 items-center justify-center rounded-xl bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white sm:text-sm"
-                    >
-                        Filter
-                    </button>
-
-                    @if ($q !== '' || $kategoriId !== '' || $jenisId !== '' || ($statusStok ?? '') !== '')
-                        <a
-                            href="{{ route('admin.books.index', ['view' => $viewMode]) }}"
-                            class="inline-flex h-10 items-center justify-center rounded-xl border border-line px-3 text-xs font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:text-sm"
-                            title="Reset Filter"
-                        >
-                            <i class="fa-solid fa-rotate-left"></i>
-                        </a>
-                    @endif
+                {{-- Panel Expandable: Pencarian Spesifik Admin --}}
+                <div id="admin-advanced-search-panel" class="hidden rounded-xl border border-line bg-subtle/40 p-4 text-left text-ink">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div>
+                            <label class="mb-1 block text-[11px] font-semibold text-ink-secondary">Judul Buku</label>
+                            <input
+                                type="text"
+                                name="filter_judul"
+                                value="{{ $filterJudul ?? '' }}"
+                                placeholder="Judul spesifik..."
+                                class="h-9 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                            >
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-[11px] font-semibold text-ink-secondary">Pengarang</label>
+                            <input
+                                type="text"
+                                name="filter_pengarang"
+                                value="{{ $filterPengarang ?? '' }}"
+                                placeholder="Nama penulis..."
+                                class="h-9 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                            >
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-[11px] font-semibold text-ink-secondary">ISBN</label>
+                            <input
+                                type="text"
+                                name="filter_isbn"
+                                value="{{ $filterIsbn ?? '' }}"
+                                placeholder="978-..."
+                                class="h-9 w-full rounded-xl border border-line bg-white px-3 text-xs font-mono text-ink focus:border-primary focus:outline-none"
+                            >
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
+
+        {{-- Tata Letak 2 Kolom (Sidebar Filter Kiri 3 Kolom + Daftar Katalog Kanan 9 Kolom dengan Style Visual Sebelumnya) --}}
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 items-start">
+            {{-- Kolom Kiri: Filter Pencarian Katalog (Style Kartu Sebelumnya dengan Header Biru Tua Gradasi MNCU) --}}
+            <aside aria-label="Filter Katalog Buku" class="lg:col-span-3 order-2 lg:order-1">
+                <div class="lg:sticky lg:top-24">
+                    <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+                        <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-[#0F2A6B] to-[#143A8F] px-5 py-3.5 text-white">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-sliders text-sm" aria-hidden="true"></i>
+                                <h2 class="text-sm sm:text-base font-semibold">Filter Katalog</h2>
+                            </div>
+                            @if ($hasAdminActiveFilter)
+                                <a
+                                    href="{{ route('admin.books.index', ['view' => $viewMode]) }}"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-white/25 transition-colors"
+                                    title="Reset Filter"
+                                >
+                                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                                    <span>Reset</span>
+                                </a>
+                            @endif
+                        </div>
+
+                        <form method="GET" action="{{ route('admin.books.index') }}" id="admin-sidebar-filter-form" class="p-4 divide-y divide-dashed divide-line">
+                            <input type="hidden" name="view" id="sidebar-view-input" value="{{ $viewMode }}">
+                            <input type="hidden" name="q" value="{{ $q }}">
+                            <input type="hidden" name="sort" value="{{ $sort ?? 'terbaru' }}">
+
+                            {{-- 1. Tahun Penerbitan --}}
+                            <div class="py-3 first:pt-0">
+                                <button
+                                    type="button"
+                                    onclick="toggleAdminSidebarSection('admin-collapse-year', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Tahun Penerbitan</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="admin-collapse-year" class="mt-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            name="tahun_dari"
+                                            value="{{ $tahunDari ?? '' }}"
+                                            placeholder="Dari (2018)"
+                                            class="h-9 w-full rounded-xl border border-line bg-subtle/60 px-2.5 text-center text-xs text-ink focus:border-primary focus:bg-white focus:outline-none"
+                                        >
+                                        <span class="text-muted font-semibold">-</span>
+                                        <input
+                                            type="number"
+                                            name="tahun_sampai"
+                                            value="{{ $tahunSampai ?? '' }}"
+                                            placeholder="Sampai (2026)"
+                                            class="h-9 w-full rounded-xl border border-line bg-subtle/60 px-2.5 text-center text-xs text-ink focus:border-primary focus:bg-white focus:outline-none"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- 2. Ketersediaan Stok --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleAdminSidebarSection('admin-collapse-stok', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Ketersediaan Stok</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="admin-collapse-stok" class="mt-2.5 space-y-2">
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="" @checked(($statusStok ?? '') === '') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Semua Status Stok</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="tersedia" @checked(($statusStok ?? '') === 'tersedia') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Stok Siap Pinjam</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="habis" @checked(($statusStok ?? '') === 'habis') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Semua Dipinjam / Habis</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="kosong" @checked(($statusStok ?? '') === 'kosong') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Belum Ada Eksemplar</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {{-- 3. Format / Jenis Buku --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleAdminSidebarSection('admin-collapse-jenis', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Jenis Koleksi</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="admin-collapse-jenis" class="mt-2.5 space-y-2">
+                                    @foreach ($types as $type)
+                                        <label class="flex items-center justify-between gap-2 cursor-pointer group">
+                                            <span class="flex items-center gap-2.5 min-w-0">
+                                                <input
+                                                    type="checkbox"
+                                                    name="jenis[]"
+                                                    value="{{ $type->id_jenis_buku }}"
+                                                    @checked(in_array($type->id_jenis_buku, $jenisList ?? [], true))
+                                                    class="size-4 rounded border-line text-primary focus:ring-primary/20 shrink-0"
+                                                >
+                                                <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors truncate">{{ $type->nama_jenis_buku }}</span>
+                                            </span>
+                                            <span class="rounded-full bg-subtle border border-line px-2 py-0.5 text-[10px] font-semibold text-ink-secondary shrink-0">{{ $type->buku_count ?? 0 }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            {{-- 4. Kategori Koleksi --}}
+                            <div class="py-3">
+                                <button
+                                    type="button"
+                                    onclick="toggleAdminSidebarSection('admin-collapse-kategori', this)"
+                                    class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                    aria-expanded="true"
+                                >
+                                    <span>Kategori Keilmuan</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 rotate-180" data-chevron></i>
+                                </button>
+                                <div id="admin-collapse-kategori" class="mt-2.5 space-y-2">
+                                    @php
+                                        $primaryCats = $categories->take(5);
+                                        $extraCats = $categories->slice(5);
+                                    @endphp
+                                    @foreach ($primaryCats as $cat)
+                                        <label class="flex items-center justify-between gap-2 cursor-pointer group">
+                                            <span class="flex items-center gap-2.5 min-w-0">
+                                                <input
+                                                    type="checkbox"
+                                                    name="kategori[]"
+                                                    value="{{ $cat->id_kategori_buku }}"
+                                                    @checked(in_array($cat->id_kategori_buku, $kategoriList ?? [], true))
+                                                    class="size-4 rounded border-line text-primary focus:ring-primary/20 shrink-0"
+                                                >
+                                                <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors truncate">{{ $cat->nama_kategori }}</span>
+                                            </span>
+                                            <span class="rounded-full bg-subtle border border-line px-2 py-0.5 text-[10px] font-semibold text-ink-secondary shrink-0">{{ $cat->buku_count ?? 0 }}</span>
+                                        </label>
+                                    @endforeach
+
+                                    @if ($extraCats->isNotEmpty())
+                                        <div id="admin-more-categories" class="hidden space-y-2 pt-1">
+                                            @foreach ($extraCats as $cat)
+                                                <label class="flex items-center justify-between gap-2 cursor-pointer group">
+                                                    <span class="flex items-center gap-2.5 min-w-0">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="kategori[]"
+                                                            value="{{ $cat->id_kategori_buku }}"
+                                                            @checked(in_array($cat->id_kategori_buku, $kategoriList ?? [], true))
+                                                            class="size-4 rounded border-line text-primary focus:ring-primary/20 shrink-0"
+                                                        >
+                                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors truncate">{{ $cat->nama_kategori }}</span>
+                                                    </span>
+                                                    <span class="rounded-full bg-subtle border border-line px-2 py-0.5 text-[10px] font-semibold text-ink-secondary shrink-0">{{ $cat->buku_count ?? 0 }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onclick="toggleAdminMoreCategories('admin-more-categories', this)"
+                                            class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                                        >
+                                            <span>Lihat Lebih Banyak</span>
+                                            <i class="fa-solid fa-plus text-[9px]"></i>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- 5. Lokasi Rak --}}
+                            @if (! empty($lokasiList))
+                                <div class="py-3">
+                                    <button
+                                        type="button"
+                                        onclick="toggleAdminSidebarSection('admin-collapse-lokasi', this)"
+                                        class="flex w-full items-center justify-between text-left font-semibold text-ink text-xs sm:text-sm hover:text-primary transition-colors"
+                                        aria-expanded="false"
+                                    >
+                                        <span>Lokasi Rak</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-muted transition-transform duration-200 {{ ! empty($lokasiFilterList) ? 'rotate-180' : '' }}" data-chevron></i>
+                                    </button>
+                                    <div id="admin-collapse-lokasi" class="mt-2.5 space-y-2 {{ empty($lokasiFilterList) ? 'hidden' : '' }}">
+                                        @foreach ($lokasiList as $lok)
+                                            <label class="flex items-center gap-2.5 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    name="lokasi[]"
+                                                    value="{{ $lok }}"
+                                                    @checked(in_array($lok, $lokasiFilterList ?? [], true))
+                                                    class="size-4 rounded border-line text-primary focus:ring-primary/20"
+                                                >
+                                                <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors leading-snug">{{ $lok }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Tombol Terapkan Filter --}}
+                            <div class="pt-3.5">
+                                <button
+                                    type="submit"
+                                    class="btn-press btn-sheen flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark"
+                                >
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                    <span>Terapkan Filter</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            {{-- Kolom Kanan: Tabel / Grid Koleksi Buku (Style Visual Sebelumnya) --}}
+            <div class="lg:col-span-9 order-1 lg:order-2 min-w-0 flex flex-col gap-5">
+                {{-- Header Urutan & Info Jumlah Koleksi (Style Sebelumnya) --}}
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-3">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-ink flex items-center gap-2">
+                            <i class="fa-solid fa-bars-staggered text-primary"></i>
+                            <span>Daftar Katalog Koleksi</span>
+                        </h2>
+                        <p class="mt-0.5 text-xs text-muted">
+                            Menampilkan <strong>{{ $books->count() }}</strong> dari <strong>{{ $books->total() }}</strong> judul buku
+                        </p>
+                    </div>
+
+                    <div class="relative self-start sm:self-auto">
+                        <label for="admin-book-sort" class="sr-only">Urutkan Berdasarkan</label>
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted">
+                            <i class="fa-solid fa-arrow-down-short-wide text-xs"></i>
+                        </span>
+                        <select
+                            id="admin-book-sort"
+                            onchange="const s = document.getElementById('filter-sort-input'); if (s) { s.value = this.value; } document.getElementById('filter-form')?.submit();"
+                            class="h-10 rounded-xl border border-line bg-white pr-8 pl-8 text-xs font-semibold text-ink shadow-xs focus:border-primary focus:outline-none"
+                        >
+                            <option value="terbaru" @selected(($sort ?? 'terbaru') === 'terbaru')>Urutkan: Koleksi Terbaru</option>
+                            <option value="judul_asc" @selected(($sort ?? '') === 'judul_asc')>Urutkan: Judul (A - Z)</option>
+                            <option value="judul_desc" @selected(($sort ?? '') === 'judul_desc')>Urutkan: Judul (Z - A)</option>
+                            <option value="tahun_desc" @selected(($sort ?? '') === 'tahun_desc')>Urutkan: Tahun (Terbaru)</option>
+                            <option value="tahun_asc" @selected(($sort ?? '') === 'tahun_asc')>Urutkan: Tahun (Terlama)</option>
+                        </select>
+                    </div>
+                </div>
 
         {{-- 1. TAMPILAN TABEL (ROW VIEW) DILENGKAPI KOLOM STOK --}}
         <div id="books-table-view" class="{{ $viewMode === 'grid' ? 'hidden' : '' }} overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -567,22 +852,55 @@
             @endif
         </div>
 
-        {{-- Pagination (Berlaku untuk Tabel & Grid) --}}
-        @if ($books->hasPages())
-            <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-                {{ $books->links() }}
+                {{-- Pagination (Berlaku untuk Tabel & Grid) --}}
+                @if ($books->hasPages())
+                    <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
+                        {{ $books->links() }}
+                    </div>
+                @endif
             </div>
-        @endif
+        </div>
     </div>
 
-    {{-- Script Switcher Row (Tabel) <-> Grid (Kartu) --}}
+    {{-- Script Switcher Row (Tabel) <-> Grid (Kartu) & Accordion Sidebar --}}
     <script>
+        function toggleAdminAdvancedSearch() {
+            const panel = document.getElementById('admin-advanced-search-panel');
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+        }
+
+        function toggleAdminSidebarSection(targetId, btn) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const isHidden = target.classList.toggle('hidden');
+            if (btn) {
+                btn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+                const chevron = btn.querySelector('[data-chevron]');
+                if (chevron) {
+                    chevron.classList.toggle('rotate-180', !isHidden);
+                }
+            }
+        }
+
+        function toggleAdminMoreCategories(targetId, btn) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const isHidden = target.classList.toggle('hidden');
+            if (btn) {
+                btn.innerHTML = isHidden
+                    ? '<span>Lihat Lebih Banyak</span> <i class="fa-solid fa-plus text-[9px]"></i>'
+                    : '<span>Sembunyikan</span> <i class="fa-solid fa-minus text-[9px]"></i>';
+            }
+        }
+
         function switchBookView(mode) {
             const tableView = document.getElementById('books-table-view');
             const gridView = document.getElementById('books-grid-view');
             const btnTable = document.getElementById('btn-view-table');
             const btnGrid = document.getElementById('btn-view-grid');
             const filterInput = document.getElementById('filter-view-input');
+            const sidebarInput = document.getElementById('sidebar-view-input');
 
             if (mode === 'grid') {
                 tableView.classList.add('hidden');
@@ -600,6 +918,9 @@
 
             if (filterInput) {
                 filterInput.value = mode;
+            }
+            if (sidebarInput) {
+                sidebarInput.value = mode;
             }
 
             try {

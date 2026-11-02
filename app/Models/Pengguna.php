@@ -16,6 +16,8 @@ class Pengguna extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasLibraryId, Notifiable;
 
+    public const MAKSIMAL_PINJAMAN = 3;
+
     protected $table = 'pengguna';
 
     protected $primaryKey = 'id_pengguna';
@@ -223,6 +225,25 @@ class Pengguna extends Authenticatable
     public function peminjaman(): HasMany
     {
         return $this->hasMany(PeminjamanBuku::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    /**
+     * Hitung jumlah peminjaman buku aktif yang belum dikembalikan oleh pengguna.
+     */
+    public function jumlahPinjamanAktif(): int
+    {
+        return $this->peminjaman()
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->count();
+    }
+
+    /**
+     * Cek apakah pengguna telah mencapai batas maksimal peminjaman buku (3 buku).
+     */
+    public function mencapaiBatasPinjaman(): bool
+    {
+        return $this->jumlahPinjamanAktif() >= self::MAKSIMAL_PINJAMAN;
     }
 
     /**

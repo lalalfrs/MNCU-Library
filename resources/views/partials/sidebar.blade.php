@@ -55,7 +55,13 @@
                 </div>
 
                 <div class="mt-3 flex items-center justify-between border-t border-line/60 pt-2.5 text-xs">
-                    <span class="text-muted text-[11px]">Akun Terverifikasi</span>
+                    <a href="{{ route('inbox') }}" class="inline-flex items-center gap-1.5 font-semibold {{ (! empty($userInboxAlertCount) && $userInboxAlertCount > 0) ? 'text-rose-600' : 'text-ink-secondary hover:text-primary' }}">
+                        <i class="fa-solid fa-bell text-[11px] {{ (! empty($userInboxAlertCount) && $userInboxAlertCount > 0) ? 'text-rose-600 animate-bounce' : 'text-amber-600' }}"></i>
+                        <span>Inbox Notifikasi</span>
+                        @if (! empty($userInboxAlertCount) && $userInboxAlertCount > 0)
+                            <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">{{ $userInboxAlertCount }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('profile.show') }}" class="group/p font-semibold text-primary hover:underline inline-flex items-center gap-1">
                         <span>Profil Saya</span>
                         <i class="fa-solid fa-angle-right text-[10px] transition-transform duration-200 group-hover/p:translate-x-0.5"></i>

@@ -154,12 +154,11 @@
                             >
                         </div>
 
-                        {{-- Kategori & Format Buku (Input Manual via Keyboard, Tanpa Dropdown) --}}
-                        <div class="grid gap-5 sm:grid-cols-2">
+                        {{-- Kategori & Format Buku --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2">
                             <div>
-                                <label for="nama_kategori" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Kategori Koleksi <span class="text-red-500">*</span></span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_kategori" class="block truncate text-xs font-semibold text-ink">
+                                    Kategori Koleksi <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -176,12 +175,12 @@
                                         <option value="{{ $cat->nama_kategori }}"></option>
                                     @endforeach
                                 </datalist>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Ketik kategori baru atau pilih dari daftar rekomendasi</p>
                             </div>
 
                             <div>
-                                <label for="nama_jenis_buku" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Format / Jenis Koleksi <span class="text-red-500">*</span></span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_jenis_buku" class="block truncate text-xs font-semibold text-ink">
+                                    Format / Jenis Koleksi <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -198,15 +197,15 @@
                                         <option value="{{ $type->nama_jenis_buku }}"></option>
                                     @endforeach
                                 </datalist>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Ketik format koleksi baru atau pilih dari daftar rekomendasi</p>
                             </div>
                         </div>
 
-                        {{-- Penerbit & Pengarang Utama (Input Manual via Keyboard, Tanpa Dropdown) --}}
-                        <div class="grid gap-5 sm:grid-cols-2">
+                        {{-- Penerbit & Pengarang Utama --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2">
                             <div>
-                                <label for="nama_penerbit" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Penerbit Buku</span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_penerbit" class="block truncate text-xs font-semibold text-ink">
+                                    Penerbit Buku
                                 </label>
                                 <input
                                     type="text"
@@ -222,12 +221,12 @@
                                         <option value="{{ $pub->nama_penerbit }}"></option>
                                     @endforeach
                                 </datalist>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Nama penerbit baru otomatis terdaftar saat disimpan</p>
                             </div>
 
                             <div>
-                                <label for="nama_penulis" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Pengarang / Penulis Utama</span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_penulis" class="block truncate text-xs font-semibold text-ink">
+                                    Pengarang / Penulis Utama
                                 </label>
                                 <input
                                     type="text"
@@ -243,13 +242,14 @@
                                         <option value="{{ $auth->nama_penulis }}"></option>
                                     @endforeach
                                 </datalist>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Nama pengarang baru otomatis terdaftar saat disimpan</p>
                             </div>
                         </div>
 
-                        {{-- ISBN, Tahun, Halaman & Dimensi / Ukuran Fisik --}}
-                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        {{-- ISBN, Tahun, Halaman & Dimensi Fisik --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
-                                <label for="isbn" class="block text-xs font-semibold text-ink">
+                                <label for="isbn" class="block truncate text-xs font-semibold text-ink">
                                     Nomor ISBN
                                 </label>
                                 <input
@@ -257,12 +257,13 @@
                                     name="isbn"
                                     id="isbn"
                                     value="{{ old('isbn', $book->isbn) }}"
-                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm font-mono"
+                                    placeholder="978-602-xxx"
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 font-mono text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
                             </div>
 
                             <div>
-                                <label for="tahun_terbit" class="block text-xs font-semibold text-ink">
+                                <label for="tahun_terbit" class="block truncate text-xs font-semibold text-ink">
                                     Tahun Terbit
                                 </label>
                                 <input
@@ -277,7 +278,7 @@
                             </div>
 
                             <div>
-                                <label for="jumlah_halaman" class="block text-xs font-semibold text-ink">
+                                <label for="jumlah_halaman" class="block truncate text-xs font-semibold text-ink">
                                     Jumlah Halaman
                                 </label>
                                 <input
@@ -285,22 +286,24 @@
                                     name="jumlah_halaman"
                                     id="jumlah_halaman"
                                     value="{{ old('jumlah_halaman', $book->jumlah_halaman) }}"
+                                    placeholder="Contoh: 350"
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
                             </div>
 
                             <div>
-                                <label for="dimensi" class="block text-xs font-semibold text-ink">
-                                    Dimensi / Ukuran Fisik
+                                <label for="dimensi" class="block truncate text-xs font-semibold text-ink">
+                                    Dimensi Fisik
                                 </label>
                                 <input
                                     type="text"
                                     name="dimensi"
                                     id="dimensi"
                                     value="{{ old('dimensi', $book->dimensi) }}"
-                                    placeholder="Contoh: 21 cm atau 15 x 23 cm"
+                                    placeholder="Contoh: 15 x 23 cm"
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
+                                <p class="mt-1 text-[10px] leading-normal text-muted">Dicetak pada label stiker</p>
                             </div>
                         </div>
 

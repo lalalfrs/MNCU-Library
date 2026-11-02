@@ -131,7 +131,8 @@ class LibraryController extends Controller
             }
         }
 
-        // 5. Box Filter Pencarian Lanjutan (Sesuai Referensi Gambar Desain & Layout OPAC)
+        // 5. Box Filter Pencarian Lanjutan & Sidebar Refine Results (Widyatama Style)
+        $filterJudul = trim((string) $request->query('filter_judul', ''));
         $filterPengarang = trim((string) $request->query('filter_pengarang', ''));
         $filterPenerbit = trim((string) $request->query('filter_penerbit', ''));
         $filterSubjek = trim((string) $request->query('filter_subjek', ''));
@@ -140,13 +141,34 @@ class LibraryController extends Controller
         $filterDdc = trim((string) $request->query('filter_ddc', ''));
         $filterNomorInduk = trim((string) $request->query('filter_nomor_induk', ''));
         $filterTahun = trim((string) $request->query('filter_tahun', 'Semua'));
-        $filterLokasi = (string) $request->query('filter_lokasi', 'Semua');
-        $filterJenis = (string) $request->query('filter_jenis', 'Semua');
+        $filterTahunDari = trim((string) $request->query('filter_tahun_dari', ''));
+        $filterTahunSampai = trim((string) $request->query('filter_tahun_sampai', ''));
+
+        $rawLokasi = $request->query('filter_lokasi', 'Semua');
+        $filterLokasiList = is_array($rawLokasi)
+            ? array_values(array_filter(array_map('trim', $rawLokasi), fn ($v) => $v !== '' && $v !== 'Semua'))
+            : (($rawLokasi !== 'Semua' && trim((string) $rawLokasi) !== '') ? [trim((string) $rawLokasi)] : []);
+        $filterLokasi = is_array($rawLokasi) ? ($filterLokasiList[0] ?? 'Semua') : (string) $rawLokasi;
+
+        $rawJenis = $request->query('filter_jenis', 'Semua');
+        $filterJenisList = is_array($rawJenis)
+            ? array_values(array_filter(array_map('trim', $rawJenis), fn ($v) => $v !== '' && $v !== 'Semua'))
+            : (($rawJenis !== 'Semua' && trim((string) $rawJenis) !== '') ? [trim((string) $rawJenis)] : []);
+        $filterJenis = is_array($rawJenis) ? ($filterJenisList[0] ?? 'Semua') : (string) $rawJenis;
+
+        $rawKategori = $request->query('filter_kategori', []);
+        $filterKategoriList = is_array($rawKategori)
+            ? array_values(array_filter(array_map('trim', $rawKategori), fn ($v) => $v !== '' && $v !== 'Semua'))
+            : (($rawKategori !== 'Semua' && trim((string) $rawKategori) !== '') ? [trim((string) $rawKategori)] : []);
+
         $filterProdi = (string) $request->query('filter_prodi', 'Semua');
         $statusFilter = (string) $request->query('status_filter', $request->query('status', 'Semua'));
 
-        // Hitung berapa banyak filter dari Box Filter yang sedang aktif
+        // Hitung berapa banyak filter dari Box Filter / Sidebar yang sedang aktif
         $activeFilterCount = 0;
+        if (! empty($filterJudul)) {
+            $activeFilterCount++;
+        }
         if (! empty($filterPengarang)) {
             $activeFilterCount++;
         }
@@ -171,10 +193,16 @@ class LibraryController extends Controller
         if ($filterTahun !== 'Semua' && ! empty($filterTahun)) {
             $activeFilterCount++;
         }
-        if ($filterLokasi !== 'Semua' && ! empty($filterLokasi)) {
+        if (! empty($filterTahunDari) || ! empty($filterTahunSampai)) {
             $activeFilterCount++;
         }
-        if ($filterJenis !== 'Semua' && ! empty($filterJenis)) {
+        if (! empty($filterLokasiList)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterJenisList)) {
+            $activeFilterCount++;
+        }
+        if (! empty($filterKategoriList)) {
             $activeFilterCount++;
         }
         if ($filterProdi !== 'Semua' && ! empty($filterProdi)) {
@@ -202,26 +230,16 @@ class LibraryController extends Controller
 
         $currentUserId = Auth::check() ? Auth::user()->id_pengguna : null;
 
-        // Ambil peminjaman aktif user yang lewat jadwal pengembalian untuk notifikasi peringatan sesuai flowchart
+        // Ambil peminjaman aktif user yang menyentuh H-1 (24 jam sebelum deadline) atau lewat jadwal pengembalian untuk notifikasi peringatan
         $userOverdueLoans = collect();
         if ($currentUserId) {
+            app(PeminjamanService::class)->sinkronisasiStatusKeterlambatan($currentUserId);
+
             $userOverdueLoans = PeminjamanBuku::with(['buku', 'eksemplar'])
                 ->where('id_pengguna', $currentUserId)
                 ->whereNull('tanggal_kembali')
                 ->whereDate('tanggal_jatuh_tempo', '<', Carbon::now()->toDateString())
                 ->get();
-
-            // Otomatis tandai status peringatan terkirim sesuai alur flowchart
-            foreach ($userOverdueLoans as $overdue) {
-                if (! $overdue->notifikasi_peringatan_dikirim) {
-                    $overdue->update([
-                        'status' => $overdue->status === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi' : 'Terlambat',
-                        'hari_keterlambatan' => $overdue->hitungHariTerlambat(),
-                        'notifikasi_peringatan_dikirim' => true,
-                        'tanggal_notifikasi' => Carbon::now(),
-                    ]);
-                }
-            }
         }
 
         if ($dbBooks->isNotEmpty()) {
@@ -385,6 +403,7 @@ class LibraryController extends Controller
             $kriteria,
             $fitur,
             $subjekId,
+            $filterJudul,
             $filterPengarang,
             $filterPenerbit,
             $filterSubjek,
@@ -393,8 +412,11 @@ class LibraryController extends Controller
             $filterDdc,
             $filterNomorInduk,
             $filterTahun,
-            $filterLokasi,
-            $filterJenis,
+            $filterTahunDari,
+            $filterTahunSampai,
+            $filterLokasiList,
+            $filterJenisList,
+            $filterKategoriList,
             $filterProdi,
             $statusFilter,
             $category
@@ -438,6 +460,13 @@ class LibraryController extends Controller
             }
 
             $matchesCategory = $category === 'Semua' || $item['category'] === $category || ($item['category_name'] ?? '') === $category;
+            if ($matchesCategory && ! empty($filterKategoriList)) {
+                $matchesCategory = collect($filterKategoriList)->contains(fn ($kat) => (
+                    strcasecmp($item['category_name'] ?? '', $kat) === 0 ||
+                    strcasecmp($item['category'] ?? '', $kat) === 0 ||
+                    collect($item['subjects'] ?? [])->contains(fn ($s) => stripos($s, $kat) !== false)
+                ));
+            }
 
             // B. Filter Kategori Subjek (Flowchart Cabang 1)
             $matchesSubjek = true;
@@ -452,7 +481,8 @@ class LibraryController extends Controller
                     stripos($item['category'] ?? '', $filterSubjek) !== false;
             }
 
-            // C. Box Filter Pencarian Lanjutan (Referensi Desain Gambar 2 & Hero Filter)
+            // C. Box Filter Pencarian Lanjutan & Sidebar Refine Results
+            $matchesJudul = empty($filterJudul) || stripos($item['title'] ?? '', $filterJudul) !== false;
             $matchesPengarang = empty($filterPengarang) || stripos($item['author'], $filterPengarang) !== false;
             $matchesPenerbit = empty($filterPenerbit) || stripos($item['publisher'] ?? '', $filterPenerbit) !== false;
             $matchesKota = empty($filterKota) || stripos($item['publisher_city'] ?? '', $filterKota) !== false;
@@ -464,14 +494,29 @@ class LibraryController extends Controller
             $matchesNomorInduk = empty($filterNomorInduk) || (
                 collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['kode_inventaris'] ?? '', $filterNomorInduk) !== false)
             );
+
             $matchesTahun = empty($filterTahun) || $filterTahun === 'Semua' || stripos((string) $item['year'], (string) $filterTahun) !== false;
-            $matchesLokasi = empty($filterLokasi) || $filterLokasi === 'Semua' || (
-                stripos($item['location'] ?? '', $filterLokasi) !== false ||
-                collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['lokasi_rak'] ?? '', $filterLokasi) !== false)
-            );
-            $matchesJenis = empty($filterJenis) || $filterJenis === 'Semua' || (
-                $item['category'] === $filterJenis || ($item['format'] ?? '') === $filterJenis
-            );
+            if ($matchesTahun && (! empty($filterTahunDari) || ! empty($filterTahunSampai))) {
+                $itemYear = (int) ($item['year'] ?? 0);
+                if (! empty($filterTahunDari) && is_numeric($filterTahunDari) && $itemYear < (int) $filterTahunDari) {
+                    $matchesTahun = false;
+                }
+                if (! empty($filterTahunSampai) && is_numeric($filterTahunSampai) && $itemYear > (int) $filterTahunSampai) {
+                    $matchesTahun = false;
+                }
+            }
+
+            $matchesLokasi = empty($filterLokasiList) || collect($filterLokasiList)->contains(fn ($lok) => (
+                stripos($item['location'] ?? '', $lok) !== false ||
+                collect($item['eksemplar_list'])->contains(fn ($ek) => stripos($ek['lokasi_rak'] ?? '', $lok) !== false)
+            ));
+
+            $matchesJenis = empty($filterJenisList) || collect($filterJenisList)->contains(fn ($jns) => (
+                strcasecmp($item['category'] ?? '', $jns) === 0 ||
+                strcasecmp($item['format'] ?? '', $jns) === 0 ||
+                stripos($item['category'] ?? '', $jns) !== false
+            ));
+
             $matchesProdi = empty($filterProdi) || $filterProdi === 'Semua' || (
                 $item['prodi'] === $filterProdi
             );
@@ -485,6 +530,7 @@ class LibraryController extends Controller
             }
 
             return $matchesQuery &&
+                $matchesJudul &&
                 $matchesSubjek &&
                 $matchesPengarang &&
                 $matchesPenerbit &&
@@ -611,6 +657,7 @@ class LibraryController extends Controller
             'query' => $query,
             'kriteria' => $kriteria,
             'sort' => $sort,
+            'filterJudul' => $filterJudul,
             'filterPengarang' => $filterPengarang,
             'filterPenerbit' => $filterPenerbit,
             'filterSubjek' => $filterSubjek,
@@ -619,8 +666,13 @@ class LibraryController extends Controller
             'filterDdc' => $filterDdc,
             'filterNomorInduk' => $filterNomorInduk,
             'filterTahun' => $filterTahun,
+            'filterTahunDari' => $filterTahunDari,
+            'filterTahunSampai' => $filterTahunSampai,
             'filterLokasi' => $filterLokasi,
+            'filterLokasiList' => $filterLokasiList,
             'filterJenis' => $filterJenis,
+            'filterJenisList' => $filterJenisList,
+            'filterKategoriList' => $filterKategoriList,
             'filterProdi' => $filterProdi,
             'category' => $category,
             'prodi' => $prodi,
@@ -673,6 +725,65 @@ class LibraryController extends Controller
     }
 
     /**
+     * Halaman Inbox & Notifikasi Peminjaman untuk seluruh User (Mahasiswa, Dosen, Pustakawan, Admin).
+     * Mengirimkan dan menampilkan notifikasi setiap kali peminjaman buku menyentuh H-1 (24 jam sebelum deadline)
+     * maupun ketika sudah melewati batas waktu pengembalian.
+     */
+    public function inbox(Request $request): View
+    {
+        $user = Auth::user();
+        app(PeminjamanService::class)->sinkronisasiStatusKeterlambatan($user->id_pengguna);
+
+        $tab = trim((string) $request->query('tab', 'notifikasi'));
+        $q = trim((string) $request->query('q', ''));
+
+        // 1. Notifikasi H-1 (24 jam sebelum deadline) & Keterlambatan
+        $deadlineAlerts = PeminjamanBuku::with(['buku.penulis', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->whereDate('tanggal_jatuh_tempo', '<=', Carbon::now()->addDay()->toDateString())
+            ->orderBy('tanggal_jatuh_tempo')
+            ->get();
+
+        // 2. Seluruh Pinjaman Aktif (maksimal 3 buku)
+        $activeLoans = PeminjamanBuku::with(['buku.penulis', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->whereNull('tanggal_kembali')
+            ->whereIn('status', ['Dipinjam', 'Terlambat', 'Menunggu Verifikasi'])
+            ->orderBy('tanggal_jatuh_tempo')
+            ->get();
+
+        // 3. Permohonan Peminjaman yang masih Menunggu Persetujuan Admin
+        $pendingRequests = PeminjamanBuku::with(['buku.penulis', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->where('status', 'Menunggu Persetujuan')
+            ->latest('tanggal_pengajuan_pinjam')
+            ->get();
+
+        // 4. Riwayat Selesai / Ditolak
+        $historyLoans = PeminjamanBuku::with(['buku.penulis', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->where(function ($sub): void {
+                $sub->whereNotNull('tanggal_kembali')
+                    ->orWhere('status', 'Ditolak');
+            })
+            ->latest()
+            ->get();
+
+        return view('inbox.index', [
+            'user' => $user,
+            'tab' => $tab,
+            'q' => $q,
+            'deadlineAlerts' => $deadlineAlerts,
+            'activeLoans' => $activeLoans,
+            'pendingRequests' => $pendingRequests,
+            'historyLoans' => $historyLoans,
+            'maxLoans' => PeminjamanService::MAKSIMAL_PINJAMAN,
+        ]);
+    }
+
+    /**
      * Validasi eligibilitas user yang sedang login untuk meminjam buku via website OPAC.
      */
     public function cekEligibilitasPeminjaman(Request $request): JsonResponse
@@ -701,6 +812,9 @@ class LibraryController extends Controller
                     'is_member' => $user->isMember(),
                 ],
                 'active_loans' => $hasil['active_loans'],
+                'active_loans_count' => $hasil['active_loans_count'] ?? count($hasil['active_loans']),
+                'max_loans' => $hasil['max_loans'] ?? PeminjamanService::MAKSIMAL_PINJAMAN,
+                'remaining_quota' => $hasil['remaining_quota'] ?? max(0, PeminjamanService::MAKSIMAL_PINJAMAN - count($hasil['active_loans'])),
             ],
         ], 200);
     }

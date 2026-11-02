@@ -143,12 +143,11 @@
                             >
                         </div>
 
-                        {{-- Kategori & Format Buku (Input Manual via Keyboard, Tanpa Dropdown) --}}
-                        <div class="grid gap-5 sm:grid-cols-2">
+                        {{-- Kategori & Format Buku --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2">
                             <div>
-                                <label for="nama_kategori" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Kategori Koleksi <span class="text-red-500">*</span></span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_kategori" class="block truncate text-xs font-semibold text-ink">
+                                    Kategori Koleksi <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -165,13 +164,12 @@
                                         <option value="{{ $cat->nama_kategori }}"></option>
                                     @endforeach
                                 </datalist>
-                                <span class="text-[10px] text-muted">Ketik langsung kategori baru atau pilih rekomendasi dari keyboard</span>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Ketik kategori baru atau pilih dari daftar rekomendasi</p>
                             </div>
 
                             <div>
-                                <label for="nama_jenis_buku" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Format / Jenis Koleksi <span class="text-red-500">*</span></span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_jenis_buku" class="block truncate text-xs font-semibold text-ink">
+                                    Format / Jenis Koleksi <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -188,16 +186,15 @@
                                         <option value="{{ $type->nama_jenis_buku }}"></option>
                                     @endforeach
                                 </datalist>
-                                <span class="text-[10px] text-muted">Ketik langsung format koleksi baru atau pilih rekomendasi</span>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Ketik format koleksi baru atau pilih dari daftar rekomendasi</p>
                             </div>
                         </div>
 
-                        {{-- Penerbit & Pengarang Utama (Input Manual via Keyboard, Tanpa Dropdown) --}}
-                        <div class="grid gap-5 sm:grid-cols-2">
+                        {{-- Penerbit & Pengarang Utama --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2">
                             <div>
-                                <label for="nama_penerbit" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Penerbit Buku</span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_penerbit" class="block truncate text-xs font-semibold text-ink">
+                                    Penerbit Buku
                                 </label>
                                 <input
                                     type="text"
@@ -213,13 +210,12 @@
                                         <option value="{{ $pub->nama_penerbit }}"></option>
                                     @endforeach
                                 </datalist>
-                                <span class="text-[10px] text-muted">Ketik nama penerbit; jika belum ada akan otomatis terdaftar</span>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Nama penerbit baru otomatis terdaftar saat disimpan</p>
                             </div>
 
                             <div>
-                                <label for="nama_penulis" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                    <span>Pengarang / Penulis Utama</span>
-                                    <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik manual</span>
+                                <label for="nama_penulis" class="block truncate text-xs font-semibold text-ink">
+                                    Pengarang / Penulis Utama
                                 </label>
                                 <input
                                     type="text"
@@ -235,14 +231,14 @@
                                         <option value="{{ $auth->nama_penulis }}"></option>
                                     @endforeach
                                 </datalist>
-                                <span class="text-[10px] text-muted">Ketik nama pengarang langsung menggunakan keyboard</span>
+                                <p class="mt-1 text-[11px] leading-normal text-muted">Nama pengarang baru otomatis terdaftar saat disimpan</p>
                             </div>
                         </div>
 
-                        {{-- ISBN, Tahun, Halaman & Dimensi / Ukuran Fisik --}}
-                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        {{-- ISBN, Tahun, Halaman & Dimensi Fisik --}}
+                        <div class="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-4">
                             <div>
-                                <label for="isbn" class="block text-xs font-semibold text-ink">
+                                <label for="isbn" class="block truncate text-xs font-semibold text-ink">
                                     Nomor ISBN
                                 </label>
                                 <input
@@ -251,12 +247,12 @@
                                     id="isbn"
                                     value="{{ old('isbn') }}"
                                     placeholder="978-602-xxx"
-                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm font-mono"
+                                    class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 font-mono text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
                             </div>
 
                             <div>
-                                <label for="tahun_terbit" class="block text-xs font-semibold text-ink">
+                                <label for="tahun_terbit" class="block truncate text-xs font-semibold text-ink">
                                     Tahun Terbit
                                 </label>
                                 <input
@@ -271,7 +267,7 @@
                             </div>
 
                             <div>
-                                <label for="jumlah_halaman" class="block text-xs font-semibold text-ink">
+                                <label for="jumlah_halaman" class="block truncate text-xs font-semibold text-ink">
                                     Jumlah Halaman
                                 </label>
                                 <input
@@ -285,18 +281,18 @@
                             </div>
 
                             <div>
-                                <label for="dimensi" class="block text-xs font-semibold text-ink">
-                                    Dimensi / Ukuran Fisik
+                                <label for="dimensi" class="block truncate text-xs font-semibold text-ink">
+                                    Dimensi Fisik
                                 </label>
                                 <input
                                     type="text"
                                     name="dimensi"
                                     id="dimensi"
                                     value="{{ old('dimensi') }}"
-                                    placeholder="Contoh: 21 cm atau 15 x 23 cm"
+                                    placeholder="Contoh: 15 x 23 cm"
                                     class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                                 >
-                                <span class="text-[10px] text-muted">Dicetak pada label stiker</span>
+                                <p class="mt-1 text-[10px] leading-normal text-muted">Dicetak pada label stiker</p>
                             </div>
                         </div>
 
@@ -404,30 +400,24 @@
                                 Daftarkan salinan fisik buku. Anda dapat mengetik kode barcode manual dari stiker fisik, melakukan scan dengan barcode scanner, atau biarkan kosong agar sistem otomatis membuat kode inventaris baru.
                             </p>
 
-                            <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="grid items-start gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label for="kode_barcode" class="flex items-center justify-between text-xs font-semibold text-ink">
-                                        <span><i class="fa-solid fa-barcode mr-1 text-primary"></i>Kode Barcode / Nomor Inventaris Fisik</span>
-                                        <span class="text-[11px] font-normal text-muted"><i class="fa-solid fa-keyboard mr-1 text-primary"></i>Ketik/Scan</span>
+                                    <label for="kode_barcode" class="block truncate text-xs font-semibold text-ink">
+                                        Kode Barcode / Nomor Inventaris
                                     </label>
-                                    <div class="relative mt-1">
-                                        <input
-                                            type="text"
-                                            name="kode_barcode"
-                                            id="kode_barcode"
-                                            value="{{ old('kode_barcode') }}"
-                                            placeholder="Contoh: INV-MNCU-001 atau scan barcode..."
-                                            class="h-10 w-full rounded-xl border border-line bg-white pr-8 pl-3.5 text-xs font-mono text-ink placeholder:text-muted focus:border-primary focus:outline-none"
-                                        >
-                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted">
-                                            <i class="fa-solid fa-keyboard text-xs"></i>
-                                        </span>
-                                    </div>
-                                    <span class="text-[10px] text-muted">Jika kosong, sistem membuat kode otomatis INV-BK...</span>
+                                    <input
+                                        type="text"
+                                        name="kode_barcode"
+                                        id="kode_barcode"
+                                        value="{{ old('kode_barcode') }}"
+                                        placeholder="Contoh: INV-MNCU-001 atau scan barcode..."
+                                        class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3.5 font-mono text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+                                    >
+                                    <p class="mt-1 text-[10px] leading-normal text-muted">Jika kosong, sistem membuat kode otomatis INV-BK...</p>
                                 </div>
 
                                 <div>
-                                    <label for="stok_awal" class="block text-xs font-semibold text-ink">
+                                    <label for="stok_awal" class="block truncate text-xs font-semibold text-ink">
                                         Jumlah Salinan / Eksemplar
                                     </label>
                                     <input
@@ -438,15 +428,15 @@
                                         min="0"
                                         max="50"
                                         placeholder="Misal: 1"
-                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                        class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Isi 0 jika hanya ada koleksi digital tanpa buku fisik</span>
+                                    <p class="mt-1 text-[10px] leading-normal text-muted">Isi 0 jika hanya ada koleksi digital tanpa buku fisik</p>
                                 </div>
                             </div>
 
-                            <div class="grid gap-4 sm:grid-cols-2 border-t border-emerald-200/60 pt-2">
+                            <div class="grid items-start gap-4 border-t border-emerald-200/60 pt-3 sm:grid-cols-2">
                                 <div>
-                                    <label for="nomor_panggil_dasar" class="block text-xs font-semibold text-ink">
+                                    <label for="nomor_panggil_dasar" class="block truncate text-xs font-semibold text-ink">
                                         Nomor Panggil Buku (Call Number / DDC)
                                     </label>
                                     <input
@@ -455,13 +445,13 @@
                                         id="nomor_panggil_dasar"
                                         value="{{ old('nomor_panggil_dasar') }}"
                                         placeholder="Contoh: 005.1 HID a"
-                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs font-mono text-ink focus:border-primary focus:outline-none"
+                                        class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3.5 font-mono text-xs text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Akan dicetak di bagian stiker punggung buku (8x5 cm)</span>
+                                    <p class="mt-1 text-[10px] leading-normal text-muted">Akan dicetak di bagian stiker punggung buku (8x5 cm)</p>
                                 </div>
 
                                 <div>
-                                    <label for="lokasi_rak_dasar" class="block text-xs font-semibold text-ink">
+                                    <label for="lokasi_rak_dasar" class="block truncate text-xs font-semibold text-ink">
                                         Lokasi Rak Koleksi
                                     </label>
                                     <input
@@ -470,9 +460,9 @@
                                         id="lokasi_rak_dasar"
                                         value="{{ old('lokasi_rak_dasar', 'Lantai 2, Rak Koleksi') }}"
                                         placeholder="Contoh: Lantai 2, Rak Komputer 03"
-                                        class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none"
+                                        class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none"
                                     >
-                                    <span class="text-[10px] text-muted">Letak penempatan buku fisik di gedung perpustakaan</span>
+                                    <p class="mt-1 text-[10px] leading-normal text-muted">Letak penempatan buku fisik di gedung perpustakaan</p>
                                 </div>
                             </div>
                         </div>
