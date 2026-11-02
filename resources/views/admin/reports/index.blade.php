@@ -4,7 +4,7 @@
 @section('description', 'Laporan resmi rekapitulasi data perpustakaan MNC University meliputi total koleksi buku, total anggota member, peminjam aktif, dan buku belum kembali.')
 
 @section('content')
-    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container">
+    <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container print:max-w-none print:px-0 print:py-0 print:gap-4 print:m-0">
         {{-- Breadcrumb & Header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
             <div>
@@ -169,10 +169,10 @@
         {{-- ========================================================================= --}}
         {{-- 4 KARTU METRIK UTAMA SESUAI FLOWCHART REPORT                              --}}
         {{-- ========================================================================= --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-3 print:mb-4">
 
             {{-- 1. MENAMPILKAN TOTAL KOLEKSI BUKU --}}
-            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs">
+            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs print:border-slate-300 print:shadow-none print:p-3 print:rounded-lg print:break-inside-avoid">
                 <div class="flex items-center justify-between">
                     <span class="flex size-11 items-center justify-center rounded-xl bg-blue-100 text-primary">
                         <i class="fa-solid fa-book-bookmark text-lg" aria-hidden="true"></i>
@@ -190,7 +190,7 @@
             </div>
 
             {{-- 2. MENAMPILKAN TOTAL ANGGOTA MEMBER --}}
-            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs">
+            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs print:border-slate-300 print:shadow-none print:p-3 print:rounded-lg print:break-inside-avoid">
                 <div class="flex items-center justify-between">
                     <span class="flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                         <i class="fa-solid fa-id-card text-lg" aria-hidden="true"></i>
@@ -209,7 +209,7 @@
             </div>
 
             {{-- 3. MENAMPILKAN TOTAL USER YANG MEMINJAM BUKU --}}
-            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs">
+            <div class="rounded-2xl border border-line bg-white p-5 shadow-xs print:border-slate-300 print:shadow-none print:p-3 print:rounded-lg print:break-inside-avoid">
                 <div class="flex items-center justify-between">
                     <span class="flex size-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
                         <i class="fa-solid fa-users text-lg" aria-hidden="true"></i>
@@ -227,7 +227,7 @@
             </div>
 
             {{-- 4. MENAMPILKAN TOTAL BUKU YANG BELUM DIKEMBALIKAN --}}
-            <div class="rounded-2xl border border-amber-300 bg-amber-50/50 p-5 shadow-xs">
+            <div class="rounded-2xl border border-amber-300 bg-amber-50/50 p-5 shadow-xs print:border-slate-300 print:bg-white print:shadow-none print:p-3 print:rounded-lg print:break-inside-avoid">
                 <div class="flex items-center justify-between">
                     <span class="flex size-11 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
                         <i class="fa-solid fa-clock text-lg" aria-hidden="true"></i>
@@ -248,24 +248,24 @@
         {{-- ========================================================================= --}}
         {{-- TABEL RINCIAN 1: DAFTAR BUKU YANG BELUM DIKEMBALIKAN                      --}}
         {{-- ========================================================================= --}}
-        <section class="rounded-2xl border border-line bg-white p-5 shadow-xs">
+        <section class="rounded-2xl border border-line bg-white p-5 shadow-xs print:border print:border-slate-300 print:rounded-lg print:p-3.5 print:shadow-none print:break-inside-avoid print:mb-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-4">
                 <div>
                     <h2 class="text-base font-bold text-ink">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>Daftar Buku yang Belum Dikembalikan
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2 print:hidden"></i>Daftar Buku yang Belum Dikembalikan
                     </h2>
                     <p class="text-xs text-muted">
                         Daftar seluruh buku yang masih berada di pemustaka (status Dipinjam, Terlambat, atau Menunggu Verifikasi Pengembalian).
                     </p>
                 </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 print:border print:border-slate-300">
                     {{ $totalBukuBelumKembali }} Buku Tanggungan
                 </span>
             </div>
 
-            <div class="mt-4 overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-subtle text-muted">
+            <div class="mt-4 overflow-x-auto print:overflow-visible">
+                <table class="w-full text-left text-xs print:text-[10px] print:w-full">
+                    <thead class="bg-subtle text-muted print:bg-slate-100 print:text-black">
                         <tr>
                             <th class="px-3.5 py-2.5 font-semibold">No</th>
                             <th class="px-3.5 py-2.5 font-semibold">Nama Peminjam / NIM</th>
@@ -328,24 +328,24 @@
         {{-- ========================================================================= --}}
         {{-- TABEL RINCIAN 2: DAFTAR TRANSAKSI PEMINJAMAN PADA PERIODE TERPILIH        --}}
         {{-- ========================================================================= --}}
-        <section class="rounded-2xl border border-line bg-white p-5 shadow-xs">
+        <section class="rounded-2xl border border-line bg-white p-5 shadow-xs print:border print:border-slate-300 print:rounded-lg print:p-3.5 print:shadow-none print:break-inside-avoid print:mb-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-4">
                 <div>
                     <h2 class="text-base font-bold text-ink">
-                        <i class="fa-solid fa-clock-rotate-left text-primary mr-2"></i>Rekapitulasi Peminjaman Periode: {{ $periodeLabel }}
+                        <i class="fa-solid fa-clock-rotate-left text-primary mr-2 print:hidden"></i>Rekapitulasi Peminjaman Periode: {{ $periodeLabel }}
                     </h2>
                     <p class="text-xs text-muted">
                         Riwayat peminjaman buku yang dilakukan oleh member perpustakaan pada rentang waktu yang dipilih.
                     </p>
                 </div>
-                <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary print:border print:border-slate-300">
                     {{ $totalTransaksiPeminjaman }} Transaksi Peminjaman
                 </span>
             </div>
 
-            <div class="mt-4 overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-subtle text-muted">
+            <div class="mt-4 overflow-x-auto print:overflow-visible">
+                <table class="w-full text-left text-xs print:text-[10px] print:w-full">
+                    <thead class="bg-subtle text-muted print:bg-slate-100 print:text-black">
                         <tr>
                             <th class="px-3.5 py-2.5 font-semibold">No</th>
                             <th class="px-3.5 py-2.5 font-semibold">Peminjam</th>
@@ -400,7 +400,7 @@
         </section>
 
         {{-- TANDA TANGAN RESMI PUSTAKAWAN (KHUSUS CETAK PDF / PRINT) --}}
-        <div class="hidden print:block mt-8 pt-6 border-t border-line">
+        <div class="hidden print:block mt-8 pt-6 border-t border-line print:break-inside-avoid">
             <div class="flex justify-between text-xs text-ink">
                 <div>
                     <p>Mengetahui,</p>

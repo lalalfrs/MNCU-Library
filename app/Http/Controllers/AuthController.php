@@ -172,6 +172,54 @@ class AuthController extends Controller
     }
 
     /**
+     * Skenario 1: Tampilkan formulir reset / ganti kata sandi untuk pengguna yang sedang masuk.
+     */
+    public function showChangePasswordForm(): View
+    {
+        /** @var Pengguna $user */
+        $user = Auth::user();
+
+        return view('auth.change-password', compact('user'));
+    }
+
+    /**
+     * Skenario 1: Proses pembaruan kata sandi oleh pengguna sendiri (Dosen & Mahasiswa).
+     * Langsung memasukkan kata sandi baru sebanyak 2 kali tanpa perlu memasukkan kata sandi lama.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password_baru' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'password_baru.required' => 'Kata sandi baru wajib diisi.',
+            'password_baru.min' => 'Kata sandi baru minimal 6 karakter.',
+            'password_baru.confirmed' => 'Konfirmasi kata sandi baru tidak cocok. Pastikan kedua input kata sandi sama persis.',
+        ]);
+
+        /** @var Pengguna $user */
+        $user = Auth::user();
+
+        // Enkripsi dan simpan kata sandi baru dengan Hash::make()
+        $user->kata_sandi = Hash::make($validated['password_baru']);
+        if (isset($user->password) || in_array('password', $user->getFillable(), true)) {
+            $user->password = Hash::make($validated['password_baru']);
+        }
+        $user->save();
+
+        if ($request->input('redirect_to') === 'profile') {
+            return redirect()->route('profile.show')->with(
+                'success',
+                'Kata sandi Anda berhasil diperbarui! Silakan gunakan kata sandi baru untuk login berikutnya.'
+            );
+        }
+
+        return redirect()->route('password.edit')->with(
+            'success',
+            'Kata sandi Anda berhasil diperbarui! Silakan gunakan kata sandi baru untuk login berikutnya.'
+        );
+    }
+
+    /**
      * Proses keluar dari sesi sistem perpustakaan.
      */
     public function logout(Request $request): RedirectResponse

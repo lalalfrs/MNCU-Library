@@ -16,6 +16,35 @@
             <span class="inline-flex min-h-[44px] items-center font-semibold text-ink" aria-current="page">Profil Pengguna</span>
         </nav>
 
+        {{-- Alert Notifikasi Sukses / Feedback --}}
+        @if (session('success'))
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-xs sm:text-sm text-emerald-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                    <i class="fa-solid fa-circle-check text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-emerald-950">Berhasil!</p>
+                    <p class="mt-0.5 text-xs text-emerald-800 leading-relaxed">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs sm:text-sm text-rose-900 shadow-xs" role="alert">
+                <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white">
+                    <i class="fa-solid fa-triangle-exclamation text-xs" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-rose-950">Periksa Kembali Input Anda</p>
+                    <ul class="mt-1 list-disc list-inside space-y-0.5 text-xs text-rose-800">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         {{-- Page Header & Sub Navigation Tabs --}}
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
             <div>
@@ -29,10 +58,18 @@
                         <i class="fa-solid fa-id-card text-xs" aria-hidden="true"></i>
                         <span>Ringkasan</span>
                     </span>
+                    <a href="{{ route('profile.riwayat') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
+                        <span>Riwayat Peminjaman</span>
+                    </a>
                     <a href="{{ route('profile.edit') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
                         <i class="fa-solid fa-user-pen text-xs" aria-hidden="true"></i>
                         <span>Edit Profil</span>
                     </a>
+                    <button type="button" onclick="openProfileResetModal()" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-key text-xs" aria-hidden="true"></i>
+                        <span>Reset Password</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -219,6 +256,18 @@
                         </h2>
                     </div>
                     <div class="p-3 space-y-1">
+                        <a href="{{ route('profile.riwayat') }}" class="flex min-h-[44px] items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-clock-rotate-left text-primary" aria-hidden="true"></i>
+                                <span>Riwayat Peminjaman Buku</span>
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                @if (isset($totalPinjamAktif) && $totalPinjamAktif > 0)
+                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">{{ $totalPinjamAktif }} Aktif</span>
+                                @endif
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
+                            </div>
+                        </a>
                         <a href="{{ route('opac') }}" class="flex min-h-[44px] items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50">
                             <span class="flex items-center gap-3">
                                 <i class="fa-solid fa-book-open text-primary" aria-hidden="true"></i>
@@ -233,16 +282,16 @@
                             </span>
                             <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
                         </a>
-                        <a href="{{ route('profile.edit') }}#ubah-password" class="flex min-h-[44px] items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50">
+                        <button type="button" onclick="openProfileResetModal()" class="flex min-h-[44px] w-full items-center justify-between rounded-xl p-3 text-xs font-medium text-ink transition-colors hover:bg-slate-50 text-left">
                             <span class="flex items-center gap-3">
                                 <i class="fa-solid fa-key text-amber-600" aria-hidden="true"></i>
-                                <span>Ubah Kata Sandi Akun</span>
+                                <span>Reset / Ubah Kata Sandi</span>
                             </span>
                             <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
                                 <span>Ganti</span>
                                 <i class="fa-solid fa-chevron-right text-[10px] text-slate-400" aria-hidden="true"></i>
                             </span>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -380,6 +429,511 @@
                 </div>
             </div>
         </div>
+
+        {{-- ========================================================================= --}}
+        {{-- 3. RIWAYAT PEMINJAMAN BUKU SPESIFIK USER (TABEL & CARD LIST TAILWIND)    --}}
+        {{-- ========================================================================= --}}
+        <div id="riwayat-peminjaman" class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+            {{-- Header Bagian Riwayat --}}
+            <div class="flex flex-col gap-3 border-b border-line bg-slate-50/70 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <i class="fa-solid fa-clock-rotate-left text-sm" aria-hidden="true"></i>
+                        </span>
+                        <h2 class="text-base font-bold text-ink sm:text-lg">Riwayat Peminjaman Buku Saya</h2>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">
+                        Daftar riwayat peminjaman buku fisik terdaftar atas nama akun Anda di Perpustakaan MNC University.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-white border border-line px-3 py-1.5 text-xs font-semibold text-ink shadow-xs">
+                        <span class="size-2 rounded-full bg-primary"></span>
+                        <span>Total: {{ isset($riwayatPeminjaman) ? $riwayatPeminjaman->count() : 0 }} Buku</span>
+                    </span>
+                    @if (isset($totalPinjamAktif) && $totalPinjamAktif > 0)
+                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-xs">
+                            <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span>{{ $totalPinjamAktif }} Sedang Berjalan</span>
+                        </span>
+                    @endif
+                    <a href="{{ route('profile.riwayat') }}" class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark">
+                        <i class="fa-solid fa-list-check text-xs"></i>
+                        <span>Lihat Detail Lengkap</span>
+                    </a>
+                </div>
+            </div>
+
+            {{-- Tampilan Desktop: Tabel Responsif --}}
+            <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="border-b border-line bg-subtle text-muted">
+                        <tr>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">No</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Nama Buku</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Tanggal Peminjaman</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Tanggal Pengembalian</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px]">Status Sirkulasi</th>
+                            <th scope="col" class="px-5 py-3.5 font-bold uppercase tracking-wider text-[11px] text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line/70">
+                        @forelse ($riwayatPeminjaman ?? [] as $index => $pinjam)
+                            @php
+                                $hariTerlambat = method_exists($pinjam, 'hitungHariTerlambat') ? $pinjam->hitungHariTerlambat() : 0;
+                            @endphp
+                            <tr class="transition-colors hover:bg-slate-50/70">
+                                <td class="px-5 py-4 font-mono text-muted text-xs">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="size-11 shrink-0 overflow-hidden rounded-lg border border-line bg-slate-100 shadow-xs">
+                                            @if ($pinjam->buku && $pinjam->buku->sampul_url)
+                                                <img src="{{ $pinjam->buku->sampul_url }}" alt="{{ $pinjam->buku->judul_buku }}" class="size-full object-cover">
+                                            @else
+                                                <div class="flex size-full items-center justify-center bg-primary/10 text-primary">
+                                                    <i class="fa-solid fa-book text-sm" aria-hidden="true"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0 max-w-[320px]">
+                                            <p class="font-bold text-ink hover:text-primary transition-colors line-clamp-2" title="{{ $pinjam->buku?->judul_buku }}">
+                                                {{ $pinjam->buku?->judul_buku ?? 'Judul Buku Tidak Ditemukan' }}
+                                            </p>
+                                            <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+                                                <span class="font-mono">ID: {{ $pinjam->id_peminjaman }}</span>
+                                                @if ($pinjam->eksemplar?->nomor_barcode)
+                                                    <span>•</span>
+                                                    <span class="font-mono">Barcode: {{ $pinjam->eksemplar->nomor_barcode }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-1.5 font-semibold text-ink">
+                                        <i class="fa-regular fa-calendar-check text-xs text-primary" aria-hidden="true"></i>
+                                        <span>{{ $pinjam->tanggal_pinjam ? $pinjam->tanggal_pinjam->format('d M Y') : ($pinjam->created_at ? $pinjam->created_at->format('d M Y') : '-') }}</span>
+                                    </div>
+                                    @if ($pinjam->tanggal_pengajuan_pinjam && ! $pinjam->tanggal_pinjam)
+                                        <span class="mt-0.5 block text-[10px] text-muted">Diajukan: {{ $pinjam->tanggal_pengajuan_pinjam->format('d M Y') }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    @if ($pinjam->tanggal_kembali)
+                                        <div class="flex items-center gap-1.5 font-bold text-emerald-700">
+                                            <i class="fa-solid fa-circle-check text-xs text-emerald-600" aria-hidden="true"></i>
+                                            <span>{{ $pinjam->tanggal_kembali->format('d M Y') }}</span>
+                                        </div>
+                                        <span class="mt-0.5 block text-[10px] text-muted">Selesai Dikembalikan</span>
+                                    @else
+                                        @if ($pinjam->tanggal_jatuh_tempo)
+                                            <div class="flex items-center gap-1.5 font-bold {{ $hariTerlambat > 0 ? 'text-rose-600' : 'text-amber-700' }}">
+                                                <i class="fa-regular fa-clock text-xs" aria-hidden="true"></i>
+                                                <span>{{ $pinjam->tanggal_jatuh_tempo->format('d M Y') }}</span>
+                                            </div>
+                                            @if ($hariTerlambat > 0)
+                                                <span class="mt-0.5 block text-[10px] font-semibold text-rose-600">Terlambat {{ $hariTerlambat }} hari</span>
+                                            @else
+                                                <span class="mt-0.5 block text-[10px] text-muted">Batas Pengembalian</span>
+                                            @endif
+                                        @else
+                                            <span class="font-medium text-slate-500">-</span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 whitespace-nowrap">
+                                    @php
+                                        $isKembali = in_array($pinjam->status, ['Kembali', 'Dikembalikan']) || ! empty($pinjam->tanggal_kembali);
+                                    @endphp
+                                    @if ($isKembali)
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                            <i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i>
+                                            <span>Dikembalikan</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Dipinjam')
+                                        @if ($hariTerlambat > 0)
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                                <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
+                                                <span>Terlambat</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-primary border border-blue-200">
+                                                <i class="fa-solid fa-book-open-reader text-[10px]" aria-hidden="true"></i>
+                                                <span>Sedang Dipinjam</span>
+                                            </span>
+                                        @endif
+                                    @elseif (in_array($pinjam->status, ['Menunggu Verifikasi', 'Menunggu Persetujuan']))
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200">
+                                            <i class="fa-solid fa-hourglass-half text-[10px]" aria-hidden="true"></i>
+                                            <span>{{ $pinjam->status }}</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Terlambat')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                            <i class="fa-solid fa-triangle-exclamation text-[10px]" aria-hidden="true"></i>
+                                            <span>Terlambat</span>
+                                        </span>
+                                    @elseif ($pinjam->status === 'Ditolak')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                            <i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i>
+                                            <span>Ditolak</span>
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                                            {{ $pinjam->status }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 text-right whitespace-nowrap">
+                                    <a
+                                        href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
+                                        class="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-medium text-ink hover:bg-slate-50 hover:text-primary transition-colors"
+                                        title="Buka buku ini di OPAC"
+                                    >
+                                        <i class="fa-solid fa-eye text-[11px] text-muted" aria-hidden="true"></i>
+                                        <span>Katalog OPAC</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                        <i class="fa-solid fa-book text-2xl" aria-hidden="true"></i>
+                                    </div>
+                                    <h3 class="mt-3 text-sm font-bold text-ink">Belum Ada Riwayat Peminjaman</h3>
+                                    <p class="mx-auto mt-1 max-w-sm text-xs text-muted leading-relaxed">
+                                        Anda belum pernah meminjam koleksi buku fisik di Perpustakaan MNC University. Silakan temukan dan pinjam buku favorit Anda melalui katalog OPAC.
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="{{ route('opac') }}" class="btn-press inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-dark">
+                                            <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                                            <span>Jelajahi Katalog Buku (OPAC)</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Tampilan Mobile: Card List Responsif (antislop-layoutmobile) --}}
+            <div class="block sm:hidden divide-y divide-line/70">
+                @forelse ($riwayatPeminjaman ?? [] as $pinjam)
+                    @php
+                        $hariTerlambat = method_exists($pinjam, 'hitungHariTerlambat') ? $pinjam->hitungHariTerlambat() : 0;
+                    @endphp
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="size-12 shrink-0 overflow-hidden rounded-xl border border-line bg-slate-100 shadow-xs">
+                                    @if ($pinjam->buku && $pinjam->buku->sampul_url)
+                                        <img src="{{ $pinjam->buku->sampul_url }}" alt="{{ $pinjam->buku->judul_buku }}" class="size-full object-cover">
+                                    @else
+                                        <div class="flex size-full items-center justify-center bg-primary/10 text-primary">
+                                            <i class="fa-solid fa-book text-base" aria-hidden="true"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-bold text-xs text-ink line-clamp-2 leading-snug">
+                                        {{ $pinjam->buku?->judul_buku ?? 'Judul Buku Tidak Ditemukan' }}
+                                    </h3>
+                                    <p class="mt-0.5 font-mono text-[11px] text-muted">ID: {{ $pinjam->id_peminjaman }}</p>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                @php
+                                    $isKembali = in_array($pinjam->status, ['Kembali', 'Dikembalikan']) || ! empty($pinjam->tanggal_kembali);
+                                @endphp
+                                @if ($isKembali)
+                                    <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                        Dikembalikan
+                                    </span>
+                                @elseif ($pinjam->status === 'Dipinjam')
+                                    @if ($hariTerlambat > 0)
+                                        <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                            Terlambat
+                                        </span>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-primary border border-blue-200">
+                                            Dipinjam
+                                        </span>
+                                    @endif
+                                @elseif (in_array($pinjam->status, ['Menunggu Verifikasi', 'Menunggu Persetujuan']))
+                                    <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200">
+                                        Verifikasi
+                                    </span>
+                                @elseif ($pinjam->status === 'Terlambat')
+                                    <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                        Terlambat
+                                    </span>
+                                @else
+                                    <span class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+                                        {{ $pinjam->status }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Metadata Grid Tanggal Peminjaman & Pengembalian --}}
+                        <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2.5 text-[11px] border border-line/60">
+                            <div>
+                                <span class="block text-muted text-[10px]">Tanggal Peminjaman</span>
+                                <span class="font-bold text-ink">
+                                    {{ $pinjam->tanggal_pinjam ? $pinjam->tanggal_pinjam->format('d M Y') : ($pinjam->created_at ? $pinjam->created_at->format('d M Y') : '-') }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="block text-muted text-[10px]">Tanggal Pengembalian</span>
+                                <span class="font-bold {{ $pinjam->tanggal_kembali ? 'text-emerald-700' : ($hariTerlambat > 0 ? 'text-rose-600' : 'text-ink') }}">
+                                    @if ($pinjam->tanggal_kembali)
+                                        {{ $pinjam->tanggal_kembali->format('d M Y') }}
+                                    @elseif ($pinjam->tanggal_jatuh_tempo)
+                                        {{ $pinjam->tanggal_jatuh_tempo->format('d M Y') }}
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            @if ($pinjam->eksemplar?->nomor_barcode)
+                                <span class="font-mono text-[10px] text-muted">Barcode: {{ $pinjam->eksemplar->nomor_barcode }}</span>
+                            @else
+                                <span></span>
+                            @endif
+                            <a
+                                href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
+                                class="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                            >
+                                <span>Lihat di OPAC</span>
+                                <i class="fa-solid fa-angle-right text-[10px]" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center">
+                        <i class="fa-solid fa-book-open text-2xl text-slate-300 mb-2 block"></i>
+                        <p class="text-xs font-semibold text-ink">Belum Ada Riwayat Peminjaman</p>
+                        <p class="mt-1 text-[11px] text-muted">Buku yang Anda pinjam akan tercatat otomatis di sini.</p>
+                        <a href="{{ route('opac') }}" class="btn-press mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>Buka Katalog OPAC</span>
+                        </a>
+                    </div>
+                @endforelse
+            </div>
+        </div>
     </div>
 </div>
+
+{{-- ========================================================================= --}}
+{{-- MODAL RESET PASSWORD LANGSUNG (TANPA PASSWORD LAMA, 2X INPUT)             --}}
+{{-- ========================================================================= --}}
+<div
+    id="profile-reset-password-modal"
+    class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-reset-profile-title"
+>
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-white shadow-2xl transition-all">
+            {{-- Header Modal --}}
+            <div class="flex items-center justify-between border-b border-line bg-slate-50/70 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <i class="fa-solid fa-key text-sm" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <h3 id="modal-reset-profile-title" class="text-sm font-bold text-ink sm:text-base">Reset Kata Sandi Akun</h3>
+                        <p class="text-xs text-muted">Perbarui kata sandi langsung tanpa perlu kata sandi lama.</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeProfileResetModal()"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    aria-label="Tutup jendela reset kata sandi"
+                >
+                    <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            {{-- Isi Formulir Modal --}}
+            <form action="{{ route('profile.password.update') }}" method="POST" class="p-6 space-y-5">
+                @csrf
+                @method('PUT')
+
+                {{-- Alert Info: Tanpa Password Lama --}}
+                <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/80 p-3.5 text-xs text-blue-900">
+                    <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 shrink-0" aria-hidden="true"></i>
+                    <p class="leading-relaxed">
+                        Anda dapat langsung membuat kata sandi baru. Masukkan kata sandi baru sebanyak <strong>2 kali</strong> pada kolom di bawah ini untuk verifikasi.
+                    </p>
+                </div>
+
+                {{-- 1. Kata Sandi Baru --}}
+                <div class="space-y-1.5">
+                    <label for="modal_password_baru" class="block text-xs font-bold text-ink sm:text-sm">
+                        Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                            <i class="fa-solid fa-lock text-xs" aria-hidden="true"></i>
+                        </span>
+                        <input
+                            type="password"
+                            name="password_baru"
+                            id="modal_password_baru"
+                            required
+                            minlength="6"
+                            placeholder="Minimal 6 karakter kombinasi..."
+                            class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                            oninput="checkModalPasswordMatch()"
+                        >
+                        <button
+                            type="button"
+                            onclick="toggleModalPassword('modal_password_baru', 'modal-eye-new')"
+                            class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                            aria-label="Tampilkan atau sembunyikan kata sandi baru"
+                        >
+                            <i id="modal-eye-new" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- 2. Konfirmasi Kata Sandi Baru --}}
+                <div class="space-y-1.5">
+                    <label for="modal_password_baru_confirmation" class="block text-xs font-bold text-ink sm:text-sm">
+                        Ulangi Kata Sandi Baru <span class="text-rose-500" aria-hidden="true">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+                            <i class="fa-solid fa-lock-open text-xs" aria-hidden="true"></i>
+                        </span>
+                        <input
+                            type="password"
+                            name="password_baru_confirmation"
+                            id="modal_password_baru_confirmation"
+                            required
+                            minlength="6"
+                            placeholder="Ketik ulang kata sandi baru yang sama..."
+                            class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-10 text-xs font-medium text-ink placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
+                            oninput="checkModalPasswordMatch()"
+                        >
+                        <button
+                            type="button"
+                            onclick="toggleModalPassword('modal_password_baru_confirmation', 'modal-eye-confirm')"
+                            class="absolute inset-y-0 right-0 flex min-h-[44px] items-center pr-3.5 text-muted hover:text-ink focus:outline-none"
+                            aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi"
+                        >
+                            <i id="modal-eye-confirm" class="fa-regular fa-eye text-xs" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <p id="modal-match-feedback" class="text-[11px] font-medium text-muted mt-1 hidden"></p>
+                </div>
+
+                {{-- Info Keamanan Hashing --}}
+                <div class="rounded-xl bg-slate-50 p-3 border border-line/70 flex items-center gap-2 text-[11px] text-muted">
+                    <i class="fa-solid fa-shield-halved text-emerald-600" aria-hidden="true"></i>
+                    <span>Terenkripsi aman menggunakan standar hash Bcrypt Laravel.</span>
+                </div>
+
+                {{-- Footer Tombol Aksi --}}
+                <div class="flex flex-col-reverse gap-2.5 pt-3 sm:flex-row sm:items-center sm:justify-end border-t border-line/70">
+                    <button
+                        type="button"
+                        onclick="closeProfileResetModal()"
+                        class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-line bg-white px-5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        <span>Simpan Kata Sandi Baru</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openProfileResetModal() {
+        const modal = document.getElementById('profile-reset-password-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            setTimeout(() => {
+                document.getElementById('modal_password_baru')?.focus();
+            }, 100);
+        }
+    }
+
+    function closeProfileResetModal() {
+        const modal = document.getElementById('profile-reset-password-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function toggleModalPassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function checkModalPasswordMatch() {
+        const p1 = document.getElementById('modal_password_baru')?.value || '';
+        const p2 = document.getElementById('modal_password_baru_confirmation')?.value || '';
+        const feedback = document.getElementById('modal-match-feedback');
+        if (!feedback) return;
+
+        if (!p2) {
+            feedback.classList.add('hidden');
+            return;
+        }
+
+        feedback.classList.remove('hidden');
+        if (p1 === p2) {
+            feedback.className = 'text-[11px] font-medium text-emerald-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Kata sandi cocok!</span>';
+        } else {
+            feedback.className = 'text-[11px] font-medium text-rose-600 flex items-center gap-1 mt-1';
+            feedback.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Konfirmasi kata sandi belum sama.</span>';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeProfileResetModal();
+        }
+    });
+
+    document.getElementById('profile-reset-password-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeProfileResetModal();
+        }
+    });
+</script>
 @endsection

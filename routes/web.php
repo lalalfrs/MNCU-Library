@@ -26,14 +26,22 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/lupa-password', [AuthController::class, 'sendResetPassword'])->name('password.email');
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+// Skenario 1: Reset / Ubah Password oleh Pengguna yang Sedang Login (Dosen & Mahasiswa)
+Route::middleware('auth')->group(function (): void {
+    Route::get('/ubah-password', [AuthController::class, 'showChangePasswordForm'])->name('password.edit');
+    Route::put('/ubah-password', [AuthController::class, 'updatePassword'])->name('password.update');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 
 // Profil Pengguna (Khusus Pengguna Terautentikasi)
 Route::middleware('auth')->group(function (): void {
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profil/riwayat-peminjaman', [ProfileController::class, 'riwayatPeminjaman'])->name('profile.riwayat');
+    Route::get('/riwayat-peminjaman', [ProfileController::class, 'riwayatPeminjaman'])->name('peminjaman.riwayat');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::put('/profil/reset-password', [ProfileController::class, 'resetPassword']);
 });
 
 // Beranda Utama
@@ -83,6 +91,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     Route::post('users/{user}/promote-member', [UserController::class, 'promoteMember'])->name('users.promote-member');
     Route::post('users/{user}/demote-member', [UserController::class, 'demoteMember'])->name('users.demote-member');
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // 2. Manajemen Buku & Stok Eksemplar
     Route::get('buku/{buku}/cetak-label/{eksemplar?}', [BookController::class, 'cetakLabel'])->name('books.cetak-label');

@@ -1,5 +1,5 @@
 {{-- Footer Perpustakaan MNC University --}}
-<footer class="mt-8 border-t border-line bg-white py-5 text-center text-[13px] text-muted lg:text-base">
+<footer class="mt-8 border-t border-line bg-white py-5 text-center text-[13px] text-muted lg:text-base print:hidden">
     &copy; <span id="footer-year">{{ date('Y') }}</span> Perpustakaan MNC University. Hak Cipta Dilindungi.
     <script>
         (function () {
