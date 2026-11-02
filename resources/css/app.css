@@ -5,13 +5,14 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-/* Logo containment safeguard to prevent layout explosions */
-img[src*="Logo"],
-img[src*="logo"],
-.brand-logo {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
+@layer base {
+    /* Logo containment safeguard inside base layer so Tailwind height and width utilities can override it */
+    img[src*="Logo"],
+    img[src*="logo"],
+    .brand-logo {
+        max-width: 100%;
+        object-fit: contain;
+    }
 }
 
 /* Design tokens: spesifikasi-desain-ui.md §2 */
@@ -475,10 +476,19 @@ body.modal-open header {
 /* ==========================================================================
    Tata Letak Cetak PDF & Print Resmi (Perpustakaan MNC University)
    ========================================================================== */
+.print-kop-logo {
+    width: 48px !important;
+    height: 48px !important;
+    max-width: 48px !important;
+    max-height: 48px !important;
+    object-fit: contain !important;
+    flex-shrink: 0 !important;
+}
+
 @media print {
     @page {
         size: A4 portrait;
-        margin: 12mm 15mm;
+        margin: 10mm 12mm;
     }
 
     *,
@@ -488,9 +498,12 @@ body.modal-open header {
         print-color-adjust: exact !important;
     }
 
+    html,
     body {
         background: #ffffff !important;
         color: #111827 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     .print\:hidden,
