@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Buku;
 use App\Models\EksemplarBuku;
 use App\Models\Pengguna;
+use App\Services\HolidayHelper;
 use App\Services\PeminjamanService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -173,7 +174,7 @@ class PeminjamanApiController extends Controller
         }
 
         $tanggalPinjam = $validated['tanggal_pinjam'] ?? Carbon::now()->toDateString();
-        $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? Carbon::now()->addDays(14)->toDateString();
+        $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? HolidayHelper::hitungJatuhTempo($tanggalPinjam, 7)->toDateString();
 
         try {
             $peminjaman = $this->peminjamanService->buatPeminjaman(

@@ -10,6 +10,7 @@ use App\Models\PeminjamanBuku;
 use App\Models\Prodi;
 use App\Models\ProfilPustakawan;
 use App\Models\SubjekBuku;
+use App\Services\HolidayHelper;
 use App\Services\PeminjamanService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -107,8 +108,6 @@ class LibraryController extends Controller
         }
 
         $category = (string) $request->query('kategori', 'Semua');
-        $prodi = (string) $request->query('prodi', 'Semua');
-        $jenisFilter = (string) $request->query('jenis', 'Semua');
         $selectedBookId = $request->query('buku');
 
         // 2. Alur Flowchart Fitur OPAC (Kategori Subjek, Koleksi Populer, Koleksi Baru & Diperbarui)
@@ -675,8 +674,6 @@ class LibraryController extends Controller
             'filterKategoriList' => $filterKategoriList,
             'filterProdi' => $filterProdi,
             'category' => $category,
-            'prodi' => $prodi,
-            'jenisFilter' => $jenisFilter,
             'selectedBookId' => $selectedBookId,
             'selectedBookItem' => $selectedBookItem,
             'statusFilter' => $statusFilter,
@@ -845,7 +842,7 @@ class LibraryController extends Controller
         $peminjamanService = app(PeminjamanService::class);
 
         $tanggalPinjam = $validated['tanggal_pinjam'] ?? now()->toDateString();
-        $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? Carbon::parse($tanggalPinjam)->addDays(14)->toDateString();
+        $tanggalJatuhTempo = $validated['tanggal_jatuh_tempo'] ?? HolidayHelper::hitungJatuhTempo($tanggalPinjam, 7)->toDateString();
 
         try {
             $peminjaman = $peminjamanService->ajukanPeminjaman(

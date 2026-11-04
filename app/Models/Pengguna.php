@@ -128,6 +128,9 @@ class Pengguna extends Authenticatable
         if ($this->isDosen()) {
             return 'dosen';
         }
+        if ($this->isTendik()) {
+            return 'tendik';
+        }
 
         return 'admin';
     }
@@ -182,6 +185,14 @@ class Pengguna extends Authenticatable
     public function isDosen(): bool
     {
         return $this->peran?->nama_peran === 'Dosen';
+    }
+
+    /**
+     * Cek apakah pengguna berstatus sebagai Tenaga Kependidikan (Tendik).
+     */
+    public function isTendik(): bool
+    {
+        return $this->peran?->nama_peran === 'Tendik';
     }
 
     /**

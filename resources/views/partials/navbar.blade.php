@@ -205,7 +205,7 @@
                     {{-- Dropdown Menu Pengguna --}}
                     <div
                         id="user-dropdown"
-                        class="absolute right-0 mt-2 hidden w-64 rounded-2xl border border-line bg-white p-2 shadow-raised z-50"
+                        class="absolute right-0 mt-2 hidden w-64 max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-white p-2 shadow-raised z-50"
                         role="menu"
                     >
                         <div class="border-b border-line px-3 py-2.5">
@@ -218,40 +218,57 @@
 
                         {{-- Akses Cepat CRUD Manajemen (Khusus Super Admin & Pustakawan) --}}
                         @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
-                            <div class="py-1 border-b border-line">
-                                <span class="block px-3 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Panel CRUD</span>
-                                <a href="{{ route('admin.inbox') }}" class="flex items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-amber-700">
-                                    <div class="flex items-center gap-2.5">
-                                        <i class="fa-solid fa-inbox text-amber-600 w-4"></i>
-                                        <span>Inbox Pengembalian</span>
-                                    </div>
-                                    @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
-                                        <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
-                                            {{ $inboxPendingCount }}
-                                        </span>
-                                    @endif
-                                </a>
-                                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#7C3AED]">
-                                    <i class="fa-solid fa-users-gear text-[#7C3AED] w-4"></i>
-                                    <span>Manajemen User</span>
-                                </a>
-                                <a href="{{ route('admin.books.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#2563EB]">
-                                    <i class="fa-solid fa-book-bookmark text-[#2563EB] w-4"></i>
-                                    <span>Manajemen Buku</span>
-                                </a>
-                                <a href="{{ route('admin.acara.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#EA580C]">
-                                    <i class="fa-solid fa-calendar-days text-[#EA580C] w-4"></i>
-                                    <span>Manajemen Acara</span>
-                                </a>
-                                <a href="{{ route('admin.berita.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#059669]">
-                                    <i class="fa-solid fa-newspaper text-[#059669] w-4"></i>
-                                    <span>Manajemen Berita</span>
-                                </a>
-                                <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
-                                    <i class="fa-solid fa-arrows-rotate text-primary w-4"></i>
-                                    <span>Peminjaman &amp; Sirkulasi</span>
-                                </a>
-                            </div>
+                            <details class="group border-b border-line py-1" {{ request()->routeIs('admin.*') ? 'open' : '' }}>
+                                <summary class="flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-ink-secondary transition-colors hover:bg-subtle hover:text-primary [&::-webkit-details-marker]:hidden">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-sliders text-primary w-4 text-center"></i>
+                                        <span>Panel CRUD</span>
+                                        @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
+                                            <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
+                                                {{ $inboxPendingCount }}
+                                            </span>
+                                        @endif
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-muted transition-transform duration-200 group-open:rotate-180"></i>
+                                </summary>
+                                <div class="mt-1 space-y-0.5 pl-1">
+                                    <a href="{{ route('admin.inbox') }}" class="flex items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-amber-700">
+                                        <div class="flex items-center gap-2.5">
+                                            <i class="fa-solid fa-inbox text-amber-600 w-4"></i>
+                                            <span>Inbox Pengembalian</span>
+                                        </div>
+                                        @if (! empty($inboxPendingCount) && $inboxPendingCount > 0)
+                                            <span class="rounded-full bg-rose-600 px-1.5 py-0.2 text-[9px] font-bold text-white">
+                                                {{ $inboxPendingCount }}
+                                            </span>
+                                        @endif
+                                    </a>
+                                    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#7C3AED]">
+                                        <i class="fa-solid fa-users-gear text-[#7C3AED] w-4"></i>
+                                        <span>Manajemen User</span>
+                                    </a>
+                                    <a href="{{ route('admin.books.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#2563EB]">
+                                        <i class="fa-solid fa-book-bookmark text-[#2563EB] w-4"></i>
+                                        <span>Manajemen Buku</span>
+                                    </a>
+                                    <a href="{{ route('admin.acara.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#EA580C]">
+                                        <i class="fa-solid fa-calendar-days text-[#EA580C] w-4"></i>
+                                        <span>Manajemen Acara</span>
+                                    </a>
+                                    <a href="{{ route('admin.berita.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-[#059669]">
+                                        <i class="fa-solid fa-newspaper text-[#059669] w-4"></i>
+                                        <span>Manajemen Berita</span>
+                                    </a>
+                                    <a href="{{ route('admin.peminjaman.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                        <i class="fa-solid fa-arrows-rotate text-primary w-4"></i>
+                                        <span>Peminjaman &amp; Sirkulasi</span>
+                                    </a>
+                                    <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-subtle hover:text-primary">
+                                        <i class="fa-solid fa-file-lines text-primary w-4"></i>
+                                        <span>Laporan Perpustakaan</span>
+                                    </a>
+                                </div>
+                            </details>
                         @endif
 
                         <div class="py-1">
@@ -333,10 +350,14 @@
             });
         }
 
-        document.addEventListener('click', () => {
-            userDropdown?.classList.add('hidden');
-            inboxDropdown?.classList.add('hidden');
-            userBtn?.setAttribute('aria-expanded', 'false');
+        document.addEventListener('click', (e) => {
+            if (userDropdown && !userDropdown.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+                userBtn?.setAttribute('aria-expanded', 'false');
+            }
+            if (inboxDropdown && !inboxDropdown.contains(e.target)) {
+                inboxDropdown.classList.add('hidden');
+            }
         });
     })();
 </script>

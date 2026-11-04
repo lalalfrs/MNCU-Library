@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasLibraryId;
+use App\Services\HolidayHelper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -91,7 +92,7 @@ class PeminjamanBuku extends Model
     }
 
     /**
-     * Hitung selisih hari keterlambatan terhadap batas pengembalian.
+     * Hitung selisih hari keterlambatan terhadap batas pengembalian (tidak menghitung hari libur & hari libur nasional).
      * Tidak menyertakan sanksi denda (hanya metrik durasi keterlambatan).
      */
     public function hitungHariTerlambat(?Carbon $tanggalCek = null): int
@@ -101,7 +102,7 @@ class PeminjamanBuku extends Model
         $target = Carbon::parse($targetDate)->startOfDay();
 
         if ($target->gt($tempo)) {
-            return (int) $tempo->diffInDays($target);
+            return HolidayHelper::hitungHariTerlambatEfektif($tempo, $target);
         }
 
         return 0;

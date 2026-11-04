@@ -190,13 +190,13 @@ class PeminjamanService
             ]);
         }
 
-        // 4. Hitung tanggal jatuh tempo (default 14 hari sejak tanggal pinjam yang dipilih)
+        // 4. Hitung tanggal jatuh tempo (maksimal 7 hari kerja efektif, tidak menghitung hari Minggu & libur nasional)
         $tglJatuhTempo = $tanggalJatuhTempo
             ? Carbon::parse($tanggalJatuhTempo)->startOfDay()
-            : $tglPinjam->copy()->addDays(14);
+            : HolidayHelper::hitungJatuhTempo($tglPinjam, 7);
 
         if ($tglJatuhTempo->lte($tglPinjam)) {
-            $tglJatuhTempo = $tglPinjam->copy()->addDays(14);
+            $tglJatuhTempo = HolidayHelper::hitungJatuhTempo($tglPinjam, 7);
         }
 
         // 5. Simpan transaksi pengajuan peminjaman (eksemplar nullable atau preferensi pemohon)

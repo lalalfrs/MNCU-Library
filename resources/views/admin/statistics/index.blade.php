@@ -141,9 +141,7 @@
             </div>
         </section>
 
-        {{-- ========================================================================= --}}
-        {{-- 4 PILAR STATISTIK SESUAI FLOWCHART                                        --}}
-        {{-- ========================================================================= --}}
+        {{-- 4 Pilar Statistik Sesuai Flowchart --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
             {{-- 1. MENAMPILKAN STATISTIK DATA MEMBER --}}

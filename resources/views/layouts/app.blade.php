@@ -20,7 +20,6 @@
         @php
             /**
              * Menu navbar sesuai flowchart Beranda.
-             * TODO (integrasi): ganti 'href' dengan route() setelah halaman tujuan dibuat.
              *
              * @var array<int, array{label: string, href: string}> $navigationItems
              */

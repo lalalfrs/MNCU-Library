@@ -51,8 +51,8 @@ class BookCollectionEntryAndBarcodeLabelTest extends TestCase
         // Memastikan field dimensi dan kode barcode untuk registrasi eksemplar tersedia
         $response->assertSee('name="dimensi"', false);
         $response->assertSee('name="kode_barcode"', false);
-        $response->assertSee('Dimensi / Ukuran Fisik');
-        $response->assertSee('Kode Barcode / Nomor Inventaris Fisik');
+        $response->assertSee('Dimensi Fisik');
+        $response->assertSee('Kode Barcode / Nomor Inventaris');
     }
 
     /**

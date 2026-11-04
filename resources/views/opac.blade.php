@@ -1911,7 +1911,7 @@
                                     required
                                     class="w-full rounded-xl border border-line bg-white px-3 py-1.5 text-xs text-ink shadow-2xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 >
-                                <p class="text-[10px] text-muted mt-0.5">Otomatis 14 hari sejak tanggal pinjam.</p>
+                                <p class="text-[10px] text-muted mt-0.5">Maksimal 7 hari (tidak menghitung hari libur &amp; libur nasional).</p>
                             </div>
                         </div>
 
@@ -2171,8 +2171,9 @@
                 todayFormatted: '{{ now()->translatedFormat("l, d F Y") }}',
                 maxBorrowYmd: '{{ now()->addDays(3)->toDateString() }}',
                 minReturnYmd: '{{ now()->toDateString() }}',
-                maxReturnYmd: '{{ now()->addDays(17)->toDateString() }}',
-                defaultReturnYmd: '{{ now()->addDays(14)->toDateString() }}'
+                maxReturnYmd: '{{ \App\Services\HolidayHelper::hitungJatuhTempo(now()->addDays(3), 7)->toDateString() }}',
+                defaultReturnYmd: '{{ \App\Services\HolidayHelper::hitungJatuhTempo(now(), 7)->toDateString() }}',
+                holidays: @json(array_keys(\App\Services\HolidayHelper::getDaftarLiburNasional()))
             }
         };
 
@@ -2851,14 +2852,26 @@
 
             function syncReturnDueDate() {
                 const baseVal = pickupInput ? pickupInput.value : window.MNCU_AUTH.dates.todayYmd;
-                const baseDate = new Date(baseVal);
-                if (!isNaN(baseDate.getTime())) {
-                    const returnDate = new Date(baseDate);
-                    returnDate.setDate(returnDate.getDate() + 14);
-                    const y = returnDate.getFullYear();
-                    const m = String(returnDate.getMonth() + 1).padStart(2, '0');
-                    const d = String(returnDate.getDate()).padStart(2, '0');
-                    returnInput.value = `${y}-${m}-${d}`;
+                const parts = baseVal.split('-');
+                const cur = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                if (!isNaN(cur.getTime())) {
+                    let addedDays = 0;
+                    const holidays = window.MNCU_AUTH.dates.holidays || [];
+                    while (addedDays < 7) {
+                        cur.setDate(cur.getDate() + 1);
+                        const dayOfWeek = cur.getDay(); // 0 is Sunday
+                        const y = cur.getFullYear();
+                        const m = String(cur.getMonth() + 1).padStart(2, '0');
+                        const d = String(cur.getDate()).padStart(2, '0');
+                        const ymd = `${y}-${m}-${d}`;
+                        if (dayOfWeek !== 0 && !holidays.includes(ymd)) {
+                            addedDays++;
+                        }
+                    }
+                    const finalY = cur.getFullYear();
+                    const finalM = String(cur.getMonth() + 1).padStart(2, '0');
+                    const finalD = String(cur.getDate()).padStart(2, '0');
+                    returnInput.value = `${finalY}-${finalM}-${finalD}`;
                     returnInput.min = baseVal;
                 }
             }

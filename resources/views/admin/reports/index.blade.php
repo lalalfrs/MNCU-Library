@@ -6,9 +6,7 @@
 @section('content')
     <div class="mx-auto flex w-full max-w-[1570px] flex-1 flex-col gap-6 px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 responsive-desktop-container print:max-w-none print:px-0 print:py-0 print:gap-0 print:m-0">
 
-        {{-- ========================================================================= --}}
-        {{-- DOKUMEN CETAK PDF RESMI 1 HALAMAN A4 (KHUSUS SAAT PRINT / SIMPAN PDF)     --}}
-        {{-- ========================================================================= --}}
+        {{-- DOKUMEN CETAK PDF RESMI 1 HALAMAN A4 (KHUSUS SAAT PRINT / SIMPAN PDF) --}}
         <div class="hidden print:block w-full bg-white text-slate-900 font-sans print:p-0">
             {{-- Kop Surat Resmi Perpustakaan MNC University --}}
             <div class="flex items-center justify-between gap-4 pb-2.5">
@@ -263,9 +261,7 @@
             </div>
         </div>
 
-        {{-- ========================================================================= --}}
-        {{-- TAMPILAN INTERAKTIF LAYAR WEB (DISEMBUNYIKAN SAAT PRINT: print:hidden)    --}}
-        {{-- ========================================================================= --}}
+        {{-- TAMPILAN INTERAKTIF LAYAR WEB (DISEMBUNYIKAN SAAT PRINT: print:hidden) --}}
         <div class="flex flex-col gap-6 print:hidden">
             {{-- Breadcrumb & Header --}}
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -648,9 +644,7 @@
             </section>
         </div>
 
-        {{-- ========================================================================= --}}
-        {{-- MODAL PRATINJAU LEMBAR PDF A4 (UNTUK DILIHAT DI LAYAR SEBELUM CETAK)      --}}
-        {{-- ========================================================================= --}}
+        {{-- MODAL PRATINJAU LEMBAR PDF A4 (UNTUK DILIHAT DI LAYAR SEBELUM CETAK) --}}
         <div
             id="report-pdf-preview-modal"
             class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/65 backdrop-blur-xs p-3 sm:p-6 print:hidden"

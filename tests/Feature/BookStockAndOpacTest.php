@@ -254,12 +254,29 @@ class BookStockAndOpacTest extends TestCase
     }
 
     /**
-     * Mengubah status eksemplar menjadi Dipinjam untuk mahasiswa yang memiliki tanggungan ditolak sesuai flowchart.
+     * Mengubah status eksemplar menjadi Dipinjam untuk mahasiswa yang telah mencapai batas maksimal 3 buku ditolak sesuai flowchart.
      */
     public function test_admin_cannot_change_exemplar_to_borrowed_for_ineligible_student(): void
     {
         $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
-        $studentBlocked = Pengguna::where('id_pengguna', 'MNCU00004')->firstOrFail(); // Fauzi has active loan
+        $studentBlocked = Pengguna::where('id_pengguna', 'MNCU00004')->firstOrFail(); // Fauzi sudah memiliki 1 pinjaman dari seeder
+
+        // Tambahkan 2 pinjaman aktif lagi sehingga mencapai kuota maksimal 3 buku
+        $extraBooks = Buku::where('id_buku', '!=', 'MNCU00001')->take(2)->get();
+        foreach ($extraBooks as $idx => $extraBook) {
+            $extraCopy = EksemplarBuku::where('id_buku', $extraBook->id_buku)->where('status', 'Tersedia')->firstOrFail();
+            $extraCopy->update(['status' => 'Dipinjam']);
+            PeminjamanBuku::create([
+                'id_peminjaman' => 'PJ9990'.($idx + 1),
+                'id_pengguna' => $studentBlocked->id_pengguna,
+                'id_buku' => $extraBook->id_buku,
+                'id_eksemplar' => $extraCopy->id_eksemplar,
+                'tanggal_pinjam' => now()->subDays(2)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->addDays(5)->toDateString(),
+                'status' => 'Dipinjam',
+            ]);
+        }
+
         $book = Buku::firstOrFail();
         $eksemplar = EksemplarBuku::where('id_buku', $book->id_buku)->where('status', 'Tersedia')->firstOrFail();
 

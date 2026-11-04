@@ -270,6 +270,7 @@
                                             'Pustakawan' => 'bg-blue-100 text-blue-800 border-blue-200',
                                             'Mahasiswa' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
                                             'Dosen' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                            'Tendik' => 'bg-sky-100 text-sky-800 border-sky-200',
                                             default => 'bg-gray-100 text-gray-800 border-gray-200',
                                         };
                                     @endphp
@@ -449,10 +450,10 @@
 
                     <div>
                         <label for="select-candidate-user" class="block text-xs font-semibold text-ink">
-                            Pilih Mahasiswa / Dosen yang Ingin Jadi Member <span class="text-red-500">*</span>
+                            Pilih Mahasiswa / Dosen / Tendik yang Ingin Jadi Member <span class="text-red-500">*</span>
                         </label>
                         <p class="mt-0.5 text-[11px] text-muted">
-                            Pemustaka harus menemui pustakawan secara langsung untuk verifikasi identitas (KTM / Kartu Identitas).
+                            Pemustaka harus menemui pustakawan secara langsung untuk verifikasi identitas (KTM / Kartu Identitas / NIP).
                         </p>
                         <select
                             id="select-candidate-user"
@@ -584,9 +585,7 @@
         </div>
     </div>
 
-    {{-- ========================================================================= --}}
-    {{-- MODAL RESET PASSWORD OLEH ADMIN (SKENARIO 2)                             --}}
-    {{-- ========================================================================= --}}
+    {{-- Modal Reset Password oleh Admin --}}
     <div
         id="admin-reset-password-modal"
         class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"

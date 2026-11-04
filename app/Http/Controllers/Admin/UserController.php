@@ -51,7 +51,9 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(10)->withQueryString();
-        $roles = Peran::orderBy('nama_peran')->get();
+        $roles = Peran::whereIn('nama_peran', ['Mahasiswa', 'Dosen', 'Tendik'])
+            ->orderByRaw("CASE nama_peran WHEN 'Mahasiswa' THEN 1 WHEN 'Dosen' THEN 2 WHEN 'Tendik' THEN 3 ELSE 4 END")
+            ->get();
 
         // Daftar pengguna yang belum menjadi member untuk opsi modal "Tambah Data Member"
         $candidateUsers = Pengguna::with('peran')
@@ -77,7 +79,9 @@ class UserController extends Controller
      */
     public function create(): View
     {
-        $roles = Peran::orderBy('nama_peran')->get();
+        $roles = Peran::whereIn('nama_peran', ['Mahasiswa', 'Dosen', 'Tendik'])
+            ->orderByRaw("CASE nama_peran WHEN 'Mahasiswa' THEN 1 WHEN 'Dosen' THEN 2 WHEN 'Tendik' THEN 3 ELSE 4 END")
+            ->get();
         $prodis = Prodi::orderBy('nama_prodi')->get();
 
         return view('admin.users.create', compact('roles', 'prodis'));
@@ -119,7 +123,13 @@ class UserController extends Controller
     public function edit(string $id): View
     {
         $user = Pengguna::with(['peran', 'prodi'])->findOrFail($id);
-        $roles = Peran::orderBy('nama_peran')->get();
+        $roles = Peran::whereIn('nama_peran', ['Mahasiswa', 'Dosen', 'Tendik'])
+            ->orderByRaw("CASE nama_peran WHEN 'Mahasiswa' THEN 1 WHEN 'Dosen' THEN 2 WHEN 'Tendik' THEN 3 ELSE 4 END")
+            ->get();
+        // Bila user saat ini memiliki peran selain 3 peran tersebut (misal Pustakawan/Kepala Perpustakaan), sertakan perannya agar tidak hilang
+        if ($user->peran && ! $roles->contains('id_peran', $user->id_peran)) {
+            $roles->push($user->peran);
+        }
         $prodis = Prodi::orderBy('nama_prodi')->get();
 
         return view('admin.users.edit', compact('user', 'roles', 'prodis'));

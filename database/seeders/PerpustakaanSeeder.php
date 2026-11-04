@@ -58,6 +58,12 @@ class PerpustakaanSeeder extends Seeder
                 'nama_peran' => 'Dosen',
                 'deskripsi_peran' => 'Tenaga pendidik dan peneliti MNC University',
             ],
+            [
+                'id_peran' => 'MNCU00005',
+                'uuid' => (string) Str::uuid(),
+                'nama_peran' => 'Tendik',
+                'deskripsi_peran' => 'Tenaga kependidikan dan staf operasional MNC University',
+            ],
         ];
 
         foreach ($peranList as $item) {

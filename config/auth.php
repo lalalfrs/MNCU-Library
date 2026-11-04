@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Pengguna;
-use App\Models\User;
 
 return [
 
@@ -67,11 +66,6 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', Pengguna::class),
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

@@ -719,10 +719,10 @@
                             id="modal_pinjam_tanggal_jatuh_tempo"
                             required
                             min="{{ now()->toDateString() }}"
-                            value="{{ now()->addDays(14)->toDateString() }}"
+                            value="{{ \App\Services\HolidayHelper::hitungJatuhTempo(now(), 7)->toDateString() }}"
                             class="w-full rounded-xl border border-line bg-white px-3 py-1.5 text-xs text-ink focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         >
-                        <span class="text-[10px] text-muted">Default 14 hari kerja.</span>
+                        <span class="text-[10px] text-muted">Maksimal 7 hari (tidak menghitung hari libur &amp; libur nasional).</span>
                     </div>
                 </div>
 

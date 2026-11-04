@@ -207,10 +207,11 @@
                             type="date"
                             id="tanggal_jatuh_tempo"
                             name="tanggal_jatuh_tempo"
-                            value="{{ old('tanggal_jatuh_tempo', now()->addDays(14)->toDateString()) }}"
+                            value="{{ old('tanggal_jatuh_tempo', \App\Services\HolidayHelper::hitungJatuhTempo(now(), 7)->toDateString()) }}"
                             required
                             class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm"
                         >
+                        <p class="mt-1 text-[11px] text-muted">Maksimal 7 hari (tidak menghitung hari libur Minggu &amp; libur nasional).</p>
                         @error('tanggal_jatuh_tempo')
                             <p class="mt-1.5 text-xs font-semibold text-rose-600">{{ $message }}</p>
                         @enderror
@@ -253,15 +254,32 @@
     </div>
 
     <script>
-        // Otomatis atur tanggal jatuh tempo +14 hari saat tanggal pinjam berubah
+        const HOLIDAYS_LIST = @json(array_keys(\App\Services\HolidayHelper::getDaftarLiburNasional()));
+
+        // Otomatis atur tanggal jatuh tempo maksimal 7 hari kerja (tidak menghitung Minggu & libur nasional)
         function autoAdjustDueDate(pinjamDateStr) {
             if (!pinjamDateStr) return;
-            const d = new Date(pinjamDateStr);
-            d.setDate(d.getDate() + 14);
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            document.getElementById('tanggal_jatuh_tempo').value = `${y}-${m}-${day}`;
+            const parts = pinjamDateStr.split('-');
+            const cur = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            let addedDays = 0;
+
+            while (addedDays < 7) {
+                cur.setDate(cur.getDate() + 1);
+                const dayOfWeek = cur.getDay(); // 0 is Sunday
+                const y = cur.getFullYear();
+                const m = String(cur.getMonth() + 1).padStart(2, '0');
+                const d = String(cur.getDate()).padStart(2, '0');
+                const ymd = `${y}-${m}-${d}`;
+
+                if (dayOfWeek !== 0 && !HOLIDAYS_LIST.includes(ymd)) {
+                    addedDays++;
+                }
+            }
+
+            const finalY = cur.getFullYear();
+            const finalM = String(cur.getMonth() + 1).padStart(2, '0');
+            const finalD = String(cur.getDate()).padStart(2, '0');
+            document.getElementById('tanggal_jatuh_tempo').value = `${finalY}-${finalM}-${finalD}`;
         }
 
         // Cek eligibilitas mahasiswa saat dropdown berubah

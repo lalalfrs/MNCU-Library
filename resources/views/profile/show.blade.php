@@ -430,9 +430,7 @@
             </div>
         </div>
 
-        {{-- ========================================================================= --}}
-        {{-- 3. RIWAYAT PEMINJAMAN BUKU SPESIFIK USER (TABEL & CARD LIST TAILWIND)    --}}
-        {{-- ========================================================================= --}}
+        {{-- Riwayat Peminjaman Buku Spesifik User --}}
         <div id="riwayat-peminjaman" class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
             {{-- Header Bagian Riwayat --}}
             <div class="flex flex-col gap-3 border-b border-line bg-slate-50/70 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -732,9 +730,7 @@
     </div>
 </div>
 
-{{-- ========================================================================= --}}
-{{-- MODAL RESET PASSWORD LANGSUNG (TANPA PASSWORD LAMA, 2X INPUT)             --}}
-{{-- ========================================================================= --}}
+{{-- Modal Reset Password Langsung --}}
 <div
     id="profile-reset-password-modal"
     class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"

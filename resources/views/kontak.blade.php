@@ -82,7 +82,6 @@
                 <h2 id="judul-form" class="text-lg font-medium text-ink lg:text-2xl">Kirim Pertanyaan</h2>
                 <p class="mt-1 text-sm text-muted lg:text-base">Ada pertanyaan atau saran? Tulis pesan di bawah ini.</p>
 
-                {{-- TODO (integrasi): hubungkan ke controller. --}}
                 <form action="#" method="POST" class="mt-6 flex flex-1 flex-col gap-5">
                     @csrf
                     <div>

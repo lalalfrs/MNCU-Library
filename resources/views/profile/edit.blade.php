@@ -436,9 +436,7 @@
             </div>
         </form>
 
-        {{-- ========================================================================= --}}
-        {{-- 3. KARTU KEAMANAN AKUN: RESET / UBAH KATA SANDI (TANPA PASSWORD LAMA)      --}}
-        {{-- ========================================================================= --}}
+        {{-- Kartu Keamanan Akun: Reset / Ubah Kata Sandi --}}
         <div id="ubah-password" class="scroll-mt-6">
             <div id="section-reset-password" class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card scroll-mt-6">
                 <div class="border-b border-line bg-slate-50/70 px-6 py-4">

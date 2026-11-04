@@ -53,13 +53,13 @@
                         Daftar Kehadiran Pengunjung Perpustakaan
                     </h1>
                     <p class="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        Silakan isi nama lengkap serta identitas Anda (NIM untuk Mahasiswa, NIP untuk Dosen/Staf, atau Alamat untuk Pengunjung Umum). Setiap pengisian daftar hadir akan tercatat langsung pada <strong>Statistik Kunjungan Perpustakaan</strong>.
+                        Silakan isi nama lengkap serta identitas Anda (NIM untuk Mahasiswa, NIP untuk Dosen atau Tendik, atau Alamat untuk Pengunjung Umum). Setiap pengisian daftar hadir akan tercatat langsung pada <strong>Statistik Kunjungan Perpustakaan</strong>.
                     </p>
 
                     <form action="{{ route('kehadiran.store') }}" method="POST" class="mt-6 space-y-5">
                         @csrf
 
-                        {{-- Pilihan Kategori Pengunjung (Opsional untuk mempermudah label, tetap menyimpan ke kolom identitas) --}}
+                        {{-- Pilihan Kategori Pengunjung --}}
                         <div>
                             <label class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-2">
                                 Kategori Pengunjung
@@ -68,27 +68,30 @@
                                 $defaultKategori = old('kategori_pengunjung');
                                 if (! $defaultKategori && auth()->check()) {
                                     if (auth()->user()->isDosen()) {
-                                        $defaultKategori = 'Dosen / Staf';
-                                    } elseif (auth()->user()->isSuperAdmin() || auth()->user()->isPustakawan()) {
-                                        $defaultKategori = 'Dosen / Staf';
+                                        $defaultKategori = 'Dosen';
+                                    } elseif (auth()->user()->isTendik() || auth()->user()->isSuperAdmin() || auth()->user()->isPustakawan()) {
+                                        $defaultKategori = 'Tendik';
                                     } else {
                                         $defaultKategori = 'Mahasiswa';
                                     }
                                 }
                                 $defaultKategori = $defaultKategori ?: 'Mahasiswa';
                             @endphp
-                            <div class="grid grid-cols-3 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
                                 @foreach ([
-                                    ['value' => 'Mahasiswa', 'icon' => 'fa-user-graduate', 'placeholder' => 'Masukkan NIM Mahasiswa (Contoh: 2024010012)'],
-                                    ['value' => 'Dosen / Staf', 'icon' => 'fa-chalkboard-user', 'placeholder' => 'Masukkan NIP / NIDN Dosen atau Staf'],
-                                    ['value' => 'Umum', 'icon' => 'fa-users', 'placeholder' => 'Masukkan Alamat Lengkap / Instansi Asal (untuk Umum)'],
+                                    ['value' => 'Mahasiswa', 'icon' => 'fa-user-graduate', 'label' => 'NIM', 'placeholder' => 'Masukkan NIM (Nomor Induk Mahasiswa)', 'hint' => 'Masukkan NIM aktif Anda sebagai mahasiswa MNC University.'],
+                                    ['value' => 'Dosen', 'icon' => 'fa-chalkboard-user', 'label' => 'NIP', 'placeholder' => 'Masukkan NIP', 'hint' => 'Masukkan Nomor Induk Pegawai (NIP) Anda.'],
+                                    ['value' => 'Tendik', 'icon' => 'fa-id-badge', 'label' => 'NIP', 'placeholder' => 'Masukkan NIP', 'hint' => 'Masukkan Nomor Induk Pegawai (NIP) staf tenaga kependidikan.'],
+                                    ['value' => 'Umum', 'icon' => 'fa-users', 'label' => 'Alamat', 'placeholder' => 'Masukkan Alamat', 'hint' => 'Masukkan alamat domisili atau instansi asal Anda.'],
                                 ] as $kat)
                                     <label class="cursor-pointer">
                                         <input
                                             type="radio"
                                             name="kategori_pengunjung"
                                             value="{{ $kat['value'] }}"
+                                            data-label="{{ $kat['label'] }}"
                                             data-placeholder="{{ $kat['placeholder'] }}"
+                                            data-hint="{{ $kat['hint'] }}"
                                             class="peer sr-only kategori-radio"
                                             {{ $defaultKategori === $kat['value'] ? 'checked' : '' }}
                                         >
@@ -126,10 +129,10 @@
                             @enderror
                         </div>
 
-                        {{-- Input Var: NIM / NIP / Alamat (untuk Umum) --}}
+                        {{-- Input Var: NIM / NIP / Alamat sesuai Kategori Pengunjung --}}
                         <div>
                             <label for="identitas_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
-                                NIM / NIP / Alamat (untuk Umum) <span class="text-rose-600">*</span>
+                                <span id="label-identitas">NIM</span> <span class="text-rose-600">*</span>
                             </label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
@@ -139,15 +142,15 @@
                                     type="text"
                                     id="identitas_pengunjung"
                                     name="identitas_pengunjung"
-                                    value="{{ old('identitas_pengunjung', auth()->user()->nomor_induk ?? '') }}"
+                                    value="{{ old('identitas_pengunjung', auth()->user()->nomor_identitas ?? '') }}"
                                     required
                                     maxlength="255"
-                                    placeholder="Masukkan NIM / NIP / Alamat lengkap (untuk pengunjung Umum)..."
+                                    placeholder="Masukkan NIM"
                                     class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
                                 >
                             </div>
-                            <p class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
-                                Diisi dengan <strong>NIM</strong> (Mahasiswa), <strong>NIP/NIDN</strong> (Dosen/Staf), atau <strong>Alamat / Instansi</strong> jika Anda pengunjung Umum.
+                            <p id="hint-identitas" class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
+                                Masukkan NIM aktif Anda sebagai mahasiswa MNC University.
                             </p>
                             @error('identitas_pengunjung')
                                 <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
@@ -318,18 +321,31 @@
         (function () {
             const radios = document.querySelectorAll('.kategori-radio');
             const identitasInput = document.getElementById('identitas_pengunjung');
+            const labelIdentitas = document.getElementById('label-identitas');
+            const hintIdentitas = document.getElementById('hint-identitas');
             if (!radios.length || !identitasInput) return;
 
             function syncPlaceholder() {
                 const checked = document.querySelector('.kategori-radio:checked');
-                if (checked && checked.dataset.placeholder) {
-                    identitasInput.setAttribute('placeholder', checked.dataset.placeholder);
+                if (checked) {
+                    if (checked.dataset.placeholder) {
+                        identitasInput.setAttribute('placeholder', checked.dataset.placeholder);
+                    }
+                    if (labelIdentitas && checked.dataset.label) {
+                        labelIdentitas.textContent = checked.dataset.label;
+                    }
+                    if (hintIdentitas && checked.dataset.hint) {
+                        hintIdentitas.textContent = checked.dataset.hint;
+                    }
                 }
             }
 
             radios.forEach((radio) => {
                 radio.addEventListener('change', syncPlaceholder);
             });
+
+            // Sinkronisasi saat halaman dimuat
+            syncPlaceholder();
         })();
     </script>
 @endsection
