@@ -380,82 +380,41 @@
                                 @endauth
                             </div>
 
-                            {{-- Kolom Kanan: Frame Kotak Rounded berisi Data Rekap Pengunjung --}}
+                            {{-- Kolom Kanan: Frame Kotak Logo MNC University --}}
                             <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
-                                <div class="w-full max-w-[360px] lg:max-w-[380px] rounded-[22px] border border-slate-200/90 bg-slate-50/70 p-4 sm:p-5 shadow-xs">
-                                    <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
-                                        <div class="flex items-center gap-2.5">
-                                            <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#0b2a5b]/10 text-[#0b2a5b]">
-                                                <i class="fa-solid fa-chart-simple text-sm" aria-hidden="true"></i>
-                                            </span>
-                                            <div>
-                                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aktivitas Pemustaka</span>
-                                                <h2 class="text-sm sm:text-base font-bold text-[#0b1f3a]">Statistik Kunjungan</h2>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500 border border-slate-200/70">
-                                            <i class="fa-solid fa-clock-rotate-left text-[10px] text-[#f59e0b]"></i>
-                                            Terkini
-                                        </span>
+                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square flex-col items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:shadow-md">
+                                    <div class="pointer-events-none absolute -top-12 -right-12 size-36 rounded-full bg-blue-100/50 blur-2xl" aria-hidden="true"></div>
+                                    <div class="pointer-events-none absolute -bottom-12 -left-12 size-36 rounded-full bg-amber-100/40 blur-2xl" aria-hidden="true"></div>
+
+                                    <div class="relative z-10 flex size-24 sm:size-28 items-center justify-center rounded-2xl bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.06)] border border-slate-100 transition-transform duration-300 group-hover:scale-105">
+                                        <img
+                                            src="{{ asset('images/LogoTXT.png') }}"
+                                            alt="Logo MNC University"
+                                            class="max-h-full max-w-full object-contain"
+                                            loading="eager"
+                                        >
                                     </div>
 
-                                    <dl class="mt-3 flex flex-col gap-2.5">
-                                        <div class="flex items-center justify-between rounded-xl border border-blue-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
-                                            <div class="flex items-center gap-2.5">
-                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                                                    <i class="fa-solid fa-user-clock text-xs" aria-hidden="true"></i>
-                                                </span>
-                                                <div>
-                                                    <dt class="text-xs font-bold text-slate-800">Hari ini</dt>
-                                                    <span class="text-[10px] text-slate-500">Kunjungan unik hari ini</span>
-                                                </div>
-                                            </div>
-                                            <dd class="text-lg sm:text-xl font-extrabold text-blue-700">{{ number_format($visitorStats['today'] ?? 0) }}</dd>
-                                        </div>
+                                    <div class="relative z-10 mt-5">
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#0b2a5b]/10 px-3 py-1 text-[11px] font-bold text-[#0b2a5b]">
+                                            <i class="fa-solid fa-graduation-cap text-[#f59e0b] text-xs"></i>
+                                            MNC University
+                                        </span>
+                                        <h3 class="mt-2 text-base sm:text-lg font-extrabold text-[#0b1f3a] tracking-tight">
+                                            Perpustakaan Digital
+                                        </h3>
+                                        <p class="mt-1 text-xs text-slate-500 font-medium leading-relaxed max-w-[240px]">
+                                            Pusat Referensi, Literasi Ilmiah &amp; Riset Akademik Sivitas
+                                        </p>
+                                    </div>
 
-                                        <div class="flex items-center justify-between rounded-xl border border-purple-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
-                                            <div class="flex items-center gap-2.5">
-                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[#7C3AED]">
-                                                    <i class="fa-solid fa-calendar-check text-xs" aria-hidden="true"></i>
-                                                </span>
-                                                <div>
-                                                    <dt class="text-xs font-bold text-slate-800">Bulan ini</dt>
-                                                    <span class="text-[10px] text-slate-500">{{ now()->translatedFormat('F Y') }}</span>
-                                                </div>
-                                            </div>
-                                            <dd class="text-lg sm:text-xl font-extrabold text-[#7C3AED]">{{ number_format($visitorStats['month'] ?? 0) }}</dd>
-                                        </div>
-
-                                        <div class="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-white px-3.5 py-2.5 shadow-2xs">
-                                            <div class="flex items-center gap-2.5">
-                                                <span class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                                                    <i class="fa-solid fa-users text-xs" aria-hidden="true"></i>
-                                                </span>
-                                                <div>
-                                                    <dt class="text-xs font-bold text-slate-800">Total Kunjungan</dt>
-                                                    <span class="text-[10px] text-slate-500">Akumulasi pengunjung</span>
-                                                </div>
-                                            </div>
-                                            <dd class="text-lg sm:text-xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</dd>
-                                        </div>
-                                    </dl>
-
-                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 pt-2.5 text-[11px] text-slate-500">
-                                        @if (isset($isDbConnected) && ! $isDbConnected)
-                                            <span class="flex items-center gap-1.5 text-amber-600 font-medium">
-                                                <i class="fa-solid fa-circle-exclamation text-amber-500 text-xs" aria-hidden="true"></i>
-                                                Database offline
-                                            </span>
-                                        @else
-                                            <span class="flex items-center gap-1.5">
-                                                <i class="fa-solid fa-circle-check text-emerald-500 text-xs" aria-hidden="true"></i>
-                                                Pembaruan otomatis
-                                            </span>
-                                        @endif
-                                        <span class="font-semibold text-[#0b2a5b] flex items-center gap-1">
-                                            <i class="fa-solid fa-building-columns text-xs" aria-hidden="true"></i>
+                                    <div class="relative z-10 mt-4 flex items-center gap-2 border-t border-slate-200/70 pt-3 text-[11px] font-semibold text-slate-400">
+                                        <span class="flex items-center gap-1 text-[#0b2a5b]">
+                                            <i class="fa-solid fa-building-columns text-xs text-[#f59e0b]"></i>
                                             MNCU Library
                                         </span>
+                                        <span>&bull;</span>
+                                        <span class="text-slate-500">Masa Depan Berawal Disini</span>
                                     </div>
                                 </div>
                             </div>
@@ -540,9 +499,18 @@
                                 </p>
                             </div>
                             <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
-                                <div class="w-full max-w-[360px] lg:max-w-[380px] rounded-[22px] border border-slate-200/90 bg-slate-50/70 p-4 sm:p-5 shadow-xs">
-                                    <div class="text-sm font-bold text-[#0b1f3a]">Statistik Kunjungan</div>
-                                    <div class="mt-2 text-2xl font-extrabold text-emerald-700">{{ number_format($visitorStats['total'] ?? 0) }}</div>
+                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square flex-col items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
+                                    <div class="flex size-24 sm:size-28 items-center justify-center rounded-2xl bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.06)] border border-slate-100">
+                                        <img
+                                            src="{{ asset('images/LogoTXT.png') }}"
+                                            alt="Logo MNC University"
+                                            class="max-h-full max-w-full object-contain"
+                                        >
+                                    </div>
+                                    <div class="mt-4">
+                                        <h3 class="text-base font-extrabold text-[#0b1f3a] tracking-tight">Perpustakaan Digital</h3>
+                                        <p class="mt-0.5 text-xs text-slate-500 font-medium">MNC University</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -726,6 +694,101 @@
             {{-- Garis biru di bawah hero --}}
             <div class="mt-3 pt-3 pb-2 sm:mt-4 sm:pt-4 sm:pb-3">
                 <div class="h-0.5 w-full bg-primary/80"></div>
+            </div>
+        </section>
+
+        {{-- Section: Rekap Statistik Pengunjung Perpustakaan (Diturunkan dari Hero) --}}
+        <section id="statistik-pengunjung" aria-labelledby="judul-statistik-pengunjung" class="rounded-2xl border border-line bg-white p-5 sm:p-6 lg:p-7 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#0b2a5b]/10 text-[#0b2a5b]">
+                        <i class="fa-solid fa-chart-simple text-lg" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aktivitas Pemustaka</span>
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Real-time
+                            </span>
+                        </div>
+                        <h2 id="judul-statistik-pengunjung" class="text-base sm:text-lg lg:text-xl font-bold text-[#0b1f3a]">
+                            Statistik Kunjungan Perpustakaan
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    @auth
+                        @if (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan())
+                            <a
+                                href="{{ route('admin.statistics.index') }}"
+                                class="btn-press inline-flex items-center gap-2 rounded-xl bg-[#0b2a5b] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-primary-dark transition-all"
+                            >
+                                <i class="fa-solid fa-chart-pie text-[#f59e0b] text-xs"></i>
+                                <span>Panel Statistik Super Admin</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        @endif
+                    @endauth
+                    <a
+                        href="{{ route('kehadiran.index') }}"
+                        class="btn-press inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:border-primary/40 hover:text-primary transition-all"
+                    >
+                        <i class="fa-solid fa-clipboard-user text-primary text-xs"></i>
+                        <span>Buku Tamu Pengunjung</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5">
+                {{-- Hari ini --}}
+                <div class="flex items-center justify-between rounded-xl border border-blue-200/80 bg-blue-50/40 p-4 transition-all hover:bg-blue-50/70 hover:shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                            <i class="fa-solid fa-user-clock text-sm" aria-hidden="true"></i>
+                        </span>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">Hari Ini</span>
+                            <span class="text-[11px] text-slate-500">Kunjungan unik hari ini</span>
+                        </div>
+                    </div>
+                    <span class="text-2xl sm:text-3xl font-extrabold text-blue-700">
+                        {{ number_format($visitorStats['today'] ?? 0) }}
+                    </span>
+                </div>
+
+                {{-- Bulan ini --}}
+                <div class="flex items-center justify-between rounded-xl border border-purple-200/80 bg-purple-50/40 p-4 transition-all hover:bg-purple-50/70 hover:shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-[#7C3AED]">
+                            <i class="fa-solid fa-calendar-check text-sm" aria-hidden="true"></i>
+                        </span>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">Bulan Ini</span>
+                            <span class="text-[11px] text-slate-500">{{ now()->translatedFormat('F Y') }}</span>
+                        </div>
+                    </div>
+                    <span class="text-2xl sm:text-3xl font-extrabold text-[#7C3AED]">
+                        {{ number_format($visitorStats['month'] ?? 0) }}
+                    </span>
+                </div>
+
+                {{-- Total Kunjungan --}}
+                <div class="flex items-center justify-between rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4 transition-all hover:bg-emerald-50/70 hover:shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <i class="fa-solid fa-users text-sm" aria-hidden="true"></i>
+                        </span>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">Total Kunjungan</span>
+                            <span class="text-[11px] text-slate-500">Akumulasi seluruh pengunjung</span>
+                        </div>
+                    </div>
+                    <span class="text-2xl sm:text-3xl font-extrabold text-emerald-700">
+                        {{ number_format($visitorStats['total'] ?? 0) }}
+                    </span>
+                </div>
             </div>
         </section>
 

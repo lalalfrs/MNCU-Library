@@ -49,6 +49,7 @@ Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 // Buku Tamu & Presensi Kehadiran Pengunjung Perpustakaan
 Route::get('/kehadiran', [KehadiranController::class, 'index'])->name('kehadiran.index');
+Route::get('/kehadiran/lookup', [KehadiranController::class, 'lookup'])->name('kehadiran.lookup');
 Route::post('/kehadiran', [KehadiranController::class, 'store'])->name('kehadiran.store');
 
 // Profil & Informasi Perpustakaan

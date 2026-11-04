@@ -268,7 +268,7 @@ class OpacPeminjamanTest extends TestCase
             'nama_lengkap' => 'Budi Santoso',
             'email' => 'budi.santoso@mncu.ac.id',
             'kata_sandi' => Hash::make('password123'),
-            'nomor_identitas' => '2024010099',
+            'nomor_identitas' => '20099',
         ]);
 
         // User 1 mengajukan permohonan pinjam buku target

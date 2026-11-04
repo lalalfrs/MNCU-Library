@@ -95,7 +95,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Dr. H. Muhammad Arifin, M.Hum.',
                 'email' => 'arifin@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => 'PST-MNCU-001',
+                'nomor_identitas' => '30001',
             ],
             [
                 'id_pengguna' => 'MNCU00002',
@@ -105,7 +105,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Sarah Amalia, S.I.Pust.',
                 'email' => 'sarah.amalia@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => 'PST-MNCU-002',
+                'nomor_identitas' => '30002',
             ],
             [
                 'id_pengguna' => 'MNCU00003',
@@ -115,7 +115,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Fajar Pratama, S.Kom.',
                 'email' => 'fajar.pratama@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => 'PST-MNCU-003',
+                'nomor_identitas' => '30003',
             ],
             [
                 'id_pengguna' => 'MNCU00004',
@@ -128,7 +128,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Ahmad Fauzi Rahman',
                 'email' => 'fauzi.mhs@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => '2024010012',
+                'nomor_identitas' => '20001',
             ],
             [
                 'id_pengguna' => 'MNCU00005',
@@ -141,7 +141,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
                 'email' => 'hendra.gunawan@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => 'NIDN-0312048501',
+                'nomor_identitas' => '10001',
             ],
             [
                 'id_pengguna' => 'MNCU00006',
@@ -154,7 +154,7 @@ class PerpustakaanSeeder extends Seeder
                 'nama_lengkap' => 'Nabila Putri Ramadhani',
                 'email' => 'nabila.mhs@mncu.ac.id',
                 'kata_sandi' => Hash::make('password123'),
-                'nomor_identitas' => '2024010045',
+                'nomor_identitas' => '20002',
             ],
         ];
 

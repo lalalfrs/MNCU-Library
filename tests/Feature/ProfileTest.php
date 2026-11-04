@@ -141,7 +141,7 @@ class ProfileTest extends TestCase
             'tempat_lahir' => 'Jakarta',
             'tanggal_lahir' => '2004-05-12',
             'nik' => '3171010101010001',
-            'nim' => '202401001',
+            'nim' => '20001',
             'foto_profil' => $invalidMime,
         ]);
 
@@ -159,7 +159,7 @@ class ProfileTest extends TestCase
             'tempat_lahir' => 'Jakarta',
             'tanggal_lahir' => '2004-05-12',
             'nik' => '3171010101010001',
-            'nim' => '202401001',
+            'nim' => '20001',
             'foto_profil' => $oversizedPhoto,
         ]);
 
@@ -185,7 +185,7 @@ class ProfileTest extends TestCase
             'tempat_lahir' => 'Surabaya',
             'tanggal_lahir' => '2003-10-15',
             'nik' => '3578010101010003',
-            'nim' => '202401001',
+            'nim' => '20001',
             'foto_profil' => $firstPhoto,
         ]);
 
@@ -197,7 +197,7 @@ class ProfileTest extends TestCase
         $this->assertNotNull($firstPath);
         Storage::disk('public')->assertExists($firstPath);
         $this->assertSame('Ahmad Fauzi M.Kom', $mahasiswa->nama_lengkap);
-        $this->assertSame('202401001', $mahasiswa->nim);
+        $this->assertSame('20001', $mahasiswa->nim);
         $this->assertSame('3578010101010003', $mahasiswa->nik);
 
         // Unggah foto profil kedua untuk menggantikan foto pertama
@@ -212,7 +212,7 @@ class ProfileTest extends TestCase
             'tempat_lahir' => 'Surabaya',
             'tanggal_lahir' => '2003-10-15',
             'nik' => '3578010101010003',
-            'nim' => '202401001',
+            'nim' => '20001',
             'foto_profil' => $secondPhoto,
         ]);
 

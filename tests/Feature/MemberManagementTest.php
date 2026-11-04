@@ -43,7 +43,7 @@ class MemberManagementTest extends TestCase
         $response = $this->post(route('register.post'), [
             'nama_lengkap' => 'Mahasiswa Baru MNCU',
             'email' => 'mhs.baru@mncu.ac.id',
-            'nomor_identitas' => '202699001',
+            'nomor_identitas' => '20003',
             'kata_sandi' => 'password123',
             'kata_sandi_confirmation' => 'password123',
             'terms' => '1',

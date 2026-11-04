@@ -389,11 +389,11 @@ INSERT INTO `prodi` (`id_prodi`, `uuid`, `nama_prodi`, `jenjang`, `created_at`, 
 ('PR-007', 'e0f76921-72f1-4df2-a3c3-61a7a10a2007', 'Pendidikan Bahasa Inggris', 'S1', NOW(), NOW());
 
 INSERT INTO `pengguna` (`id_pengguna`, `uuid`, `id_peran`, `id_prodi`, `nama_lengkap`, `email`, `kata_sandi`, `nomor_identitas`, `created_at`, `updated_at`) VALUES
-('PG-001', 'e0f76921-72f1-4df2-a3c3-61a7a10a3001', 'RL-001', NULL, 'Dr. H. Muhammad Arifin, M.Hum.', 'arifin@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', 'PST-MNCU-001', NOW(), NOW()),
-('PG-002', 'e0f76921-72f1-4df2-a3c3-61a7a10a3002', 'RL-002', NULL, 'Sarah Amalia, S.I.Pust.', 'sarah.amalia@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', 'PST-MNCU-002', NOW(), NOW()),
-('PG-003', 'e0f76921-72f1-4df2-a3c3-61a7a10a3003', 'RL-002', NULL, 'Fajar Pratama, S.Kom.', 'fajar.pratama@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', 'PST-MNCU-003', NOW(), NOW()),
-('PG-004', 'e0f76921-72f1-4df2-a3c3-61a7a10a3004', 'RL-003', 'PR-002', 'Ahmad Fauzi Rahman', 'fauzi.mhs@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '2024010012', NOW(), NOW()),
-('PG-005', 'e0f76921-72f1-4df2-a3c3-61a7a10a3005', 'RL-004', 'PR-005', 'Prof. Dr. Hendra Gunawan, S.E., M.M.', 'hendra.gunawan@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', 'NIDN-0312048501', NOW(), NOW());
+('PG-001', 'e0f76921-72f1-4df2-a3c3-61a7a10a3001', 'RL-001', NULL, 'Dr. H. Muhammad Arifin, M.Hum.', 'arifin@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '30001', NOW(), NOW()),
+('PG-002', 'e0f76921-72f1-4df2-a3c3-61a7a10a3002', 'RL-002', NULL, 'Sarah Amalia, S.I.Pust.', 'sarah.amalia@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '30002', NOW(), NOW()),
+('PG-003', 'e0f76921-72f1-4df2-a3c3-61a7a10a3003', 'RL-002', NULL, 'Fajar Pratama, S.Kom.', 'fajar.pratama@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '30003', NOW(), NOW()),
+('PG-004', 'e0f76921-72f1-4df2-a3c3-61a7a10a3004', 'RL-003', 'PR-002', 'Ahmad Fauzi Rahman', 'fauzi.mhs@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '20001', NOW(), NOW()),
+('PG-005', 'e0f76921-72f1-4df2-a3c3-61a7a10a3005', 'RL-004', 'PR-005', 'Prof. Dr. Hendra Gunawan, S.E., M.M.', 'hendra.gunawan@mncu.ac.id', '$2y$12$N30G1R4w3Gj.V3Mv9R.jXer.fBqXj11gU96kZeqJ2Q3j008N.kM4i', '10001', NOW(), NOW());
 
 INSERT INTO `profil_pustakawan` (`id_profil_pustakawan`, `uuid`, `id_pengguna`, `nama_pustakawan`, `jabatan`, `foto_pustakawan`, `deskripsi_pustakawan`, `created_at`, `updated_at`) VALUES
 ('PP-001', 'e0f76921-72f1-4df2-a3c3-61a7a10a4001', 'PG-001', 'Dr. H. Muhammad Arifin, M.Hum.', 'Kepala Perpustakaan MNC University', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80', 'Pengelolaan layanan strategis, pengembangan koleksi perpustakaan, dan literasi informasi.', NOW(), NOW()),

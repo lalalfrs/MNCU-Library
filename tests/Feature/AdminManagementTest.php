@@ -78,7 +78,7 @@ class AdminManagementTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.users.store'), [
             'nama_lengkap' => 'Budi Santoso Testing',
             'email' => 'budi.test@mncu.ac.id',
-            'nomor_identitas' => 'TEST-0099',
+            'nomor_identitas' => '50099',
             'id_peran' => $peran->id_peran,
             'kata_sandi' => 'secret12345',
             'kata_sandi_confirmation' => 'secret12345',
@@ -93,7 +93,7 @@ class AdminManagementTest extends TestCase
         $responseEdit = $this->actingAs($admin)->put(route('admin.users.update', $createdUser->id_pengguna), [
             'nama_lengkap' => 'Budi Santoso Diperbarui',
             'email' => 'budi.test@mncu.ac.id',
-            'nomor_identitas' => 'TEST-0099',
+            'nomor_identitas' => '50099',
             'id_peran' => $peran->id_peran,
         ]);
 

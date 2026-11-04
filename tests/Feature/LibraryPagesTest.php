@@ -198,4 +198,64 @@ class LibraryPagesTest extends TestCase
         $this->assertSame($initialStats['month'] + 1, $updatedStats['month']);
         $this->assertSame($initialStats['total'] + 1, $updatedStats['total']);
     }
+
+    /**
+     * Uji endpoint pencarian NIM mahasiswa pada form kehadiran pengunjung.
+     */
+    public function test_kehadiran_lookup_finds_registered_mahasiswa_by_nim(): void
+    {
+        $this->seed(PerpustakaanSeeder::class);
+
+        $response = $this->getJson(route('kehadiran.lookup', [
+            'identitas' => '20001',
+            'kategori' => 'Mahasiswa',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'found' => true,
+            'nama_lengkap' => 'Ahmad Fauzi Rahman',
+            'nomor_identitas' => '20001',
+            'kategori' => 'Mahasiswa',
+        ]);
+    }
+
+    /**
+     * Uji endpoint pencarian NIP dosen pada form kehadiran pengunjung.
+     */
+    public function test_kehadiran_lookup_finds_registered_dosen_by_nip(): void
+    {
+        $this->seed(PerpustakaanSeeder::class);
+
+        $response = $this->getJson(route('kehadiran.lookup', [
+            'identitas' => '10001',
+            'kategori' => 'Dosen / Tendik',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'found' => true,
+            'nama_lengkap' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+            'nomor_identitas' => '10001',
+            'kategori' => 'Dosen / Tendik',
+        ]);
+    }
+
+    /**
+     * Uji respons jika NIM/NIP tidak ditemukan dalam database.
+     */
+    public function test_kehadiran_lookup_returns_false_for_unknown_identitas(): void
+    {
+        $this->seed(PerpustakaanSeeder::class);
+
+        $response = $this->getJson(route('kehadiran.lookup', [
+            'identitas' => '99999',
+            'kategori' => 'Mahasiswa',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'found' => false,
+        ]);
+    }
 }

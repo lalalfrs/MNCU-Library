@@ -114,7 +114,7 @@
                             name="nomor_identitas"
                             id="nomor_identitas"
                             value="{{ old('nomor_identitas') }}"
-                            placeholder="Contoh: 202401001"
+                            placeholder="Contoh: 20001 (NIM Mahasiswa) / 10001 (NIP Dosen) / 30001 (NIP Tendik)"
                             class="mt-1.5 h-11 w-full rounded-xl border border-line bg-white px-3.5 text-xs text-ink focus:border-primary focus:outline-none sm:text-sm"
                         >
                     </div>

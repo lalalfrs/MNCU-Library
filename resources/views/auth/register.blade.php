@@ -128,7 +128,7 @@
                                     name="nomor_identitas"
                                     id="nomor_identitas"
                                     value="{{ old('nomor_identitas') }}"
-                                    placeholder="cth: 202401001"
+                                    placeholder="cth: 20001 (5 digit NIM/NIP)"
                                     class="block h-11 w-full rounded-xl border border-line bg-white pr-4 pl-10 text-xs text-ink placeholder:text-muted/60 transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none @error('nomor_identitas') border-red-500 @enderror"
                                 >
                             </div>

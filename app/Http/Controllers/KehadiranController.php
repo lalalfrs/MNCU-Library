@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pengguna;
 use App\Models\VisitorLog;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -26,6 +28,79 @@ class KehadiranController extends Controller
     }
 
     /**
+     * Cari identitas pengguna (NIM/NIP) untuk otomatis mengisi nama pemustaka terdaftar.
+     */
+    public function lookup(Request $request): JsonResponse
+    {
+        $identitas = trim((string) $request->query('identitas', ''));
+        $kategori = trim((string) $request->query('kategori', ''));
+
+        if (empty($identitas) || strlen($identitas) < 3) {
+            return response()->json([
+                'found' => false,
+                'message' => 'Masukkan minimal 3 karakter identitas.',
+            ]);
+        }
+
+        // Cari berdasarkan nomor identitas, id_pengguna, nim, atau nidn
+        $query = Pengguna::query()
+            ->with(['prodi', 'peran'])
+            ->where(function ($q) use ($identitas) {
+                $q->where('nomor_identitas', $identitas)
+                    ->orWhere('id_pengguna', $identitas)
+                    ->orWhere('nim', $identitas)
+                    ->orWhere('nidn', $identitas);
+            });
+
+        // Filter kategori jika diberikan
+        if ($kategori === 'Mahasiswa') {
+            $query->whereHas('peran', function ($q) {
+                $q->where('nama_peran', 'Mahasiswa');
+            });
+        } elseif (in_array($kategori, ['Dosen / Tendik', 'Dosen', 'Tendik'], true)) {
+            $query->whereHas('peran', function ($q) {
+                $q->whereIn('nama_peran', ['Dosen', 'Tendik', 'Pustakawan', 'Kepala Perpustakaan', 'Super Admin']);
+            });
+        }
+
+        $user = $query->first();
+
+        // Fallback jika tidak ditemukan dengan filter kategori, cari tanpa batasan peran
+        if (! $user) {
+            $user = Pengguna::query()
+                ->with(['prodi', 'peran'])
+                ->where(function ($q) use ($identitas) {
+                    $q->where('nomor_identitas', $identitas)
+                        ->orWhere('id_pengguna', $identitas)
+                        ->orWhere('nim', $identitas)
+                        ->orWhere('nidn', $identitas);
+                })
+                ->first();
+        }
+
+        if ($user) {
+            $userKategori = 'Mahasiswa';
+            if ($user->isDosen() || $user->isTendik() || $user->isPustakawan() || $user->isSuperAdmin()) {
+                $userKategori = 'Dosen / Tendik';
+            }
+
+            return response()->json([
+                'found' => true,
+                'nama_lengkap' => $user->nama_lengkap,
+                'nomor_identitas' => $user->nomor_identitas ?? $user->id_pengguna,
+                'kategori' => $userKategori,
+                'peran' => $user->peran?->nama_peran ?? 'Pemustaka',
+                'prodi' => $user->prodi?->nama_prodi,
+            ]);
+        }
+
+        return response()->json([
+            'found' => false,
+            'message' => 'NIM / NIP tidak terdaftar dalam database pemustaka.',
+        ]);
+    }
+
+    /**
      * Simpan data kehadiran pengunjung dan tambahkan ke statistik kunjungan perpustakaan.
      */
     public function store(Request $request): RedirectResponse
@@ -40,8 +115,20 @@ class KehadiranController extends Controller
             'identitas_pengunjung.required' => 'NIM / NIP / Alamat (untuk Umum) wajib diisi.',
         ]);
 
+        $userId = auth()->id();
+        if (! $userId && ! empty($validated['identitas_pengunjung'])) {
+            $matchedUser = Pengguna::query()
+                ->where('nomor_identitas', trim($validated['identitas_pengunjung']))
+                ->orWhere('id_pengguna', trim($validated['identitas_pengunjung']))
+                ->orWhere('nim', trim($validated['identitas_pengunjung']))
+                ->orWhere('nidn', trim($validated['identitas_pengunjung']))
+                ->first();
+
+            $userId = $matchedUser?->id_pengguna;
+        }
+
         VisitorLog::create([
-            'id_pengguna' => auth()->id(),
+            'id_pengguna' => $userId,
             'nama_pengunjung' => trim($validated['nama_pengunjung']),
             'kategori_pengunjung' => $validated['kategori_pengunjung'] ?? 'Umum',
             'identitas_pengunjung' => trim($validated['identitas_pengunjung']),

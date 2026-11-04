@@ -188,7 +188,7 @@
                                     id="nim"
                                     value="{{ old('nim', $user->nim ?? $user->nomor_identitas) }}"
                                     required
-                                    placeholder="Contoh: 202401001"
+                                    placeholder="Contoh: 20001 (5 digit)"
                                     aria-describedby="nim-desc @error('nim') nim-error @enderror"
                                     @error('nim') aria-invalid="true" @enderror
                                     class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nim') border-rose-400 bg-rose-50/30 @enderror"
@@ -218,7 +218,7 @@
                                     id="nidn"
                                     value="{{ old('nidn', $user->nidn ?? $user->nomor_identitas) }}"
                                     required
-                                    placeholder="Contoh: 0312058001"
+                                    placeholder="Contoh: 10001 (5 digit)"
                                     aria-describedby="nidn-desc @error('nidn') nidn-error @enderror"
                                     @error('nidn') aria-invalid="true" @enderror
                                     class="block w-full min-h-[44px] rounded-xl border border-line pl-10 pr-4 text-xs font-medium text-ink placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm @error('nidn') border-rose-400 bg-rose-50/30 @enderror"

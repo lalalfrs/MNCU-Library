@@ -160,7 +160,7 @@ class AuthTest extends TestCase
         $response = $this->post('/daftar', [
             'nama_lengkap' => 'Budi Santoso',
             'email' => 'budi.santoso@mncu.ac.id',
-            'nomor_identitas' => '202409999',
+            'nomor_identitas' => '20099',
             'id_prodi' => $prodi?->id_prodi,
             'kata_sandi' => 'secret123',
             'kata_sandi_confirmation' => 'secret123',

@@ -67,22 +67,19 @@
                             @php
                                 $defaultKategori = old('kategori_pengunjung');
                                 if (! $defaultKategori && auth()->check()) {
-                                    if (auth()->user()->isDosen()) {
-                                        $defaultKategori = 'Dosen';
-                                    } elseif (auth()->user()->isTendik() || auth()->user()->isSuperAdmin() || auth()->user()->isPustakawan()) {
-                                        $defaultKategori = 'Tendik';
+                                    if (auth()->user()->isDosen() || auth()->user()->isTendik() || auth()->user()->isSuperAdmin() || auth()->user()->isPustakawan()) {
+                                        $defaultKategori = 'Dosen / Tendik';
                                     } else {
                                         $defaultKategori = 'Mahasiswa';
                                     }
                                 }
                                 $defaultKategori = $defaultKategori ?: 'Mahasiswa';
                             @endphp
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
                                 @foreach ([
-                                    ['value' => 'Mahasiswa', 'icon' => 'fa-user-graduate', 'label' => 'NIM', 'placeholder' => 'Masukkan NIM (Nomor Induk Mahasiswa)', 'hint' => 'Masukkan NIM aktif Anda sebagai mahasiswa MNC University.'],
-                                    ['value' => 'Dosen', 'icon' => 'fa-chalkboard-user', 'label' => 'NIP', 'placeholder' => 'Masukkan NIP', 'hint' => 'Masukkan Nomor Induk Pegawai (NIP) Anda.'],
-                                    ['value' => 'Tendik', 'icon' => 'fa-id-badge', 'label' => 'NIP', 'placeholder' => 'Masukkan NIP', 'hint' => 'Masukkan Nomor Induk Pegawai (NIP) staf tenaga kependidikan.'],
-                                    ['value' => 'Umum', 'icon' => 'fa-users', 'label' => 'Alamat', 'placeholder' => 'Masukkan Alamat', 'hint' => 'Masukkan alamat domisili atau instansi asal Anda.'],
+                                    ['value' => 'Mahasiswa', 'icon' => 'fa-user-graduate', 'label' => 'NIM', 'placeholder' => 'Masukkan 5 digit NIM (cth: 20001)', 'hint' => 'Ketik 5 digit NIM Anda. Nama akan otomatis terdeteksi dari database.'],
+                                    ['value' => 'Dosen / Tendik', 'icon' => 'fa-chalkboard-user', 'label' => 'NIP', 'placeholder' => 'Masukkan 5 digit NIP (cth: 10001 atau 30001)', 'hint' => 'Ketik 5 digit NIP Dosen atau Tendik. Nama akan otomatis terdeteksi dari database.'],
+                                    ['value' => 'Umum', 'icon' => 'fa-users', 'label' => 'Alamat', 'placeholder' => 'Masukkan Alamat domisili / instansi', 'hint' => 'Masukkan alamat domisili atau instansi asal Anda.'],
                                 ] as $kat)
                                     <label class="cursor-pointer">
                                         <input
@@ -104,77 +101,87 @@
                             </div>
                         </div>
 
-                        {{-- Input Text: Nama Lengkap --}}
-                        <div>
-                            <label for="nama_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
-                                Nama Lengkap <span class="text-rose-600">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <i class="fa-solid fa-user text-xs sm:text-sm"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    id="nama_pengunjung"
-                                    name="nama_pengunjung"
-                                    value="{{ old('nama_pengunjung', auth()->user()->nama_lengkap ?? '') }}"
-                                    required
-                                    maxlength="150"
-                                    placeholder="Ketik nama lengkap Anda..."
-                                    class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
-                                >
+                        <div id="form-inputs-container" class="space-y-4">
+                            {{-- Input Var: NIM / NIP / Alamat sesuai Kategori Pengunjung (Untuk Civitas ditaruh di atas) --}}
+                            <div id="wrapper-identitas">
+                                <label for="identitas_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
+                                    <span id="label-identitas">NIM</span> <span class="text-rose-600">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <i class="fa-solid fa-id-card text-xs sm:text-sm"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        id="identitas_pengunjung"
+                                        name="identitas_pengunjung"
+                                        value="{{ old('identitas_pengunjung', auth()->user()->nomor_identitas ?? '') }}"
+                                        required
+                                        maxlength="255"
+                                        autocomplete="off"
+                                        placeholder="Masukkan 5 digit NIM (cth: 20001)"
+                                        class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-10 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
+                                    >
+                                    <span id="identitas-status-icon" class="hidden absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none" aria-hidden="true">
+                                        <i class="fa-solid fa-spinner fa-spin text-blue-600 text-xs"></i>
+                                    </span>
+                                </div>
+                                <div id="identitas-feedback"></div>
+                                <p id="hint-identitas" class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
+                                    Ketik 5 digit NIM Anda. Sistem akan mencari dan mengisi nama otomatis di bawah.
+                                </p>
+                                @error('identitas_pengunjung')
+                                    <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('nama_pengunjung')
-                                <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
-                        {{-- Input Var: NIM / NIP / Alamat sesuai Kategori Pengunjung --}}
-                        <div>
-                            <label for="identitas_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
-                                <span id="label-identitas">NIM</span> <span class="text-rose-600">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <i class="fa-solid fa-id-card text-xs sm:text-sm"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    id="identitas_pengunjung"
-                                    name="identitas_pengunjung"
-                                    value="{{ old('identitas_pengunjung', auth()->user()->nomor_identitas ?? '') }}"
-                                    required
-                                    maxlength="255"
-                                    placeholder="Masukkan NIM"
-                                    class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
-                                >
+                            {{-- Input Text: Nama Lengkap (Textbox bawahnya, otomatis terisi untuk double check) --}}
+                            <div id="wrapper-nama">
+                                <label for="nama_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
+                                    Nama Lengkap <span class="text-rose-600">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <i class="fa-solid fa-user text-xs sm:text-sm"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        id="nama_pengunjung"
+                                        name="nama_pengunjung"
+                                        value="{{ old('nama_pengunjung', auth()->user()->nama_lengkap ?? '') }}"
+                                        required
+                                        maxlength="150"
+                                        placeholder="Ketik nama lengkap Anda..."
+                                        class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20 transition-all"
+                                    >
+                                </div>
+                                <p id="hint-nama" class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
+                                    Terisi otomatis saat NIM/NIP terdaftar ditemukan, atau ketik nama lengkap manual.
+                                </p>
+                                @error('nama_pengunjung')
+                                    <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
+                                @enderror
                             </div>
-                            <p id="hint-identitas" class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
-                                Masukkan NIM aktif Anda sebagai mahasiswa MNC University.
-                            </p>
-                            @error('identitas_pengunjung')
-                                <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
-                        {{-- Input Keperluan Kunjungan (Opsional) --}}
-                        <div>
-                            <label for="keperluan" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
-                                Keperluan Kunjungan <span class="text-xs font-normal text-slate-400">(Opsional)</span>
-                            </label>
-                            <div class="relative">
-                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <i class="fa-solid fa-book-open-reader text-xs sm:text-sm"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    id="keperluan"
-                                    name="keperluan"
-                                    value="{{ old('keperluan') }}"
-                                    maxlength="255"
-                                    placeholder="Contoh: Membaca di tempat, Peminjaman buku OPAC, Diskusi tugas akhir..."
-                                    class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
-                                >
+                            {{-- Input Keperluan Kunjungan (Opsional) --}}
+                            <div id="wrapper-keperluan">
+                                <label for="keperluan" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
+                                    Keperluan Kunjungan <span class="text-xs font-normal text-slate-400">(Opsional)</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                        <i class="fa-solid fa-book-open-reader text-xs sm:text-sm"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        id="keperluan"
+                                        name="keperluan"
+                                        value="{{ old('keperluan') }}"
+                                        maxlength="255"
+                                        placeholder="Contoh: Membaca di tempat, Peminjaman buku OPAC, Diskusi tugas akhir..."
+                                        class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
+                                    >
+                                </div>
                             </div>
                         </div>
 
@@ -321,12 +328,37 @@
         (function () {
             const radios = document.querySelectorAll('.kategori-radio');
             const identitasInput = document.getElementById('identitas_pengunjung');
+            const namaInput = document.getElementById('nama_pengunjung');
             const labelIdentitas = document.getElementById('label-identitas');
             const hintIdentitas = document.getElementById('hint-identitas');
-            if (!radios.length || !identitasInput) return;
+            const hintNama = document.getElementById('hint-nama');
+            const feedbackEl = document.getElementById('identitas-feedback');
+            const statusIcon = document.getElementById('identitas-status-icon');
+            const container = document.getElementById('form-inputs-container');
+            const wrapperIdentitas = document.getElementById('wrapper-identitas');
+            const wrapperNama = document.getElementById('wrapper-nama');
 
-            function syncPlaceholder() {
+            if (!radios.length || !identitasInput || !namaInput) return;
+
+            let lookupTimeout = null;
+            let lastLookedUpVal = '';
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text || '';
+                return div.innerHTML;
+            }
+
+            function getActiveKategori() {
                 const checked = document.querySelector('.kategori-radio:checked');
+                return checked ? checked.value : 'Mahasiswa';
+            }
+
+            function updateLayoutAndPlaceholders() {
+                const checked = document.querySelector('.kategori-radio:checked');
+                const kategori = checked ? checked.value : 'Mahasiswa';
+                const isUmum = (kategori === 'Umum');
+
                 if (checked) {
                     if (checked.dataset.placeholder) {
                         identitasInput.setAttribute('placeholder', checked.dataset.placeholder);
@@ -338,14 +370,159 @@
                         hintIdentitas.textContent = checked.dataset.hint;
                     }
                 }
+
+                // Atur urutan tampilan:
+                // Mahasiswa / Dosen / Tendik -> NIM/NIP di atas, Nama Lengkap di bawahnya.
+                // Tamu Umum -> Nama Lengkap di atas, Alamat di bawahnya.
+                if (container && wrapperIdentitas && wrapperNama) {
+                    if (isUmum) {
+                        container.insertBefore(wrapperNama, wrapperIdentitas);
+                        if (hintNama) {
+                            hintNama.textContent = 'Masukkan nama lengkap Anda sesuai identitas pengenal.';
+                        }
+                        namaInput.setAttribute('placeholder', 'Ketik nama lengkap Anda...');
+                        if (feedbackEl) feedbackEl.innerHTML = '';
+                        if (statusIcon) statusIcon.classList.add('hidden');
+                    } else {
+                        container.insertBefore(wrapperIdentitas, wrapperNama);
+                        if (hintNama) {
+                            hintNama.textContent = 'Terisi otomatis saat NIM/NIP terdaftar ditemukan, atau ketik nama lengkap manual.';
+                        }
+                        if (identitasInput.value.trim().length >= 3) {
+                            performLookup(false);
+                        }
+                    }
+                }
             }
 
-            radios.forEach((radio) => {
-                radio.addEventListener('change', syncPlaceholder);
+            function performLookup(forceClear = false) {
+                const kategori = getActiveKategori();
+                const identitasVal = identitasInput.value.trim();
+
+                if (kategori === 'Umum') {
+                    if (feedbackEl) feedbackEl.innerHTML = '';
+                    if (statusIcon) statusIcon.classList.add('hidden');
+                    return;
+                }
+
+                if (identitasVal.length < 3) {
+                    if (feedbackEl) feedbackEl.innerHTML = '';
+                    if (statusIcon) statusIcon.classList.add('hidden');
+                    namaInput.setAttribute('placeholder', 'Ketik nama lengkap Anda...');
+                    if (forceClear) {
+                        namaInput.value = '';
+                    }
+                    lastLookedUpVal = '';
+                    return;
+                }
+
+                if (identitasVal === lastLookedUpVal && !forceClear) {
+                    return;
+                }
+
+                if (statusIcon) {
+                    statusIcon.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-blue-600 text-xs"></i>';
+                    statusIcon.classList.remove('hidden');
+                }
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = '<p class="mt-1.5 flex items-center gap-1.5 text-[11px] sm:text-xs text-blue-600 font-medium"><i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Mencari data pemustaka di database...</p>';
+                }
+
+                const lookupUrl = `{{ route('kehadiran.lookup') }}?identitas=${encodeURIComponent(identitasVal)}&kategori=${encodeURIComponent(kategori)}`;
+
+                fetch(lookupUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    lastLookedUpVal = identitasVal;
+
+                    if (data.found) {
+                        // Menaruh nama terdaftar di placeholder untuk double check
+                        namaInput.setAttribute('placeholder', `Nama terdaftar: ${data.nama_lengkap}`);
+                        // Tertulis sendiri di textbox bawahnya
+                        namaInput.value = data.nama_lengkap;
+
+                        if (statusIcon) {
+                            statusIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>';
+                            statusIcon.classList.remove('hidden');
+                        }
+                        if (feedbackEl) {
+                            feedbackEl.innerHTML = `
+                                <div class="mt-2 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/90 px-3.5 py-2 text-[11px] sm:text-xs text-emerald-800">
+                                    <span class="inline-flex items-center gap-1.5 font-semibold">
+                                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                        Identitas Terdaftar: <strong>${escapeHtml(data.nama_lengkap)}</strong>
+                                    </span>
+                                    <span class="rounded-md bg-emerald-200/80 px-2 py-0.5 text-[10px] font-bold text-emerald-900 uppercase">
+                                        ${escapeHtml(data.kategori)}${data.prodi ? ' &bull; ' + escapeHtml(data.prodi) : ''}
+                                    </span>
+                                </div>`;
+                        }
+                        if (hintNama) {
+                            hintNama.innerHTML = '<span class="text-emerald-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-600"></i> Nama berhasil terverifikasi otomatis sesuai NIM/NIP di atas.</span>';
+                        }
+                    } else {
+                        if (statusIcon) {
+                            if (identitasVal.length >= 5) {
+                                statusIcon.innerHTML = '<i class="fa-solid fa-circle-info text-amber-500 text-sm"></i>';
+                                statusIcon.classList.remove('hidden');
+                            } else {
+                                statusIcon.classList.add('hidden');
+                            }
+                        }
+                        if (feedbackEl) {
+                            if (identitasVal.length >= 5) {
+                                feedbackEl.innerHTML = `
+                                    <div class="mt-2 flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2 text-[11px] sm:text-xs text-amber-800 font-medium">
+                                        <i class="fa-solid fa-circle-info text-amber-600 text-xs shrink-0"></i>
+                                        <span>${escapeHtml(data.message || 'NIM / NIP belum terdaftar. Silakan masukkan nama lengkap secara manual pada kotak di bawah.')}</span>
+                                    </div>`;
+                            } else {
+                                feedbackEl.innerHTML = '';
+                            }
+                        }
+                        if (hintNama) {
+                            hintNama.textContent = 'Ketik nama lengkap Anda sesuai kartu identitas.';
+                        }
+                        namaInput.setAttribute('placeholder', 'Ketik nama lengkap Anda...');
+                    }
+                })
+                .catch(() => {
+                    if (statusIcon) statusIcon.classList.add('hidden');
+                    if (feedbackEl) feedbackEl.innerHTML = '';
+                });
+            }
+
+            // Listener input debounce pada NIM/NIP
+            identitasInput.addEventListener('input', function () {
+                clearTimeout(lookupTimeout);
+                lookupTimeout = setTimeout(() => {
+                    performLookup(false);
+                }, 250);
             });
 
-            // Sinkronisasi saat halaman dimuat
-            syncPlaceholder();
+            // Trigger langsung saat blur (keluar dari kotak input NIM/NIP)
+            identitasInput.addEventListener('blur', function () {
+                clearTimeout(lookupTimeout);
+                performLookup(false);
+            });
+
+            // Listener ganti kategori radio
+            radios.forEach((radio) => {
+                radio.addEventListener('change', function () {
+                    updateLayoutAndPlaceholders();
+                });
+            });
+
+            // Inisialisasi saat halaman pertama kali dimuat
+            updateLayoutAndPlaceholders();
+            if (identitasInput.value.trim().length >= 3) {
+                performLookup(false);
+            }
         })();
     </script>
 @endsection
