@@ -92,7 +92,7 @@
                     </div>
                 </div>
                 @if ($isHomeActive)
-                    <span class="size-2 rounded-full bg-primary ring-4 ring-primary/20 shrink-0 mr-1 animate-pulse"></span>
+                    <span class="size-2 rounded-full bg-primary shrink-0 mr-1"></span>
                 @else
                     <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary mr-1"></i>
                 @endif
@@ -145,7 +145,7 @@
                                 </div>
                             </div>
                             @if ($isInboxActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -169,7 +169,7 @@
                                 </div>
                             </div>
                             @if ($isUserActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -193,7 +193,7 @@
                                 </div>
                             </div>
                             @if ($isBookActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -217,7 +217,7 @@
                                 </div>
                             </div>
                             @if ($isAcaraActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -241,7 +241,7 @@
                                 </div>
                             </div>
                             @if ($isBeritaActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -265,7 +265,7 @@
                                 </div>
                             </div>
                             @if ($isPinjamActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -289,7 +289,7 @@
                                 </div>
                             </div>
                             @if ($isStatActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -313,7 +313,7 @@
                                 </div>
                             </div>
                             @if ($isReportActive)
-                                <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                                <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                             @else
                                 <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                             @endif
@@ -361,7 +361,7 @@
                             </div>
                         </div>
                         @if ($isOpacActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -385,7 +385,7 @@
                             </div>
                         </div>
                         @if ($isRepoActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -409,7 +409,7 @@
                             </div>
                         </div>
                         @if ($isJournalActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -433,7 +433,7 @@
                             </div>
                         </div>
                         @if ($isOjsActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -457,7 +457,7 @@
                             </div>
                         </div>
                         @if ($isEbookActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -504,7 +504,7 @@
                             </div>
                         </div>
                         @if ($isAboutActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -528,7 +528,7 @@
                             </div>
                         </div>
                         @if ($isContactActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -552,7 +552,7 @@
                             </div>
                         </div>
                         @if ($isLibrarianActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -576,7 +576,7 @@
                             </div>
                         </div>
                         @if ($isChatActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -600,7 +600,7 @@
                             </div>
                         </div>
                         @if ($isNewsActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif
@@ -624,7 +624,7 @@
                             </div>
                         </div>
                         @if ($isEventActive)
-                            <span class="size-1.5 rounded-full bg-primary ring-2 ring-primary/20 shrink-0 animate-pulse"></span>
+                            <span class="size-1.5 rounded-full bg-primary shrink-0"></span>
                         @else
                             <i class="fa-solid fa-angle-right text-[10px] text-muted/50 transition-all duration-200 group-hover/item:translate-x-1 group-hover/item:text-primary"></i>
                         @endif

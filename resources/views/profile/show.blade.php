@@ -452,7 +452,7 @@
                     </span>
                     @if (isset($totalPinjamAktif) && $totalPinjamAktif > 0)
                         <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-xs">
-                            <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="size-2 rounded-full bg-amber-500"></span>
                             <span>{{ $totalPinjamAktif }} Sedang Berjalan</span>
                         </span>
                     @endif

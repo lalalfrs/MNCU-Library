@@ -12,18 +12,13 @@
                 <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 <span class="font-medium text-ink">Repository</span>
             </nav>
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
-                        Repository Karya Ilmiah MNC University
-                    </h1>
-                    <p class="mt-1 text-sm text-ink-secondary sm:text-base">
-                        Pusat arsip digital skripsi, tugas akhir sarjana, dan publikasi penelitian sivitas akademika MNC University.
-                    </p>
-                </div>
-                <div class="rounded-xl border border-[#DDD6FE] bg-[#7C3AED]/5 px-4 py-2 text-xs text-[#7C3AED]">
-                    Total Karya Ilmiah: <span class="font-bold">{{ $totalCount }} dokumen</span>
-                </div>
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
+                    Repository Karya Ilmiah MNC University
+                </h1>
+                <p class="text-sm text-ink-secondary sm:text-base">
+                    Pusat arsip digital skripsi, tugas akhir sarjana, dan publikasi penelitian sivitas akademika MNC University.
+                </p>
             </div>
         </div>
 

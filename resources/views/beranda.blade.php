@@ -221,8 +221,7 @@
                         <div class="grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
                             <div class="flex flex-col justify-center lg:col-span-7">
                                 <div class="mb-4 flex flex-wrap items-center gap-3">
-                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
-                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                    <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
                                         {{ $lastPromoSlide['badge'] }}
                                     </span>
                                     <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
@@ -271,15 +270,9 @@
                         <div class="relative z-10 grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
                             {{-- Kolom Kiri: Sambutan Sesuai Peran User --}}
                             <div class="flex flex-col justify-center lg:col-span-7">
-                                <div class="mb-3.5 flex flex-wrap items-center gap-3">
-                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
-                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
-                                        Sambutan Perpustakaan
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
-                                        <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
-                                        {{ now()->translatedFormat('d M Y') }}
-                                    </span>
+                                <div class="mb-3.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                    <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                    <span>{{ now()->translatedFormat('d M Y') }}</span>
                                 </div>
 
                                 @auth
@@ -406,8 +399,7 @@
                                 {{-- Kolom Kiri: Pill Kategori + Tanggal, Judul Kapital Bold Navy, Kutipan, Tombol Pill Navy --}}
                                 <div class="flex flex-col justify-center lg:col-span-7">
                                     <div class="mb-4 flex flex-wrap items-center gap-3">
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
-                                            <span class="size-2 rounded-full bg-[#f59e0b]"></span>
+                                        <span class="inline-flex items-center rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
                                             {{ $slide['badge'] }}
                                         </span>
                                         <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
@@ -459,15 +451,9 @@
                         </div>
                         <div class="relative z-10 grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-10">
                             <div class="flex flex-col justify-center lg:col-span-7">
-                                <div class="mb-3.5 flex flex-wrap items-center gap-3">
-                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f1f5f9] px-3.5 py-1.5 text-xs font-bold text-[#0f2a6b]">
-                                        <span class="size-2 rounded-full bg-[#f59e0b]"></span>
-                                        Sambutan Perpustakaan
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
-                                        <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
-                                        {{ now()->translatedFormat('d M Y') }}
-                                    </span>
+                                <div class="mb-3.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                                    <i class="fa-regular fa-calendar text-[11px]" aria-hidden="true"></i>
+                                    <span>{{ now()->translatedFormat('d M Y') }}</span>
                                 </div>
                                 <h2 class="text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-extrabold uppercase tracking-tight text-[#0b1f3a] leading-[1.22]">
                                     Perpustakaan MNC University
@@ -679,13 +665,7 @@
                         <i class="fa-solid fa-chart-simple text-lg" aria-hidden="true"></i>
                     </span>
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aktivitas Pemustaka</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Real-time
-                            </span>
-                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aktivitas Pemustaka</span>
                         <h2 id="judul-statistik-pengunjung" class="text-base sm:text-lg lg:text-xl font-bold text-[#0b1f3a]">
                             Statistik Kunjungan Perpustakaan
                         </h2>

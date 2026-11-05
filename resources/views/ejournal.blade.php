@@ -12,40 +12,25 @@
                 <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 <span class="font-medium text-ink">E-Journal</span>
             </nav>
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
-                        Portal E-Journal & Database Riset
-                    </h1>
-                    <p class="mt-1 text-sm text-ink-secondary sm:text-base">
-                        Koleksi database jurnal internasional dan nasional untuk mendukung riset serta penulisan karya ilmiah mahasiswa dan dosen.
-                    </p>
-                </div>
-                <div class="rounded-xl border border-[#BFDBFE] bg-[#2563EB]/5 px-4 py-2 text-xs text-[#2563EB]">
-                    Database Terintegrasi: <span class="font-bold">3 Subjek Koleksi Riset</span>
-                </div>
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
+                    Portal E-Journal & Database Riset
+                </h1>
+                <p class="text-sm text-ink-secondary sm:text-base">
+                    Koleksi database jurnal internasional dan nasional untuk mendukung riset serta penulisan karya ilmiah mahasiswa dan dosen.
+                </p>
             </div>
         </div>
 
         {{-- Section: Akses Portal Jurnal Berdasarkan Subjek (Gale Cengage) --}}
         <section aria-labelledby="subjek-jurnal-heading" class="flex flex-col gap-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
-                <div>
-                    <div class="inline-flex items-center gap-1.5 rounded-full bg-[#0b2a5b]/10 px-3 py-1 text-xs font-bold text-[#0b2a5b] mb-1.5">
-                        <i class="fa-solid fa-key text-[#f59e0b] text-[11px]"></i>
-                        Akses Database Jurnal Internasional
-                    </div>
-                    <h2 id="subjek-jurnal-heading" class="text-lg sm:text-xl lg:text-2xl font-bold text-[#0b1f3a]">
-                        Akses Portal Jurnal Berdasarkan Subjek
-                    </h2>
-                    <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Gunakan tautan resmi dan password tertera di bawah untuk mengakses koleksi jurnal serta basis data riset Gale Cengage.
-                    </p>
-                </div>
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200 shrink-0 self-start sm:self-auto">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Akses Aktif Kampus
-                </span>
+            <div class="border-b border-slate-200/80 pb-3">
+                <h2 id="subjek-jurnal-heading" class="text-lg sm:text-xl lg:text-2xl font-bold text-[#0b1f3a]">
+                    Akses Portal Jurnal Berdasarkan Subjek
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                    Gunakan tautan resmi dan password tertera di bawah untuk mengakses koleksi jurnal serta basis data riset Gale Cengage.
+                </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
@@ -55,14 +40,9 @@
                     <div class="pointer-events-none absolute -bottom-10 -left-10 size-32 rounded-full bg-amber-100/30 blur-xl" aria-hidden="true"></div>
 
                     <div class="relative z-10">
-                        <div class="flex items-center justify-between gap-3">
-                            <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#0b2a5b]">
-                                <i class="fa-solid fa-chart-line text-lg text-[#0b2a5b]"></i>
-                            </span>
-                            <span class="rounded-full bg-[#0b2a5b]/10 px-3 py-1 text-[11px] font-bold text-[#0b2a5b]">
-                                Gale Economics
-                            </span>
-                        </div>
+                        <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#0b2a5b]">
+                            <i class="fa-solid fa-chart-line text-lg text-[#0b2a5b]"></i>
+                        </span>
 
                         <h3 class="mt-4 text-lg font-bold text-[#0b1f3a] group-hover:text-primary transition-colors">
                             Subjek Ekonomi
@@ -73,12 +53,9 @@
 
                         {{-- Kotak Password --}}
                         <div class="mt-4 rounded-xl border border-slate-200/80 bg-white/95 p-3.5 shadow-2xs backdrop-blur-xs">
-                            <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                                <span class="font-medium flex items-center gap-1.5">
-                                    <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
-                                    Password Akses:
-                                </span>
-                                <span class="text-[10px] text-slate-400">Klik tombol salin</span>
+                            <div class="text-xs text-slate-500 mb-1.5 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
+                                Password Akses:
                             </div>
                             <div class="flex items-center justify-between gap-2">
                                 <code class="font-mono text-sm sm:text-base font-extrabold text-[#0b1f3a] tracking-wider select-all bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
@@ -116,14 +93,9 @@
                     <div class="pointer-events-none absolute -bottom-10 -left-10 size-32 rounded-full bg-amber-100/30 blur-xl" aria-hidden="true"></div>
 
                     <div class="relative z-10">
-                        <div class="flex items-center justify-between gap-3">
-                            <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#0284c7]">
-                                <i class="fa-solid fa-microchip text-lg text-[#0284c7]"></i>
-                            </span>
-                            <span class="rounded-full bg-[#0284c7]/10 px-3 py-1 text-[11px] font-bold text-[#0284c7]">
-                                Gale Science & Tech
-                            </span>
-                        </div>
+                        <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#0284c7]">
+                            <i class="fa-solid fa-microchip text-lg text-[#0284c7]"></i>
+                        </span>
 
                         <h3 class="mt-4 text-lg font-bold text-[#0b1f3a] group-hover:text-primary transition-colors">
                             Subjek Teknik
@@ -134,12 +106,9 @@
 
                         {{-- Kotak Password --}}
                         <div class="mt-4 rounded-xl border border-slate-200/80 bg-white/95 p-3.5 shadow-2xs backdrop-blur-xs">
-                            <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                                <span class="font-medium flex items-center gap-1.5">
-                                    <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
-                                    Password Akses:
-                                </span>
-                                <span class="text-[10px] text-slate-400">Klik tombol salin</span>
+                            <div class="text-xs text-slate-500 mb-1.5 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
+                                Password Akses:
                             </div>
                             <div class="flex items-center justify-between gap-2">
                                 <code class="font-mono text-sm sm:text-base font-extrabold text-[#0b1f3a] tracking-wider select-all bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
@@ -177,14 +146,9 @@
                     <div class="pointer-events-none absolute -bottom-10 -left-10 size-32 rounded-full bg-amber-100/30 blur-xl" aria-hidden="true"></div>
 
                     <div class="relative z-10">
-                        <div class="flex items-center justify-between gap-3">
-                            <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#7c3aed]">
-                                <i class="fa-solid fa-users text-lg text-[#7c3aed]"></i>
-                            </span>
-                            <span class="rounded-full bg-[#7c3aed]/10 px-3 py-1 text-[11px] font-bold text-[#7c3aed]">
-                                Gale Social Studies
-                            </span>
-                        </div>
+                        <span class="flex size-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-100 text-[#7c3aed]">
+                            <i class="fa-solid fa-users text-lg text-[#7c3aed]"></i>
+                        </span>
 
                         <h3 class="mt-4 text-lg font-bold text-[#0b1f3a] group-hover:text-primary transition-colors">
                             Subjek Sosial
@@ -195,12 +159,9 @@
 
                         {{-- Kotak Password --}}
                         <div class="mt-4 rounded-xl border border-slate-200/80 bg-white/95 p-3.5 shadow-2xs backdrop-blur-xs">
-                            <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                                <span class="font-medium flex items-center gap-1.5">
-                                    <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
-                                    Password Akses:
-                                </span>
-                                <span class="text-[10px] text-slate-400">Klik tombol salin</span>
+                            <div class="text-xs text-slate-500 mb-1.5 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-lock text-[#f59e0b] text-[11px]"></i>
+                                Password Akses:
                             </div>
                             <div class="flex items-center justify-between gap-2">
                                 <code class="font-mono text-sm sm:text-base font-extrabold text-[#0b1f3a] tracking-wider select-all bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">

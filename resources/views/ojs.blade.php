@@ -12,39 +12,22 @@
                 <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 <span class="font-medium text-ink">OJS per Prodi</span>
             </nav>
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
-                        Portal Jurnal OJS per Program Studi
-                    </h1>
-                    <p class="mt-1 text-sm text-ink-secondary sm:text-base">
-                        Sistem pengelolaan dan penerbitan jurnal elektronik berkala ilmiah (Open Journal Systems) MNC University.
-                    </p>
-                </div>
-                <div class="rounded-xl border border-[#A7F3D0] bg-[#059669]/5 px-4 py-2 text-xs text-[#047857]">
-                    Total Jurnal Aktif: <span class="font-bold">{{ count($journals) }} Program Studi</span>
-                </div>
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
+                    Portal Jurnal OJS per Program Studi
+                </h1>
+                <p class="text-sm text-ink-secondary sm:text-base">
+                    Sistem pengelolaan dan penerbitan jurnal elektronik berkala ilmiah (Open Journal Systems) MNC University.
+                </p>
             </div>
         </div>
 
         {{-- Info Banner --}}
         <div class="rounded-2xl border border-line bg-subtle p-5 lg:p-6">
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h2 class="text-sm font-semibold text-ink sm:text-base">Kirim Naskah Artikel Ilmiah (Call for Papers)</h2>
-                    <p class="mt-1 text-xs text-ink-secondary leading-relaxed sm:text-sm">
-                        Setiap jurnal menerima naskah hasil penelitian orisinal mahasiswa, dosen, dan peneliti luar. Silakan pilih portal program studi terkait untuk membaca Author Guidelines dan melakukan registrasi naskah secara online.
-                    </p>
-                </div>
-                <div class="shrink-0">
-                    <span class="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-xs font-medium text-ink">
-                        <svg class="size-4 text-[#047857]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Peer-Reviewed & Open Access
-                    </span>
-                </div>
-            </div>
+            <h2 class="text-sm font-semibold text-ink sm:text-base">Kirim Naskah Artikel Ilmiah (Call for Papers)</h2>
+            <p class="mt-1 text-xs text-ink-secondary leading-relaxed sm:text-sm">
+                Setiap jurnal menerima naskah hasil penelitian orisinal mahasiswa, dosen, dan peneliti luar. Silakan pilih portal program studi terkait untuk membaca Author Guidelines dan melakukan registrasi naskah secara online.
+            </p>
         </div>
 
         {{-- Journals Grid --}}

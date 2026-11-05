@@ -12,18 +12,13 @@
                 <svg class="size-3.5 text-muted/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
                 <span class="font-medium text-ink">E-Book</span>
             </nav>
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
-                        Koleksi E-Book Digital
-                    </h1>
-                    <p class="mt-1 text-sm text-ink-secondary sm:text-base">
-                        Buku teks perkuliahan dan monograf dalam format elektronik yang dapat diakses secara fleksibel dari perangkat Anda.
-                    </p>
-                </div>
-                <div class="rounded-xl border border-[#FECDD3] bg-[#E11D48]/5 px-4 py-2 text-xs text-[#E11D48]">
-                    Koleksi Tersedia: <span class="font-bold">{{ $totalCount }} Judul E-Book</span>
-                </div>
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-semibold text-primary sm:text-3xl lg:text-4xl">
+                    Koleksi E-Book Digital
+                </h1>
+                <p class="text-sm text-ink-secondary sm:text-base">
+                    Buku teks perkuliahan dan monograf dalam format elektronik yang dapat diakses secara fleksibel dari perangkat Anda.
+                </p>
             </div>
         </div>
 
