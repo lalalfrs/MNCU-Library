@@ -137,7 +137,14 @@ class LibraryPagesTest extends TestCase
         $response = $this->get(route('ejournal'));
         $response->assertStatus(200);
         $response->assertSee('Portal E-Journal');
-        $response->assertSee('DOAJ');
+        $response->assertSee('Subjek Ekonomi');
+        $response->assertSee('harmony');
+        $response->assertSee('https://link.gale.com/apps/PPBE?u=fjktbus', false);
+        $response->assertSee('Subjek Teknik');
+        $response->assertSee('keeper');
+        $response->assertSee('https://link.gale.com/apps/PPGS?u=fjktsci', false);
+        $response->assertSee('Subjek Sosial');
+        $response->assertSee('journey');
     }
 
     public function test_ojs_page_is_successful(): void

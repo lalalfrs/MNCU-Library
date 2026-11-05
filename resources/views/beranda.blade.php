@@ -17,9 +17,9 @@
                 'href' => route('repository'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-graduation-cap',
-                'cardBg' => 'bg-white',
-                'cardBorder' => 'border-purple-200 hover:border-purple-400',
-                'cardShadow' => 'hover:shadow-lg hover:shadow-purple-500/10',
+                'cardBg' => 'bg-gradient-to-br from-white via-slate-50/80 to-purple-50/40',
+                'cardBorder' => 'border-purple-200/90 hover:border-purple-400',
+                'cardShadow' => 'shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:shadow-lg hover:shadow-purple-500/10',
                 'iconBox' => 'bg-purple-100 text-purple-700 border border-purple-200',
                 'iconStyle' => 'background-color: #f3e8ff; color: #7c3aed;',
                 'topBarStyle' => 'background: linear-gradient(to right, #7c3aed, #d946ef);',
@@ -34,9 +34,9 @@
                 'href' => route('ejournal'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-newspaper',
-                'cardBg' => 'bg-white',
-                'cardBorder' => 'border-blue-200 hover:border-blue-400',
-                'cardShadow' => 'hover:shadow-lg hover:shadow-blue-500/10',
+                'cardBg' => 'bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40',
+                'cardBorder' => 'border-blue-200/90 hover:border-blue-400',
+                'cardShadow' => 'shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:shadow-lg hover:shadow-blue-500/10',
                 'iconBox' => 'bg-blue-100 text-blue-700 border border-blue-200',
                 'iconStyle' => 'background-color: #dbeafe; color: #2563eb;',
                 'topBarStyle' => 'background: linear-gradient(to right, #0ea5e9, #2563eb);',
@@ -51,9 +51,9 @@
                 'href' => route('ojs'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-layer-group',
-                'cardBg' => 'bg-white',
-                'cardBorder' => 'border-emerald-200 hover:border-emerald-400',
-                'cardShadow' => 'hover:shadow-lg hover:shadow-emerald-500/10',
+                'cardBg' => 'bg-gradient-to-br from-white via-slate-50/80 to-emerald-50/40',
+                'cardBorder' => 'border-emerald-200/90 hover:border-emerald-400',
+                'cardShadow' => 'shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:shadow-lg hover:shadow-emerald-500/10',
                 'iconBox' => 'bg-emerald-100 text-emerald-700 border border-emerald-200',
                 'iconStyle' => 'background-color: #d1fae5; color: #047857;',
                 'topBarStyle' => 'background: linear-gradient(to right, #10b981, #14b8a6);',
@@ -68,9 +68,9 @@
                 'href' => route('ebook'),
                 'isExternal' => false,
                 'faIcon' => 'fa-solid fa-tablet-screen-button',
-                'cardBg' => 'bg-white',
-                'cardBorder' => 'border-rose-200 hover:border-rose-400',
-                'cardShadow' => 'hover:shadow-lg hover:shadow-rose-500/10',
+                'cardBg' => 'bg-gradient-to-br from-white via-slate-50/80 to-rose-50/40',
+                'cardBorder' => 'border-rose-200/90 hover:border-rose-400',
+                'cardShadow' => 'shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:shadow-lg hover:shadow-rose-500/10',
                 'iconBox' => 'bg-rose-100 text-rose-700 border border-rose-200',
                 'iconStyle' => 'background-color: #ffe4e6; color: #e11d48;',
                 'topBarStyle' => 'background: linear-gradient(to right, #f43f5e, #ec4899);',
@@ -382,39 +382,17 @@
 
                             {{-- Kolom Kanan: Frame Kotak Logo MNC University --}}
                             <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
-                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square flex-col items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:shadow-md">
-                                    <div class="pointer-events-none absolute -top-12 -right-12 size-36 rounded-full bg-blue-100/50 blur-2xl" aria-hidden="true"></div>
-                                    <div class="pointer-events-none absolute -bottom-12 -left-12 size-36 rounded-full bg-amber-100/40 blur-2xl" aria-hidden="true"></div>
+                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-8 sm:p-10 shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:shadow-md">
+                                    <div class="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-blue-100/50 blur-2xl" aria-hidden="true"></div>
+                                    <div class="pointer-events-none absolute -bottom-12 -left-12 size-40 rounded-full bg-amber-100/40 blur-2xl" aria-hidden="true"></div>
 
-                                    <div class="relative z-10 flex size-24 sm:size-28 items-center justify-center rounded-2xl bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.06)] border border-slate-100 transition-transform duration-300 group-hover:scale-105">
+                                    <div class="relative z-10 flex size-36 sm:size-44 lg:size-48 items-center justify-center rounded-3xl bg-white/95 p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] border border-slate-100 transition-transform duration-300 group-hover:scale-105">
                                         <img
                                             src="{{ asset('images/LogoTXT.png') }}"
                                             alt="Logo MNC University"
                                             class="max-h-full max-w-full object-contain"
                                             loading="eager"
                                         >
-                                    </div>
-
-                                    <div class="relative z-10 mt-5">
-                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#0b2a5b]/10 px-3 py-1 text-[11px] font-bold text-[#0b2a5b]">
-                                            <i class="fa-solid fa-graduation-cap text-[#f59e0b] text-xs"></i>
-                                            MNC University
-                                        </span>
-                                        <h3 class="mt-2 text-base sm:text-lg font-extrabold text-[#0b1f3a] tracking-tight">
-                                            Perpustakaan Digital
-                                        </h3>
-                                        <p class="mt-1 text-xs text-slate-500 font-medium leading-relaxed max-w-[240px]">
-                                            Pusat Referensi, Literasi Ilmiah &amp; Riset Akademik Sivitas
-                                        </p>
-                                    </div>
-
-                                    <div class="relative z-10 mt-4 flex items-center gap-2 border-t border-slate-200/70 pt-3 text-[11px] font-semibold text-slate-400">
-                                        <span class="flex items-center gap-1 text-[#0b2a5b]">
-                                            <i class="fa-solid fa-building-columns text-xs text-[#f59e0b]"></i>
-                                            MNCU Library
-                                        </span>
-                                        <span>&bull;</span>
-                                        <span class="text-slate-500">Masa Depan Berawal Disini</span>
                                     </div>
                                 </div>
                             </div>
@@ -499,17 +477,13 @@
                                 </p>
                             </div>
                             <div class="flex items-center justify-center lg:col-span-5 lg:justify-end">
-                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square flex-col items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-                                    <div class="flex size-24 sm:size-28 items-center justify-center rounded-2xl bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.06)] border border-slate-100">
+                                <div class="group relative flex w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px] aspect-square items-center justify-center overflow-hidden rounded-[26px] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-8 sm:p-10 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
+                                    <div class="flex size-36 sm:size-44 lg:size-48 items-center justify-center rounded-3xl bg-white/95 p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] border border-slate-100">
                                         <img
                                             src="{{ asset('images/LogoTXT.png') }}"
                                             alt="Logo MNC University"
                                             class="max-h-full max-w-full object-contain"
                                         >
-                                    </div>
-                                    <div class="mt-4">
-                                        <h3 class="text-base font-extrabold text-[#0b1f3a] tracking-tight">Perpustakaan Digital</h3>
-                                        <p class="mt-0.5 text-xs text-slate-500 font-medium">MNC University</p>
                                     </div>
                                 </div>
                             </div>
@@ -698,7 +672,7 @@
         </section>
 
         {{-- Section: Rekap Statistik Pengunjung Perpustakaan (Diturunkan dari Hero) --}}
-        <section id="statistik-pengunjung" aria-labelledby="judul-statistik-pengunjung" class="rounded-2xl border border-line bg-white p-5 sm:p-6 lg:p-7 shadow-xs">
+        <section id="statistik-pengunjung" aria-labelledby="judul-statistik-pengunjung" class="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-blue-50/30 p-5 sm:p-6 lg:p-7 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div class="flex items-center gap-3">
                     <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#0b2a5b]/10 text-[#0b2a5b]">
@@ -793,7 +767,7 @@
         </section>
 
         {{-- Komponen card: layanan --}}
-        <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-line bg-white p-6 lg:p-8">
+        <section id="layanan" aria-labelledby="judul-layanan" class="scroll-mt-28 rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-blue-50/30 p-6 lg:p-8 shadow-xs">
             <div class="flex flex-wrap items-end justify-between gap-2">
                 <div>
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary mb-2">
@@ -806,7 +780,7 @@
             </div>
 
             {{-- Kartu utama: satu-satunya layanan yang berupa halaman di situs ini, jadi diberi porsi lebih besar. --}}
-            <a href="{{ route('opac') }}" class="group relative mt-6 flex flex-col gap-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-primary/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
+            <a href="{{ route('opac') }}" class="group relative mt-6 flex flex-col gap-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-primary/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:gap-7 lg:p-8">
                 <span class="absolute inset-x-0 top-0 h-1.5" style="background: linear-gradient(to right, #0f2a6b, #2563eb, #38bdf8);"></span>
                 <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-105 lg:size-20" style="background-color: #0f2a6b; color: #ffffff;">
                     <i class="fa-solid fa-book-open-reader text-3xl lg:text-4xl text-white" aria-hidden="true"></i>
@@ -869,7 +843,7 @@
         </section>
 
         {{-- Card berita --}}
-        <section aria-labelledby="judul-berita" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
+        <section aria-labelledby="judul-berita" class="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-blue-50/30 p-5 lg:p-[30px] shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 id="judul-berita" class="text-base font-semibold text-ink lg:text-xl">Berita Perpustakaan</h2>
@@ -919,7 +893,7 @@
                             <li class="carousel-item-3 shrink-0 flex flex-col">
                                 <a
                                     href="{{ !empty($newsItem['slug']) && $newsItem['slug'] !== '#' ? route('berita.show', $newsItem['slug']) : route('berita.index') }}"
-                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                                     draggable="false"
                                 >
                                     <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5 select-none pointer-events-none">
@@ -938,7 +912,7 @@
                                             {{ $newsItem['category'] ?? 'Berita Kampus' }}
                                         </span>
                                     </div>
-                                    <span class="flex flex-1 flex-col p-5 bg-white">
+                                    <span class="flex flex-1 flex-col p-5 bg-transparent">
                                         <span class="flex items-center gap-1.5 text-xs font-semibold text-primary">
                                             <i class="fa-regular fa-calendar text-[11px]"></i>
                                             <span>{{ $newsItem['date'] }}</span>
@@ -986,7 +960,7 @@
         </section>
 
         {{-- Acara / event --}}
-        <section aria-labelledby="judul-acara" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
+        <section aria-labelledby="judul-acara" class="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-blue-50/30 p-5 lg:p-[30px] shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 id="judul-acara" class="text-base font-semibold text-ink lg:text-xl">Acara Mendatang</h2>
@@ -1036,7 +1010,7 @@
                             <li class="carousel-item-3 shrink-0 flex flex-col">
                                 <a
                                     href="{{ !empty($eventItem['slug']) && $eventItem['slug'] !== '#' ? route('acara.show', $eventItem['slug']) : route('acara.index') }}"
-                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                                    class="carousel-card group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-raised motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                                     draggable="false"
                                 >
                                     <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5 select-none pointer-events-none">
@@ -1073,7 +1047,7 @@
                                             </span>
                                         @endif
                                     </div>
-                                    <span class="flex flex-1 flex-col p-5 bg-white">
+                                    <span class="flex flex-1 flex-col p-5 bg-transparent">
                                         <span class="flex items-center gap-1.5 text-xs font-semibold text-primary">
                                             <i class="fa-regular fa-clock text-[11px]"></i>
                                             <span>{{ !empty($eventItem['date']) ? $eventItem['date'] : ($eventItem['day'] . ' ' . $eventItem['month']) }}</span>
@@ -1130,7 +1104,7 @@
         </section>
 
         {{-- Map --}}
-        <section aria-labelledby="judul-lokasi" class="rounded-2xl border border-line bg-white p-5 lg:p-[30px]">
+        <section aria-labelledby="judul-lokasi" class="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/60 to-blue-50/30 p-5 lg:p-[30px] shadow-xs">
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h2 id="judul-lokasi" class="text-base font-medium text-ink lg:text-xl">Lokasi Perpustakaan</h2>

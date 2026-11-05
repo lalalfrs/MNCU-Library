@@ -77,7 +77,7 @@
             @if ($beritas->isNotEmpty())
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                     @foreach ($beritas as $item)
-                        <article class="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised">
+                        <article class="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-raised">
                             <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5">
                                 @if ($item->image)
                                     <img

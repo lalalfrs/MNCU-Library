@@ -109,7 +109,7 @@
                         @php
                             $isPast = $item->event_date->isPast() && !$item->event_date->isToday();
                         @endphp
-                        <article class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-raised">
+                        <article class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-raised">
                             @if ($item->image)
                                 <div class="relative h-48 w-full overflow-hidden bg-subtle border-b border-line">
                                     <img
