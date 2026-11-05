@@ -114,9 +114,9 @@
                 </article>
             </div>
 
-            {{-- Right Column: Event Details Card (Sticky) --}}
+            {{-- Right Column: Event Details Card --}}
             <aside aria-label="Informasi Pelaksanaan" class="flex flex-col gap-6">
-                <div class="sticky top-24 rounded-2xl border border-line bg-white p-6 shadow-card">
+                <div class="rounded-2xl border border-line bg-white p-6 shadow-card">
                     <h2 class="text-lg font-bold text-ink">Informasi Jadwal</h2>
                     
                     <div class="mt-6 flex items-center gap-4 rounded-xl bg-subtle p-4 border border-line">

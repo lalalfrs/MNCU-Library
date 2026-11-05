@@ -287,38 +287,77 @@
             </div>
         </div>
 
+        @if (! empty($isStaff))
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 print:hidden">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-white">
+                        <i class="fa-solid fa-user-shield text-base"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-bold text-ink">Mode Akses Administrator &amp; Pustakawan</h3>
+                        <p class="text-xs text-muted">
+                            Anda dapat beralih antara melihat seluruh sirkulasi perpustakaan atau hanya pinjaman pribadi akun Anda.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a
+                        href="{{ route('profile.riwayat', ['lingkup' => 'seluruh', 'status' => $statusFilter]) }}"
+                        class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all {{ ($lingkup ?? 'seluruh') === 'seluruh' ? 'bg-primary text-white shadow-xs' : 'bg-white text-ink border border-line hover:bg-slate-50' }}"
+                    >
+                        <i class="fa-solid fa-building-columns text-xs"></i>
+                        <span>Seluruh Sirkulasi Perpustakaan</span>
+                    </a>
+                    <a
+                        href="{{ route('profile.riwayat', ['lingkup' => 'pribadi', 'status' => $statusFilter]) }}"
+                        class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all {{ ($lingkup ?? 'seluruh') === 'pribadi' ? 'bg-primary text-white shadow-xs' : 'bg-white text-ink border border-line hover:bg-slate-50' }}"
+                    >
+                        <i class="fa-solid fa-user text-xs"></i>
+                        <span>Pinjaman Pribadi</span>
+                    </a>
+                    <a
+                        href="{{ route('admin.peminjaman.index') }}"
+                        class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-primary bg-white px-3.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 shadow-xs"
+                    >
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                        <span>Buka Panel Sirkulasi Admin</span>
+                    </a>
+                </div>
+            </div>
+        @endif
+
         {{-- Filter Status Tab (print:hidden) --}}
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white p-3 shadow-card print:hidden">
             <div class="inline-flex flex-wrap items-center rounded-xl bg-slate-100 p-1 text-xs font-medium">
                 <a
-                    href="{{ route('profile.riwayat', ['status' => 'semua']) }}"
+                    href="{{ route('profile.riwayat', array_filter(['status' => 'semua', 'lingkup' => $lingkup ?? null])) }}"
                     class="inline-flex min-h-[36px] items-center rounded-lg px-3 py-1.5 transition-colors {{ in_array($statusFilter, ['semua', '']) ? 'bg-white font-bold text-primary shadow-xs' : 'text-slate-600 hover:text-ink' }}"
                 >
                     Semua ({{ $ringkasan['total'] ?? 0 }})
                 </a>
                 <a
-                    href="{{ route('profile.riwayat', ['status' => 'aktif']) }}"
+                    href="{{ route('profile.riwayat', array_filter(['status' => 'aktif', 'lingkup' => $lingkup ?? null])) }}"
                     class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors {{ in_array($statusFilter, ['aktif', 'berjalan', 'sedang_berjalan']) ? 'bg-white font-bold text-amber-900 shadow-xs' : 'text-slate-600 hover:text-ink' }}"
                 >
                     <span class="size-1.5 rounded-full bg-amber-500"></span>
                     <span>Sedang Berjalan ({{ $ringkasan['aktif'] ?? 0 }})</span>
                 </a>
                 <a
-                    href="{{ route('profile.riwayat', ['status' => 'selesai']) }}"
+                    href="{{ route('profile.riwayat', array_filter(['status' => 'selesai', 'lingkup' => $lingkup ?? null])) }}"
                     class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors {{ in_array($statusFilter, ['selesai', 'kembali', 'dikembalikan']) ? 'bg-white font-bold text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-ink' }}"
                 >
                     <span class="size-1.5 rounded-full bg-emerald-500"></span>
                     <span>Dikembalikan ({{ $ringkasan['selesai'] ?? 0 }})</span>
                 </a>
                 <a
-                    href="{{ route('profile.riwayat', ['status' => 'terlambat']) }}"
+                    href="{{ route('profile.riwayat', array_filter(['status' => 'terlambat', 'lingkup' => $lingkup ?? null])) }}"
                     class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors {{ in_array($statusFilter, ['terlambat', 'keterlambatan']) ? 'bg-white font-bold text-rose-800 shadow-xs' : 'text-slate-600 hover:text-ink' }}"
                 >
                     <span class="size-1.5 rounded-full bg-rose-500"></span>
                     <span>Keterlambatan ({{ $ringkasan['terlambat'] ?? 0 }})</span>
                 </a>
                 <a
-                    href="{{ route('profile.riwayat', ['status' => 'menunggu']) }}"
+                    href="{{ route('profile.riwayat', array_filter(['status' => 'menunggu', 'lingkup' => $lingkup ?? null])) }}"
                     class="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors {{ in_array($statusFilter, ['menunggu', 'verifikasi', 'menunggu_verifikasi']) ? 'bg-white font-bold text-indigo-800 shadow-xs' : 'text-slate-600 hover:text-ink' }}"
                 >
                     <span class="size-1.5 rounded-full bg-indigo-500"></span>
@@ -327,7 +366,7 @@
             </div>
 
             <div class="text-xs text-muted">
-                Menampilkan data peminjaman <strong>{{ $user->nama_lengkap }}</strong>
+                Menampilkan data peminjaman <strong>{{ (! empty($isStaff) && ($lingkup ?? 'seluruh') === 'seluruh') ? 'Seluruh Perpustakaan' : $user->nama_lengkap }}</strong>
             </div>
         </div>
 
@@ -372,6 +411,10 @@
                                             </p>
                                             <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted print:text-[9px]">
                                                 <span class="font-mono">ID: {{ $pinjam->id_peminjaman }}</span>
+                                                @if (! empty($isStaff) && ($lingkup ?? 'seluruh') === 'seluruh' && $pinjam->pengguna)
+                                                    <span>•</span>
+                                                    <span class="font-semibold text-primary"><i class="fa-solid fa-user text-[10px] mr-1"></i>{{ $pinjam->pengguna->nama_lengkap }}</span>
+                                                @endif
                                                 @if ($pinjam->eksemplar?->nomor_barcode)
                                                     <span>•</span>
                                                     <span class="font-mono">Barcode: {{ $pinjam->eksemplar->nomor_barcode }}</span>
@@ -532,7 +575,12 @@
                                     <h3 class="font-bold text-xs text-ink line-clamp-2 leading-snug">
                                         {{ $pinjam->buku?->judul_buku ?? 'Judul Buku Tidak Ditemukan' }}
                                     </h3>
-                                    <p class="mt-0.5 font-mono text-[11px] text-muted">ID: {{ $pinjam->id_peminjaman }}</p>
+                                    <p class="mt-0.5 font-mono text-[11px] text-muted">
+                                        ID: {{ $pinjam->id_peminjaman }}
+                                        @if (! empty($isStaff) && ($lingkup ?? 'seluruh') === 'seluruh' && $pinjam->pengguna)
+                                            <span class="block font-sans text-primary font-semibold text-[11px] mt-0.5"><i class="fa-solid fa-user text-[10px] mr-1"></i>{{ $pinjam->pengguna->nama_lengkap }}</span>
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                             <div class="shrink-0">
@@ -553,9 +601,17 @@
                                             Dipinjam
                                         </span>
                                     @endif
-                                @elseif (in_array($pinjam->status, ['Menunggu Verifikasi', 'Menunggu Persetujuan']))
-                                    <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200">
+                                @elseif ($pinjam->status === 'Menunggu Verifikasi')
+                                    <span class="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
                                         Verifikasi
+                                    </span>
+                                @elseif ($pinjam->status === 'Menunggu Persetujuan')
+                                    <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200">
+                                        Persetujuan
+                                    </span>
+                                @elseif ($pinjam->status === 'Ditolak')
+                                    <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                        Ditolak
                                     </span>
                                 @elseif ($pinjam->status === 'Terlambat')
                                     <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">

@@ -88,11 +88,11 @@
                     <thead class="border-b border-line bg-[#F8FAFC] text-[11px] font-semibold uppercase tracking-wider text-muted">
                         <tr>
                             <th scope="col" class="px-5 py-3.5">Nama Acara</th>
-                            <th scope="col" class="px-5 py-3.5">Kategori & Narasumber</th>
-                            <th scope="col" class="px-5 py-3.5">Waktu Pelaksanaan</th>
-                            <th scope="col" class="px-5 py-3.5">Lokasi / Kuota</th>
-                            <th scope="col" class="px-5 py-3.5">Status</th>
-                            <th scope="col" class="px-5 py-3.5 text-center">Aksi</th>
+                            <th scope="col" class="px-5 py-3.5 max-w-[190px]">Kategori & Narasumber</th>
+                            <th scope="col" class="px-5 py-3.5 whitespace-nowrap">Waktu Pelaksanaan</th>
+                            <th scope="col" class="px-5 py-3.5 max-w-[200px]">Lokasi / Kuota</th>
+                            <th scope="col" class="px-5 py-3.5 whitespace-nowrap">Status</th>
+                            <th scope="col" class="px-5 py-3.5 text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line text-ink">
@@ -107,17 +107,17 @@
                                                 <i class="fa-regular fa-calendar-check text-base"></i>
                                             </div>
                                         @endif
-                                        <div>
-                                            <div class="font-semibold text-ink leading-snug">{{ $event->nama_acara }}</div>
+                                        <div class="min-w-0 max-w-[260px]">
+                                            <div class="font-semibold text-ink leading-snug break-words">{{ $event->nama_acara }}</div>
                                             <span class="font-mono text-[10px] text-muted">{{ $event->id_acara }}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-5 py-4 whitespace-nowrap">
+                                <td class="px-5 py-4 max-w-[190px]">
                                     <span class="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-800">
                                         {{ $event->kategori_acara }}
                                     </span>
-                                    <p class="mt-1 text-xs text-muted">Oleh: {{ $event->narasumber ?: 'Tim Perpustakaan' }}</p>
+                                    <p class="mt-1 text-xs text-muted leading-snug break-words">Oleh: {{ $event->narasumber ?: 'Tim Perpustakaan' }}</p>
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap text-xs text-ink-secondary">
                                     <div class="font-medium text-ink">
@@ -127,9 +127,9 @@
                                         {{ \Carbon\Carbon::parse($event->tanggal_mulai)->format('H:i') }} WIB
                                     </div>
                                 </td>
-                                <td class="px-5 py-4 whitespace-nowrap text-xs text-ink-secondary">
-                                    <p class="font-medium text-ink">{{ $event->lokasi_acara ?: 'Online via Zoom' }}</p>
-                                    <p class="text-muted">{{ $event->kuota ? "Kuota: {$event->kuota} orang" : 'Kuota Tak Terbatas' }}</p>
+                                <td class="px-5 py-4 text-xs text-ink-secondary max-w-[200px]">
+                                    <p class="font-medium text-ink leading-snug break-words">{{ $event->lokasi_acara ?: 'Online via Zoom' }}</p>
+                                    <p class="mt-0.5 text-muted break-words">{{ $event->kuota ? "Kuota: {$event->kuota} orang" : 'Kuota Tak Terbatas' }}</p>
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap">
                                     @if ($event->is_active)

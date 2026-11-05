@@ -24,6 +24,21 @@
                             <i class="fa-solid fa-check text-[11px]"></i>
                             Selesai Dikembalikan
                         </span>
+                    @elseif ($loan->status === 'Menunggu Verifikasi')
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300">
+                            <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
+                            Menunggu Verifikasi Pengembalian
+                        </span>
+                    @elseif ($loan->status === 'Menunggu Persetujuan')
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-900 border border-indigo-200">
+                            <i class="fa-solid fa-hourglass-half text-[11px]"></i>
+                            Menunggu Persetujuan Pinjam
+                        </span>
+                    @elseif ($loan->status === 'Ditolak')
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800 border border-rose-200">
+                            <i class="fa-solid fa-ban text-[11px]"></i>
+                            Pengajuan Ditolak
+                        </span>
                     @elseif ($loan->isTerlambat())
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800">
                             <i class="fa-solid fa-triangle-exclamation text-[11px]"></i>
@@ -47,6 +62,17 @@
                     <span>Kembali</span>
                 </a>
 
+                @if ($loan->status === 'Menunggu Persetujuan')
+                    <a
+                        href="{{ route('admin.inbox', ['tab' => 'pinjam']) }}"
+                        class="h-10 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+                        title="Buka Inbox Pengajuan Pinjaman OPAC"
+                    >
+                        <i class="fa-solid fa-clipboard-check text-xs"></i>
+                        <span>Validasi di Inbox</span>
+                    </a>
+                @endif
+
                 @if ($loan->hari_keterlambatan > 0 || $loan->isTerlambat() || ($loan->nominal_denda && $loan->nominal_denda > 0))
                     <a
                         href="{{ route('admin.peminjaman.cetak-denda', $loan->id_peminjaman) }}"
@@ -59,7 +85,7 @@
                     </a>
                 @endif
 
-                @if (! $loan->tanggal_kembali)
+                @if (! $loan->tanggal_kembali && ! in_array($loan->status, ['Ditolak', 'Menunggu Persetujuan']))
                     {{-- Tombol Pengembalian --}}
                     <form action="{{ route('admin.peminjaman.kembalikan', $loan->id_peminjaman) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memproses pengembalian buku ini? Stok eksemplar akan bertambah kembali.')">
                         @csrf
@@ -248,33 +274,40 @@
                 <div class="space-y-3 text-xs">
                     <div>
                         <span class="text-muted">Judul Koleksi Buku:</span>
-                        <p class="font-bold text-ink text-sm">{{ $loan->buku->judul_buku }}</p>
+                        <p class="font-bold text-ink text-sm">{{ $loan->buku?->judul_buku ?? 'Judul Buku Tidak Dikenal' }}</p>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <span class="text-muted">Kode Inventaris:</span>
-                            <p class="font-mono font-semibold text-primary">{{ $loan->eksemplar->kode_inventaris }}</p>
+                    @if ($loan->eksemplar)
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-muted">Kode Inventaris:</span>
+                                <p class="font-mono font-semibold text-primary">{{ $loan->eksemplar->kode_inventaris }}</p>
+                            </div>
+                            <div>
+                                <span class="text-muted">Status Eksemplar Saat Ini:</span>
+                                <span class="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold {{ $loan->eksemplar->status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ $loan->eksemplar->status }}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-muted">Status Eksemplar Saat Ini:</span>
-                            <span class="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold {{ $loan->eksemplar->status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">
-                                {{ $loan->eksemplar->status }}
-                            </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-muted">Nomor Panggil (Call No):</span>
+                                <p class="font-medium text-ink">{{ $loan->eksemplar->nomor_panggil ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <span class="text-muted">Lokasi Rak:</span>
+                                <p class="font-medium text-ink">{{ $loan->eksemplar->lokasi_rak ?? 'Lantai 1' }}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <span class="text-muted">Nomor Panggil (Call No):</span>
-                            <p class="font-medium text-ink">{{ $loan->eksemplar->nomor_panggil ?? '-' }}</p>
+                    @else
+                        <div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
+                            <i class="fa-solid fa-circle-info mr-1"></i>
+                            Eksemplar fisik belum ditetapkan atau permohonan telah ditolak.
                         </div>
-                        <div>
-                            <span class="text-muted">Lokasi Rak:</span>
-                            <p class="font-medium text-ink">{{ $loan->eksemplar->lokasi_rak ?? 'Lantai 1' }}</p>
-                        </div>
-                    </div>
+                    @endif
                     <div>
                         <span class="text-muted">ISBN:</span>
-                        <p class="font-mono text-ink">{{ $loan->buku->isbn ?? '-' }}</p>
+                        <p class="font-mono text-ink">{{ $loan->buku?->isbn ?? '-' }}</p>
                     </div>
                 </div>
             </div>

@@ -39,7 +39,12 @@ class PeminjamanAdminController extends Controller
         $totalAktif = PeminjamanBuku::where('status', 'Dipinjam')->whereNull('tanggal_kembali')->count();
         $totalTerlambat = PeminjamanBuku::terlambat()->count();
         $totalMenungguVerifikasi = PeminjamanBuku::where('status', 'Menunggu Verifikasi')->whereNull('tanggal_kembali')->count();
-        $totalKembali = PeminjamanBuku::whereNotNull('tanggal_kembali')->count();
+        $totalMenungguPersetujuan = PeminjamanBuku::where('status', 'Menunggu Persetujuan')->count();
+        $totalKembali = PeminjamanBuku::where(function ($q): void {
+            $q->whereIn('status', ['Kembali', 'Dikembalikan'])
+                ->orWhereNotNull('tanggal_kembali');
+        })->count();
+        $totalDitolak = PeminjamanBuku::where('status', 'Ditolak')->count();
 
         // 3. Query daftar peminjaman
         $query = PeminjamanBuku::with(['pengguna.peran', 'buku', 'eksemplar'])->latest();
@@ -69,8 +74,15 @@ class PeminjamanAdminController extends Controller
             $query->terlambat();
         } elseif ($status === 'menunggu-verifikasi') {
             $query->where('status', 'Menunggu Verifikasi')->whereNull('tanggal_kembali');
+        } elseif ($status === 'menunggu-persetujuan') {
+            $query->where('status', 'Menunggu Persetujuan');
         } elseif ($status === 'kembali') {
-            $query->whereNotNull('tanggal_kembali');
+            $query->where(function ($q): void {
+                $q->whereIn('status', ['Kembali', 'Dikembalikan'])
+                    ->orWhereNotNull('tanggal_kembali');
+            });
+        } elseif ($status === 'ditolak') {
+            $query->where('status', 'Ditolak');
         }
 
         $loans = $query->paginate(15)->withQueryString();
@@ -83,7 +95,9 @@ class PeminjamanAdminController extends Controller
             'totalAktif',
             'totalTerlambat',
             'totalMenungguVerifikasi',
-            'totalKembali'
+            'totalMenungguPersetujuan',
+            'totalKembali',
+            'totalDitolak'
         ));
     }
 

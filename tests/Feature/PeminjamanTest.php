@@ -8,6 +8,7 @@ use App\Models\PeminjamanBuku;
 use App\Models\Pengguna;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -58,6 +59,34 @@ class PeminjamanTest extends TestCase
         $response->assertSee('Keterlambatan');
         $response->assertSee('Selesai Kembali');
         $response->assertSee('Catat Peminjaman Baru');
+    }
+
+    /**
+     * Halaman index dan detail peminjaman tetap aman dan tampil rapi jika ada permohonan pinjam dengan eksemplar null (misal permohonan OPAC ditolak).
+     */
+    public function test_admin_peminjaman_renders_cleanly_when_loan_has_null_eksemplar(): void
+    {
+        $rejectedLoan = PeminjamanBuku::create([
+            'id_peminjaman' => 'PJTEST99',
+            'uuid' => (string) Str::uuid(),
+            'id_pengguna' => $this->studentNoLoan->id_pengguna,
+            'id_buku' => 'MNCU00001',
+            'id_eksemplar' => null,
+            'tanggal_pinjam' => now()->toDateString(),
+            'tanggal_jatuh_tempo' => now()->addDays(7)->toDateString(),
+            'status' => 'Ditolak',
+            'alasan_penolakan' => 'Stok belum tersedia',
+        ]);
+
+        $resIndex = $this->actingAs($this->admin)->get(route('admin.peminjaman.index'));
+        $resIndex->assertStatus(200);
+        $resIndex->assertSee('PJTEST99');
+        $resIndex->assertSee('Eksemplar Belum Ditentukan');
+
+        $resShow = $this->actingAs($this->admin)->get(route('admin.peminjaman.show', $rejectedLoan->id_peminjaman));
+        $resShow->assertStatus(200);
+        $resShow->assertSee('PJTEST99');
+        $resShow->assertSee('Eksemplar fisik belum ditetapkan atau permohonan telah ditolak.');
     }
 
     /**
@@ -493,5 +522,30 @@ class PeminjamanTest extends TestCase
         $response->assertSee('Surat Rincian Denda Keterlambatan');
         $response->assertSee($this->studentHasLoan->nama_lengkap);
         $response->assertSee('Rp 1.000');
+    }
+
+    /**
+     * Admin peminjaman metrics accurately account for all statuses and display badges correctly.
+     */
+    public function test_admin_peminjaman_metrics_and_status_badges(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.peminjaman.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Total Peminjaman');
+        $response->assertSee('Sedang Dipinjam');
+        $response->assertSee('Selesai Kembali');
+    }
+
+    /**
+     * Staff dapat melihat seluruh sirkulasi di halaman riwayat profil.
+     */
+    public function test_staff_can_view_all_circulation_in_profile_riwayat(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('profile.riwayat', ['lingkup' => 'seluruh']));
+
+        $response->assertStatus(200);
+        $response->assertSee('Mode Akses Administrator &amp; Pustakawan', false);
+        $response->assertSee('Seluruh Sirkulasi Perpustakaan');
     }
 }

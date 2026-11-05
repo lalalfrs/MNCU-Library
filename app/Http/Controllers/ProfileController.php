@@ -56,12 +56,20 @@ class ProfileController extends Controller
      */
     public function riwayatPeminjaman(Request $request): View
     {
-        $user = $request->user();
+        $user = $request->user() ?: Auth::user();
         $role = $user->role ?? 'mahasiswa';
         $statusFilter = strtolower((string) $request->query('status', 'semua'));
+        $isStaff = $user->isSuperAdmin() || $user->isPustakawan();
+        $lingkup = strtolower((string) $request->query('lingkup', $isStaff ? 'seluruh' : 'pribadi'));
 
-        $query = PeminjamanBuku::with(['buku.kategoriBuku', 'eksemplar'])
-            ->where('id_pengguna', $user->id_pengguna);
+        if ($isStaff && $lingkup === 'seluruh') {
+            $baseQuery = PeminjamanBuku::query();
+            $query = PeminjamanBuku::with(['buku.kategoriBuku', 'eksemplar', 'pengguna']);
+        } else {
+            $baseQuery = PeminjamanBuku::where('id_pengguna', $user->id_pengguna);
+            $query = PeminjamanBuku::with(['buku.kategoriBuku', 'eksemplar', 'pengguna'])
+                ->where('id_pengguna', $user->id_pengguna);
+        }
 
         if ($statusFilter === 'aktif' || $statusFilter === 'berjalan' || $statusFilter === 'sedang_berjalan') {
             // Sedang berjalan: peminjaman aktif yang belum dikembalikan
@@ -100,8 +108,6 @@ class ProfileController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $baseQuery = PeminjamanBuku::where('id_pengguna', $user->id_pengguna);
-
         $ringkasan = [
             'total' => (clone $baseQuery)->count(),
             'aktif' => (clone $baseQuery)
@@ -130,7 +136,7 @@ class ProfileController extends Controller
                 ->count(),
         ];
 
-        return view('profile.riwayat', compact('user', 'role', 'riwayatPeminjaman', 'statusFilter', 'ringkasan'));
+        return view('profile.riwayat', compact('user', 'role', 'riwayatPeminjaman', 'statusFilter', 'ringkasan', 'isStaff', 'lingkup'));
     }
 
     /**

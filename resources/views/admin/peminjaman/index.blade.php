@@ -38,19 +38,19 @@
         {{-- Kartu Metrik Sirkulasi & Keterlambatan --}}
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
             {{-- 1. Total Transaksi --}}
-            <div class="rounded-2xl border border-line bg-white p-4 shadow-xs sm:p-5">
+            <a href="{{ route('admin.peminjaman.index') }}" class="group block rounded-2xl border border-line bg-white p-4 shadow-xs transition-all hover:border-primary/50 hover:shadow-sm sm:p-5 {{ $status === '' ? 'ring-2 ring-primary/20 border-primary' : '' }}">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-medium text-muted">Total Peminjaman</span>
+                    <span class="text-xs font-medium text-muted group-hover:text-primary transition-colors">Total Peminjaman</span>
                     <span class="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <i class="fa-solid fa-book-bookmark text-sm"></i>
                     </span>
                 </div>
                 <p class="mt-2 text-2xl font-bold text-ink sm:text-3xl">{{ number_format($totalPinjaman) }}</p>
-                <p class="mt-1 text-[11px] text-muted">Seluruh riwayat transaksi</p>
-            </div>
+                <p class="mt-1 text-[11px] text-muted">Seluruh transaksi sirkulasi</p>
+            </a>
 
             {{-- 2. Sedang Dipinjam (Aktif) --}}
-            <div class="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs sm:p-5">
+            <a href="{{ route('admin.peminjaman.index', ['status' => 'dipinjam']) }}" class="group block rounded-2xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs transition-all hover:border-blue-400 hover:shadow-sm sm:p-5 {{ $status === 'dipinjam' ? 'ring-2 ring-blue-500/30 border-blue-400 bg-blue-50' : '' }}">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-blue-700">Sedang Dipinjam</span>
                     <span class="flex size-8 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
@@ -59,10 +59,10 @@
                 </div>
                 <p class="mt-2 text-2xl font-bold text-blue-900 sm:text-3xl">{{ number_format($totalAktif) }}</p>
                 <p class="mt-1 text-[11px] text-blue-700">Buku masih di pemustaka</p>
-            </div>
+            </a>
 
             {{-- 3. Menunggu Approval Pengembalian --}}
-            <div class="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 shadow-xs sm:p-5">
+            <a href="{{ route('admin.peminjaman.index', ['status' => 'menunggu-verifikasi']) }}" class="group block rounded-2xl border border-amber-300 bg-amber-50/70 p-4 shadow-xs transition-all hover:border-amber-400 hover:shadow-sm sm:p-5 {{ $status === 'menunggu-verifikasi' ? 'ring-2 ring-amber-500/30 border-amber-400 bg-amber-50' : '' }}">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-amber-800">Menunggu Verifikasi</span>
                     <span class="flex size-8 items-center justify-center rounded-xl bg-amber-200/80 text-amber-800">
@@ -71,10 +71,10 @@
                 </div>
                 <p class="mt-2 text-2xl font-bold text-amber-900 sm:text-3xl">{{ number_format($totalMenungguVerifikasi ?? 0) }}</p>
                 <p class="mt-1 text-[11px] text-amber-800">Perlu persetujuan admin</p>
-            </div>
+            </a>
 
             {{-- 4. Terlambat Pengembalian --}}
-            <div class="rounded-2xl border border-rose-200 bg-rose-50/50 p-4 shadow-xs sm:p-5">
+            <a href="{{ route('admin.peminjaman.index', ['status' => 'terlambat']) }}" class="group block rounded-2xl border border-rose-200 bg-rose-50/50 p-4 shadow-xs transition-all hover:border-rose-400 hover:shadow-sm sm:p-5 {{ $status === 'terlambat' ? 'ring-2 ring-rose-500/30 border-rose-400 bg-rose-50' : '' }}">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-rose-700">Keterlambatan</span>
                     <span class="flex size-8 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
@@ -83,10 +83,10 @@
                 </div>
                 <p class="mt-2 text-2xl font-bold text-rose-900 sm:text-3xl">{{ number_format($totalTerlambat) }}</p>
                 <p class="mt-1 text-[11px] text-rose-700">Lewat batas jatuh tempo</p>
-            </div>
+            </a>
 
             {{-- 5. Selesai Dikembalikan --}}
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs sm:p-5 col-span-2 sm:col-span-1">
+            <a href="{{ route('admin.peminjaman.index', ['status' => 'kembali']) }}" class="group block rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs transition-all hover:border-emerald-400 hover:shadow-sm sm:p-5 col-span-2 sm:col-span-1 {{ $status === 'kembali' ? 'ring-2 ring-emerald-500/30 border-emerald-400 bg-emerald-50' : '' }}">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-emerald-700">Selesai Kembali</span>
                     <span class="flex size-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
@@ -95,7 +95,7 @@
                 </div>
                 <p class="mt-2 text-2xl font-bold text-emerald-900 sm:text-3xl">{{ number_format($totalKembali) }}</p>
                 <p class="mt-1 text-[11px] text-emerald-700">Stok eksemplar tersedia</p>
-            </div>
+            </a>
         </div>
 
         {{-- Filter & Pencarian --}}
@@ -119,13 +119,13 @@
                         href="{{ route('admin.peminjaman.index', array_filter(['q' => $q])) }}"
                         class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === '' ? 'bg-primary text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
                     >
-                        Semua
+                        Semua ({{ $totalPinjaman }})
                     </a>
                     <a
                         href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'dipinjam'])) }}"
                         class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === 'dipinjam' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
                     >
-                        Sedang Dipinjam
+                        Sedang Dipinjam ({{ $totalAktif }})
                     </a>
                     <a
                         href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'menunggu-verifikasi'])) }}"
@@ -137,14 +137,30 @@
                         href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'terlambat'])) }}"
                         class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === 'terlambat' ? 'bg-rose-600 text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
                     >
-                        Terlambat
+                        Terlambat ({{ $totalTerlambat }})
                     </a>
                     <a
                         href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'kembali'])) }}"
                         class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === 'kembali' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
                     >
-                        Selesai Kembali
+                        Selesai Kembali ({{ $totalKembali }})
                     </a>
+                    @if (isset($totalMenungguPersetujuan) && $totalMenungguPersetujuan > 0)
+                        <a
+                            href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'menunggu-persetujuan'])) }}"
+                            class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === 'menunggu-persetujuan' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
+                        >
+                            Menunggu Persetujuan ({{ $totalMenungguPersetujuan }})
+                        </a>
+                    @endif
+                    @if (isset($totalDitolak) && $totalDitolak > 0)
+                        <a
+                            href="{{ route('admin.peminjaman.index', array_filter(['q' => $q, 'status' => 'ditolak'])) }}"
+                            class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ $status === 'ditolak' ? 'bg-slate-700 text-white shadow-xs' : 'bg-slate-100 text-muted hover:text-ink' }}"
+                        >
+                            Ditolak ({{ $totalDitolak }})
+                        </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -177,12 +193,12 @@
                                             {{ $loan->id_peminjaman }}
                                         </a>
                                         <span class="mt-0.5 font-semibold text-ink sm:text-sm">
-                                            {{ $loan->pengguna->nama_lengkap }}
+                                            {{ $loan->pengguna?->nama_lengkap ?? 'Pengguna Tidak Ditemukan' }}
                                         </span>
                                         <span class="text-[11px] text-muted">
-                                            {{ $loan->pengguna->nim ? 'NIM: ' . $loan->pengguna->nim : $loan->pengguna->email }}
+                                            {{ $loan->pengguna?->nim ? 'NIM: ' . $loan->pengguna->nim : ($loan->pengguna?->email ?? '-') }}
                                             &bull;
-                                            <span class="font-medium text-slate-600">{{ $loan->pengguna->peran?->nama_peran }}</span>
+                                            <span class="font-medium text-slate-600">{{ $loan->pengguna?->peran?->nama_peran ?? '-' }}</span>
                                         </span>
                                     </div>
                                 </td>
@@ -191,15 +207,22 @@
                                 <td class="px-4 py-3.5 sm:px-6">
                                     <div class="flex flex-col">
                                         <span class="font-semibold text-ink line-clamp-1 sm:text-sm">
-                                            {{ $loan->buku->judul_buku }}
+                                            {{ $loan->buku?->judul_buku ?? 'Judul Buku Tidak Dikenal' }}
                                         </span>
                                         <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
-                                            <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
-                                                <i class="fa-solid fa-barcode text-[9px]"></i>
-                                                {{ $loan->eksemplar->kode_inventaris }}
-                                            </span>
-                                            @if ($loan->eksemplar->nomor_panggil)
-                                                <span>{{ $loan->eksemplar->nomor_panggil }}</span>
+                                            @if ($loan->eksemplar)
+                                                <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                                    <i class="fa-solid fa-barcode text-[9px]"></i>
+                                                    {{ $loan->eksemplar->kode_inventaris }}
+                                                </span>
+                                                @if ($loan->eksemplar->nomor_panggil)
+                                                    <span>{{ $loan->eksemplar->nomor_panggil }}</span>
+                                                @endif
+                                            @else
+                                                <span class="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                                                    <i class="fa-solid fa-circle-info text-[9px]"></i>
+                                                    {{ $loan->id_eksemplar ?: 'Eksemplar Belum Ditentukan' }}
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
@@ -233,7 +256,7 @@
                                                 Selesai Dikembalikan
                                             </span>
                                             <span class="text-[10px] text-muted">
-                                                Kembali: {{ $loan->tanggal_kembali->format('d M Y') }}
+                                                Kembali: {{ $loan->tanggal_kembali ? $loan->tanggal_kembali->format('d M Y') : '-' }}
                                             </span>
                                             @if ($loan->hari_keterlambatan > 0)
                                                 <span class="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 border border-rose-200">
@@ -263,6 +286,30 @@
                                                 </span>
                                             @endif
                                         </div>
+                                    @elseif ($loan->status === 'Menunggu Persetujuan')
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-bold text-indigo-900 border border-indigo-200">
+                                                <i class="fa-solid fa-hourglass-half text-[10px]"></i>
+                                                Menunggu Persetujuan
+                                            </span>
+                                            @if ($loan->tanggal_pengajuan_pinjam)
+                                                <span class="text-[10px] text-muted">
+                                                    Diajukan: {{ $loan->tanggal_pengajuan_pinjam->format('d M Y') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @elseif ($loan->status === 'Ditolak')
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-semibold text-rose-800 border border-rose-200">
+                                                <i class="fa-solid fa-ban text-[10px]"></i>
+                                                Pengajuan Ditolak
+                                            </span>
+                                            @if ($loan->catatan_admin)
+                                                <span class="text-[10px] text-muted italic line-clamp-1 max-w-[200px]" title="{{ $loan->catatan_admin }}">
+                                                    "{{ $loan->catatan_admin }}"
+                                                </span>
+                                            @endif
+                                        </div>
                                     @elseif ($isLate)
                                         <div class="flex flex-col items-start gap-1">
                                             <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-800">
@@ -288,7 +335,7 @@
                                                 Sedang Dipinjam
                                             </span>
                                             @php
-                                                $sisaHari = \Carbon\Carbon::now()->startOfDay()->diffInDays($loan->tanggal_jatuh_tempo->startOfDay(), false);
+                                                $sisaHari = $loan->tanggal_jatuh_tempo ? \Carbon\Carbon::now()->startOfDay()->diffInDays($loan->tanggal_jatuh_tempo->startOfDay(), false) : 0;
                                             @endphp
                                             <span class="text-[10px] text-muted">
                                                 Sisa tempo: {{ max(0, $sisaHari) }} hari
@@ -348,13 +395,17 @@
                                             </a>
                                         @endif
 
-                                        @if (! $isReturned)
+                                        @if (! $isReturned && $loan->status !== 'Ditolak')
                                             @if ($loan->status === 'Menunggu Verifikasi')
                                                 {{-- Tombol Setujui / Approve Pengembalian --}}
                                                 <button
                                                     type="button"
-                                                    onclick="openKembalikanModal('{{ $loan->id_peminjaman }}', '{{ addslashes($loan->buku->judul_buku) }}', '{{ addslashes($loan->pengguna->nama_lengkap) }}', {{ $hariTerlambat }})"
-                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+                                                    data-id="{{ $loan->id_peminjaman }}"
+                                                    data-judul="{{ $loan->buku?->judul_buku ?? 'Buku' }}"
+                                                    data-nama="{{ $loan->pengguna?->nama_lengkap ?? 'Pemustaka' }}"
+                                                    data-late="{{ $hariTerlambat }}"
+                                                    onclick="openKembalikanFromBtn(this)"
+                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 cursor-pointer"
                                                     title="Setujui dan selesaikan pengembalian buku ini"
                                                 >
                                                     <i class="fa-solid fa-check text-[11px]"></i>
@@ -364,19 +415,37 @@
                                                 {{-- Tombol Tolak Pengajuan Pengembalian --}}
                                                 <button
                                                     type="button"
-                                                    onclick="openTolakModal('{{ $loan->id_peminjaman }}', '{{ addslashes($loan->buku->judul_buku) }}', '{{ addslashes($loan->pengguna->nama_lengkap) }}')"
-                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100"
+                                                    data-id="{{ $loan->id_peminjaman }}"
+                                                    data-judul="{{ $loan->buku?->judul_buku ?? 'Buku' }}"
+                                                    data-nama="{{ $loan->pengguna?->nama_lengkap ?? 'Pemustaka' }}"
+                                                    onclick="openTolakFromBtn(this)"
+                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100 cursor-pointer"
                                                     title="Tolak Pengajuan Pengembalian (Buku Belum Diterima)"
                                                 >
                                                     <i class="fa-solid fa-xmark text-xs"></i>
                                                 </button>
+                                            @elseif ($loan->status === 'Menunggu Persetujuan')
+                                                <a
+                                                    href="{{ route('admin.inbox', ['tab' => 'pinjam']) }}"
+                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700"
+                                                    title="Buka Inbox Pengajuan Pinjaman OPAC"
+                                                >
+                                                    <i class="fa-solid fa-clipboard-check text-[11px]"></i>
+                                                    <span>Validasi Inbox</span>
+                                                </a>
                                             @else
                                                 {{-- Tombol Input Sanksi & Keterlambatan jika Terlambat --}}
                                                 @if ($isLate)
                                                     <button
                                                         type="button"
-                                                        onclick="openSanksiModal('{{ $loan->id_peminjaman }}', '{{ addslashes($loan->buku->judul_buku) }}', '{{ addslashes($loan->pengguna->nama_lengkap) }}', {{ $hariTerlambat }}, '{{ addslashes($loan->sanksi ?? '') }}', '{{ addslashes($loan->catatan_admin ?? '') }}')"
-                                                        class="inline-flex size-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100"
+                                                        data-id="{{ $loan->id_peminjaman }}"
+                                                        data-judul="{{ $loan->buku?->judul_buku ?? 'Buku' }}"
+                                                        data-nama="{{ $loan->pengguna?->nama_lengkap ?? 'Pemustaka' }}"
+                                                        data-late="{{ $hariTerlambat }}"
+                                                        data-sanksi="{{ $loan->sanksi ?? '' }}"
+                                                        data-catatan="{{ $loan->catatan_admin ?? '' }}"
+                                                        onclick="openSanksiFromBtn(this)"
+                                                        class="inline-flex size-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100 cursor-pointer"
                                                         title="Catat Data Keterlambatan & Sanksi"
                                                     >
                                                         <i class="fa-solid fa-gavel text-xs"></i>
@@ -387,7 +456,7 @@
                                                         @csrf
                                                         <button
                                                             type="submit"
-                                                            class="inline-flex size-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 transition-colors hover:bg-amber-100"
+                                                            class="inline-flex size-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 transition-colors hover:bg-amber-100 cursor-pointer"
                                                             title="Kirim Notifikasi Peringatan Batas Waktu ke Mahasiswa"
                                                         >
                                                             <i class="fa-solid fa-bell text-xs"></i>
@@ -398,8 +467,12 @@
                                                 {{-- Tombol Pengembalian Buku --}}
                                                 <button
                                                     type="button"
-                                                    onclick="openKembalikanModal('{{ $loan->id_peminjaman }}', '{{ addslashes($loan->buku->judul_buku) }}', '{{ addslashes($loan->pengguna->nama_lengkap) }}', {{ $hariTerlambat }})"
-                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+                                                    data-id="{{ $loan->id_peminjaman }}"
+                                                    data-judul="{{ $loan->buku?->judul_buku ?? 'Buku' }}"
+                                                    data-nama="{{ $loan->pengguna?->nama_lengkap ?? 'Pemustaka' }}"
+                                                    data-late="{{ $hariTerlambat }}"
+                                                    onclick="openKembalikanFromBtn(this)"
+                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 cursor-pointer"
                                                     title="Proses Pengembalian Buku"
                                                 >
                                                     <i class="fa-solid fa-arrow-rotate-left text-[11px]"></i>
@@ -439,250 +512,276 @@
     </div>
 
     {{-- Modal Konfirmasi Pengembalian Buku --}}
-    <div id="modal-kembalikan" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs flex items-center justify-center">
-        <div class="relative w-full max-w-md rounded-2xl border border-line bg-white p-6 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-line pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                        <i class="fa-solid fa-arrow-rotate-left text-sm"></i>
-                    </span>
-                    <h3 class="text-sm font-bold text-ink">Validasi Pengembalian Buku</h3>
-                </div>
-                <button type="button" onclick="closeKembalikanModal()" class="text-muted hover:text-ink">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <form id="form-kembalikan" method="POST" class="mt-4 space-y-4">
-                @csrf
-                <div class="rounded-xl bg-slate-50 p-3.5 text-xs text-ink-secondary space-y-1.5 border border-line">
-                    <p><strong class="text-ink">ID Transaksi:</strong> <span id="modal-id-peminjaman" class="font-mono text-primary font-semibold"></span></p>
-                    <p><strong class="text-ink">Mahasiswa:</strong> <span id="modal-nama-peminjam"></span></p>
-                    <p><strong class="text-ink">Judul Buku:</strong> <span id="modal-judul-buku"></span></p>
-                </div>
-
-                {{-- Alert Keterlambatan Jika Ada --}}
-                <div id="modal-late-alert" class="hidden rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
-                    <div class="flex items-center gap-2 font-bold">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>Pengembalian Terlambat <span id="modal-late-days"></span> Hari</span>
+    <div id="modal-kembalikan" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="relative w-full max-w-md rounded-2xl border border-line bg-white p-6 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-line pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                            <i class="fa-solid fa-arrow-rotate-left text-sm"></i>
+                        </span>
+                        <h3 class="text-sm font-bold text-ink">Validasi Pengembalian Buku</h3>
                     </div>
-                    <p class="mt-1 text-[11px]">
-                        Buku dikembalikan melewati batas jadwal. Sesuai ketentuan perpustakaan, <strong>tidak dikenakan sanksi denda finansial</strong>, hanya catatan durasi keterlambatan yang akan disimpan.
-                    </p>
-                </div>
-
-                <div>
-                    <label for="modal-catatan" class="block text-xs font-semibold text-ink">Catatan Pengembalian (Opsional)</label>
-                    <textarea
-                        id="modal-catatan"
-                        name="catatan"
-                        rows="2"
-                        placeholder="Contoh: Buku kembali dalam kondisi fisik baik..."
-                        class="mt-1.5 w-full rounded-xl border border-line bg-white p-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    ></textarea>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-line">
-                    <button
-                        type="button"
-                        onclick="closeKembalikanModal()"
-                        class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink-secondary hover:bg-slate-50"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        type="submit"
-                        class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-700 shadow-xs"
-                    >
-                        <i class="fa-solid fa-check text-xs"></i>
-                        <span>Konfirmasi Pengembalian</span>
+                    <button type="button" onclick="closeKembalikanModal()" class="text-muted hover:text-ink">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-            </form>
+
+                <form id="form-kembalikan" method="POST" class="mt-4 space-y-4">
+                    @csrf
+                    <div class="rounded-xl bg-slate-50 p-3.5 text-xs text-ink-secondary space-y-1.5 border border-line">
+                        <p><strong class="text-ink">ID Transaksi:</strong> <span id="modal-id-peminjaman" class="font-mono text-primary font-semibold"></span></p>
+                        <p><strong class="text-ink">Mahasiswa:</strong> <span id="modal-nama-peminjam"></span></p>
+                        <p><strong class="text-ink">Judul Buku:</strong> <span id="modal-judul-buku"></span></p>
+                    </div>
+
+                    {{-- Alert Keterlambatan Jika Ada --}}
+                    <div id="modal-late-alert" class="hidden rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                        <div class="flex items-center gap-2 font-bold">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Pengembalian Terlambat <span id="modal-late-days"></span> Hari</span>
+                        </div>
+                        <p class="mt-1 text-[11px]">
+                            Buku dikembalikan melewati batas jadwal. Sesuai ketentuan perpustakaan, <strong>tidak dikenakan sanksi denda finansial</strong>, hanya catatan durasi keterlambatan yang akan disimpan.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="modal-catatan" class="block text-xs font-semibold text-ink">Catatan Pengembalian (Opsional)</label>
+                        <textarea
+                            id="modal-catatan"
+                            name="catatan"
+                            rows="2"
+                            placeholder="Contoh: Buku kembali dalam kondisi fisik baik..."
+                            class="mt-1.5 w-full rounded-xl border border-line bg-white p-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-line">
+                        <button
+                            type="button"
+                            onclick="closeKembalikanModal()"
+                            class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink-secondary hover:bg-slate-50 cursor-pointer"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-700 shadow-xs cursor-pointer"
+                        >
+                            <i class="fa-solid fa-check text-xs"></i>
+                            <span>Konfirmasi Pengembalian</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-
-
     {{-- Modal Input Keterlambatan & Sanksi --}}
-    <div id="modal-sanksi" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs flex items-center justify-center">
-        <div class="relative w-full max-w-lg rounded-2xl border border-line bg-white p-6 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-line pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="flex size-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
-                        <i class="fa-solid fa-gavel text-sm"></i>
-                    </span>
+    <div id="modal-sanksi" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 backdrop-blur-xs">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="relative w-full max-w-lg rounded-2xl border border-line bg-white p-6 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-line pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
+                            <i class="fa-solid fa-gavel text-sm"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-ink">Catat Keterlambatan &amp; Sanksi Pemustaka</h3>
+                            <p class="text-[11px] text-muted">Penanganan peminjam yang belum mengembalikan buku lewat jadwal</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeSanksiModal()" class="text-muted hover:text-ink">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <form id="form-sanksi" action="" method="POST" class="mt-4 space-y-4 text-xs">
+                    @csrf
+                    <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3.5 text-rose-900">
+                        <div class="flex items-center gap-1.5 font-bold">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+                            <span>Peminjaman Terlambat: <span id="modal-sanksi-late-days">0</span> Hari</span>
+                        </div>
+                        <div class="mt-1 text-[11px] space-y-0.5">
+                            <p><strong>Peminjam:</strong> <span id="modal-sanksi-nama-peminjam">-</span></p>
+                            <p><strong>Judul Buku:</strong> <span id="modal-sanksi-judul-buku">-</span></p>
+                        </div>
+                    </div>
+
                     <div>
-                        <h3 class="text-sm font-bold text-ink">Catat Keterlambatan &amp; Sanksi Pemustaka</h3>
-                        <p class="text-[11px] text-muted">Penanganan peminjam yang belum mengembalikan buku lewat jadwal</p>
+                        <label for="input-jenis-sanksi" class="block font-semibold text-ink mb-1">
+                            Jenis Sanksi / Tindakan <span class="text-rose-500">*</span>
+                        </label>
+                        <select
+                            name="sanksi"
+                            id="input-jenis-sanksi"
+                            required
+                            class="w-full h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            <option value="">Pilih Jenis Sanksi...</option>
+                            <option value="Peringatan Tertulis & Penangguhan Peminjaman">Peringatan Tertulis &amp; Penangguhan Peminjaman</option>
+                            <option value="Penangguhan Peminjaman 1 Minggu">Penangguhan Peminjaman 1 Minggu</option>
+                            <option value="Penangguhan Peminjaman 1 Bulan">Penangguhan Peminjaman 1 Bulan</option>
+                            <option value="Tugas Edukatif Perpustakaan">Tugas Edukatif Perpustakaan</option>
+                            <option value="Sanksi Ganti Buku / Kompensasi">Sanksi Ganti Buku / Kompensasi</option>
+                        </select>
                     </div>
-                </div>
-                <button type="button" onclick="closeSanksiModal()" class="text-muted hover:text-ink">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+
+                    <div>
+                        <label for="input-status-sanksi" class="block font-semibold text-ink mb-1">
+                            Status Sanksi
+                        </label>
+                        <select
+                            name="status_sanksi"
+                            id="input-status-sanksi"
+                            class="w-full h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            <option value="Aktif">Aktif (Berlaku)</option>
+                            <option value="Selesai">Selesai (Sudah Dipenuhi)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="input-catatan-sanksi" class="block font-semibold text-ink mb-1">
+                            Catatan Keterlambatan &amp; Riwayat Tindakan
+                        </label>
+                        <textarea
+                            name="catatan_admin"
+                            id="input-catatan-sanksi"
+                            rows="3"
+                            placeholder="Contoh: Pemustaka belum mengembalikan buku setelah dikirimi peringatan..."
+                            class="w-full rounded-xl border border-line bg-white p-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+                        <button
+                            type="button"
+                            onclick="closeSanksiModal()"
+                            class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink hover:bg-slate-50 cursor-pointer"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white hover:bg-rose-700 shadow-xs cursor-pointer"
+                        >
+                            <i class="fa-solid fa-save text-xs"></i>
+                            <span>Simpan Sanksi Keterlambatan</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <form id="form-sanksi" action="" method="POST" class="mt-4 space-y-4 text-xs">
-                @csrf
-                <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3.5 text-rose-900">
-                    <div class="flex items-center gap-1.5 font-bold">
-                        <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
-                        <span>Peminjaman Terlambat: <span id="modal-sanksi-late-days">0</span> Hari</span>
-                    </div>
-                    <div class="mt-1 text-[11px] space-y-0.5">
-                        <p><strong>Peminjam:</strong> <span id="modal-sanksi-nama-peminjam">-</span></p>
-                        <p><strong>Judul Buku:</strong> <span id="modal-sanksi-judul-buku">-</span></p>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="input-jenis-sanksi" class="block font-semibold text-ink mb-1">
-                        Jenis Sanksi / Tindakan <span class="text-rose-500">*</span>
-                    </label>
-                    <select
-                        name="sanksi"
-                        id="input-jenis-sanksi"
-                        required
-                        class="w-full h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                        <option value="">Pilih Jenis Sanksi...</option>
-                        <option value="Peringatan Tertulis & Penangguhan Peminjaman">Peringatan Tertulis &amp; Penangguhan Peminjaman</option>
-                        <option value="Penangguhan Peminjaman 1 Minggu">Penangguhan Peminjaman 1 Minggu</option>
-                        <option value="Penangguhan Peminjaman 1 Bulan">Penangguhan Peminjaman 1 Bulan</option>
-                        <option value="Tugas Edukatif Perpustakaan">Tugas Edukatif Perpustakaan</option>
-                        <option value="Sanksi Ganti Buku / Kompensasi">Sanksi Ganti Buku / Kompensasi</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="input-status-sanksi" class="block font-semibold text-ink mb-1">
-                        Status Sanksi
-                    </label>
-                    <select
-                        name="status_sanksi"
-                        id="input-status-sanksi"
-                        class="w-full h-10 rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                        <option value="Aktif">Aktif (Berlaku)</option>
-                        <option value="Selesai">Selesai (Sudah Dipenuhi)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="input-catatan-sanksi" class="block font-semibold text-ink mb-1">
-                        Catatan Keterlambatan &amp; Riwayat Tindakan
-                    </label>
-                    <textarea
-                        name="catatan_admin"
-                        id="input-catatan-sanksi"
-                        rows="3"
-                        placeholder="Contoh: Pemustaka belum mengembalikan buku setelah dikirimi peringatan..."
-                        class="w-full rounded-xl border border-line bg-white p-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    ></textarea>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
-                    <button
-                        type="button"
-                        onclick="closeSanksiModal()"
-                        class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink hover:bg-slate-50"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        type="submit"
-                        class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white hover:bg-rose-700 shadow-xs"
-                    >
-                        <i class="fa-solid fa-save text-xs"></i>
-                        <span>Simpan Sanksi Keterlambatan</span>
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
     {{-- Modal Tolak Pengajuan Pengembalian --}}
-    <div
-        id="modal-tolak"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs hidden"
-    >
-        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-line pb-3">
-                <div class="flex items-center gap-2 text-rose-700 font-bold">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                    <span>Tolak Pengajuan Pengembalian</span>
-                </div>
-                <button
-                    type="button"
-                    onclick="closeTolakModal()"
-                    class="rounded-lg p-1.5 text-muted hover:bg-slate-100 hover:text-ink"
-                >
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-
-            <form id="form-tolak" method="POST" class="mt-4 space-y-4">
-                @csrf
-                <div class="rounded-xl bg-slate-50 p-3.5 text-xs space-y-1.5 border border-line">
-                    <div class="flex justify-between">
-                        <span class="text-muted">Kode Pinjam:</span>
-                        <span id="modal-tolak-id-peminjaman" class="font-mono font-bold text-ink"></span>
+    <div id="modal-tolak" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-line pb-3">
+                    <div class="flex items-center gap-2 text-rose-700 font-bold">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Tolak Pengajuan Pengembalian</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-muted">Peminjam:</span>
-                        <span id="modal-tolak-nama-peminjam" class="font-semibold text-ink"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-muted">Buku:</span>
-                        <span id="modal-tolak-judul-buku" class="font-medium text-ink max-w-[200px] truncate text-right"></span>
-                    </div>
-                </div>
-
-                <div class="rounded-xl bg-amber-50 p-3 text-xs text-amber-900 border border-amber-200">
-                    <p class="font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
-                        <span>Konfirmasi Penolakan</span>
-                    </p>
-                    <p class="mt-1 text-[11px] leading-relaxed text-amber-800">
-                        Status peminjaman akan dikembalikan ke status aktif semula (Dipinjam atau Terlambat) dan pemustaka akan diminta menyerahkan fisik buku ke meja sirkulasi.
-                    </p>
-                </div>
-
-                <div>
-                    <label for="input-alasan-penolakan" class="block font-semibold text-ink mb-1 text-xs">
-                        Alasan Penolakan (Opsional / Info untuk Pemustaka)
-                    </label>
-                    <textarea
-                        name="alasan"
-                        id="input-alasan-penolakan"
-                        rows="3"
-                        placeholder="Contoh: Fisik buku belum diterima di meja sirkulasi atau buku memerlukan pengecekan kondisi fisik bersama pemustaka..."
-                        class="w-full rounded-xl border border-line bg-white p-3 text-xs text-ink focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    ></textarea>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
                     <button
                         type="button"
                         onclick="closeTolakModal()"
-                        class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink hover:bg-slate-50"
+                        class="rounded-lg p-1.5 text-muted hover:bg-slate-100 hover:text-ink cursor-pointer"
                     >
-                        Batal
-                    </button>
-                    <button
-                        type="submit"
-                        class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white hover:bg-rose-700 shadow-xs"
-                    >
-                        <i class="fa-solid fa-xmark text-xs"></i>
-                        <span>Tolak Pengajuan</span>
+                        <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
-            </form>
+
+                <form id="form-tolak" method="POST" class="mt-4 space-y-4">
+                    @csrf
+                    <div class="rounded-xl bg-slate-50 p-3.5 text-xs space-y-1.5 border border-line">
+                        <div class="flex justify-between">
+                            <span class="text-muted">Kode Pinjam:</span>
+                            <span id="modal-tolak-id-peminjaman" class="font-mono font-bold text-ink"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted">Peminjam:</span>
+                            <span id="modal-tolak-nama-peminjam" class="font-semibold text-ink"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted">Buku:</span>
+                            <span id="modal-tolak-judul-buku" class="font-medium text-ink max-w-[200px] truncate text-right"></span>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-amber-50 p-3 text-xs text-amber-900 border border-amber-200">
+                        <p class="font-semibold flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                            <span>Konfirmasi Penolakan</span>
+                        </p>
+                        <p class="mt-1 text-[11px] leading-relaxed text-amber-800">
+                            Status peminjaman akan dikembalikan ke status aktif semula (Dipinjam atau Terlambat) dan pemustaka akan diminta menyerahkan fisik buku ke meja sirkulasi.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="input-alasan-penolakan" class="block font-semibold text-ink mb-1 text-xs">
+                            Alasan Penolakan (Opsional / Info untuk Pemustaka)
+                        </label>
+                        <textarea
+                            name="alasan"
+                            id="input-alasan-penolakan"
+                            rows="3"
+                            placeholder="Contoh: Fisik buku belum diterima di meja sirkulasi atau buku memerlukan pengecekan kondisi fisik bersama pemustaka..."
+                            class="w-full rounded-xl border border-line bg-white p-3 text-xs text-ink focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+                        <button
+                            type="button"
+                            onclick="closeTolakModal()"
+                            class="h-9 rounded-xl border border-line bg-white px-4 text-xs font-semibold text-ink hover:bg-slate-50 cursor-pointer"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            class="h-9 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-semibold text-white hover:bg-rose-700 shadow-xs cursor-pointer"
+                        >
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                            <span>Tolak Pengajuan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
+        function openKembalikanFromBtn(btn) {
+            const idPeminjaman = btn.getAttribute('data-id');
+            const judulBuku = btn.getAttribute('data-judul') || 'Buku';
+            const namaPeminjam = btn.getAttribute('data-nama') || 'Pemustaka';
+            const hariTerlambat = parseInt(btn.getAttribute('data-late') || '0', 10);
+            openKembalikanModal(idPeminjaman, judulBuku, namaPeminjam, hariTerlambat);
+        }
+
+        function openTolakFromBtn(btn) {
+            const idPeminjaman = btn.getAttribute('data-id');
+            const judulBuku = btn.getAttribute('data-judul') || 'Buku';
+            const namaPeminjam = btn.getAttribute('data-nama') || 'Pemustaka';
+            openTolakModal(idPeminjaman, judulBuku, namaPeminjam);
+        }
+
+        function openSanksiFromBtn(btn) {
+            const idPeminjaman = btn.getAttribute('data-id');
+            const judulBuku = btn.getAttribute('data-judul') || 'Buku';
+            const namaPeminjam = btn.getAttribute('data-nama') || 'Pemustaka';
+            const hariTerlambat = parseInt(btn.getAttribute('data-late') || '0', 10);
+            const sanksi = btn.getAttribute('data-sanksi') || '';
+            const catatan = btn.getAttribute('data-catatan') || '';
+            openSanksiModal(idPeminjaman, judulBuku, namaPeminjam, hariTerlambat, sanksi, catatan);
+        }
+
         function openKembalikanModal(idPeminjaman, judulBuku, namaPeminjam, hariTerlambat) {
             document.getElementById('modal-id-peminjaman').textContent = idPeminjaman;
             document.getElementById('modal-nama-peminjam').textContent = namaPeminjam;
