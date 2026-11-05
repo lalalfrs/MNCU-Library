@@ -147,39 +147,125 @@
 
         {{-- Jam operasional --}}
         <section aria-labelledby="judul-jam" class="rounded-2xl border border-line bg-white p-6 lg:p-8">
-            <h2 id="judul-jam" class="text-lg font-medium text-ink lg:text-2xl">Jam Operasional</h2>
-            <p class="mt-1 text-sm text-muted lg:text-base">Waktu layanan perpustakaan setiap minggu.</p>
-
-            <div class="mt-5 overflow-x-auto">
-                <table class="w-full min-w-[400px] text-left text-sm lg:text-base">
-                    <thead>
-                        <tr class="border-b border-line">
-                            <th class="py-3 pr-4 font-medium text-ink">Hari</th>
-                            <th class="py-3 pr-4 font-medium text-ink">Jam Buka</th>
-                            <th class="py-3 font-medium text-ink">Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-ink-secondary">
-                        <tr class="border-b border-line/50">
-                            <td class="py-3 pr-4">Senin s.d. Jumat</td>
-                            <td class="py-3 pr-4">08.00 s.d. 16.00 WIB</td>
-                            <td class="py-3">Layanan penuh</td>
-                        </tr>
-                        <tr class="border-b border-line/50">
-                            <td class="py-3 pr-4">Sabtu</td>
-                            <td class="py-3 pr-4">09.00 s.d. 13.00 WIB</td>
-                            <td class="py-3">Layanan terbatas</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 pr-4">Minggu & Hari Libur</td>
-                            <td class="py-3 pr-4 text-muted">Tutup</td>
-                            <td class="py-3 text-muted">Akses digital tetap tersedia</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-line/70 pb-4">
+                <div>
+                    <h2 id="judul-jam" class="text-lg font-medium text-ink lg:text-2xl">Jam Operasional Perpustakaan</h2>
+                    <p class="mt-1 text-sm text-muted lg:text-base">Jadwal resmi waktu layanan luring (offline) dan daring (online) bagi sivitas akademika.</p>
+                </div>
             </div>
 
-            <div class="mt-6 h-1 rounded-full bg-linear-to-r from-[#0EA5E9] to-[#14B8A6]"></div>
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+                {{-- 1. Senin s.d. Jumat --}}
+                <div class="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 p-6 shadow-xs transition-all duration-300 hover:shadow-md hover:border-blue-400">
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="flex size-12 items-center justify-center rounded-xl bg-[#2563EB]/10 text-[#2563EB] shadow-2xs border border-blue-100">
+                                <i class="fa-solid fa-building-columns text-lg" aria-hidden="true"></i>
+                            </span>
+                            <span class="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#2563EB] border border-blue-200">
+                                Layanan Penuh
+                            </span>
+                        </div>
+
+                        <h3 class="mt-4 text-base font-bold text-ink sm:text-lg">
+                            Senin s.d. Jumat
+                        </h3>
+                        <p class="mt-1 text-xs text-muted">Hari Kerja Reguler</p>
+
+                        <div class="mt-4 rounded-xl border border-blue-200/70 bg-white/90 p-3.5">
+                            <span class="text-[11px] font-medium text-slate-500 block">Jam Buka Layanan:</span>
+                            <span class="mt-0.5 text-base sm:text-lg font-extrabold text-[#0b1f3a] tracking-tight block">
+                                08.00 &ndash; 16.00 WIB
+                            </span>
+                        </div>
+
+                        <p class="mt-4 text-xs leading-relaxed text-slate-600">
+                            Sirkulasi peminjaman &amp; pengembalian fisik, ruang baca, komputer katalog, serta konsultasi pustakawan beroperasi penuh.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 h-1 w-full rounded-full bg-gradient-to-r from-[#0EA5E9] to-[#2563EB]"></div>
+                </div>
+
+                {{-- 2. Sabtu --}}
+                <div class="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-purple-200/80 bg-gradient-to-br from-white via-slate-50/80 to-purple-50/40 p-6 shadow-xs transition-all duration-300 hover:shadow-md hover:border-purple-400">
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="flex size-12 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED] shadow-2xs border border-purple-100">
+                                <i class="fa-solid fa-clock text-lg" aria-hidden="true"></i>
+                            </span>
+                            <span class="rounded-lg bg-purple-50 px-2.5 py-1 text-xs font-semibold text-[#7C3AED] border border-purple-200">
+                                Layanan Terbatas
+                            </span>
+                        </div>
+
+                        <h3 class="mt-4 text-base font-bold text-ink sm:text-lg">
+                            Sabtu
+                        </h3>
+                        <p class="mt-1 text-xs text-muted">Akhir Pekan</p>
+
+                        <div class="mt-4 rounded-xl border border-purple-200/70 bg-white/90 p-3.5">
+                            <span class="text-[11px] font-medium text-slate-500 block">Jam Buka Layanan:</span>
+                            <span class="mt-0.5 text-base sm:text-lg font-extrabold text-[#0b1f3a] tracking-tight block">
+                                09.00 &ndash; 13.00 WIB
+                            </span>
+                        </div>
+
+                        <p class="mt-4 text-xs leading-relaxed text-slate-600">
+                            Layanan sirkulasi buku, pengembalian mandiri, dan fasilitas ruang baca untuk mahasiswa perkuliahan akhir pekan.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 h-1 w-full rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#D946EF]"></div>
+                </div>
+
+                {{-- 3. Minggu & Libur Nasional --}}
+                <div class="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-br from-white via-slate-50/80 to-rose-50/40 p-6 shadow-xs transition-all duration-300 hover:shadow-md hover:border-rose-400">
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="flex size-12 items-center justify-center rounded-xl bg-[#E11D48]/10 text-[#E11D48] shadow-2xs border border-rose-100">
+                                <i class="fa-solid fa-calendar-xmark text-lg" aria-hidden="true"></i>
+                            </span>
+                            <span class="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-[#E11D48] border border-rose-200">
+                                Fisik Tutup
+                            </span>
+                        </div>
+
+                        <h3 class="mt-4 text-base font-bold text-ink sm:text-lg">
+                            Minggu &amp; Hari Libur
+                        </h3>
+                        <p class="mt-1 text-xs text-muted">Libur Nasional</p>
+
+                        <div class="mt-4 rounded-xl border border-rose-200/70 bg-white/90 p-3.5">
+                            <span class="text-[11px] font-medium text-slate-500 block">Status Operasional Fisik:</span>
+                            <span class="mt-0.5 text-base sm:text-lg font-extrabold text-rose-700 tracking-tight block">
+                                Tutup (Layanan Fisik)
+                            </span>
+                        </div>
+
+                        <p class="mt-4 text-xs leading-relaxed text-slate-600">
+                            Gedung perpustakaan tutup. Seluruh portal digital (OPAC, Repository, E-Book, dan E-Journal) tetap aktif 24 jam.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 h-1 w-full rounded-full bg-gradient-to-r from-[#F43F5E] to-[#E11D48]"></div>
+                </div>
+            </div>
+
+            {{-- Info Akses Digital 24/7 --}}
+            <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4 text-xs sm:text-sm text-emerald-900">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                        <i class="fa-solid fa-globe text-xs" aria-hidden="true"></i>
+                    </span>
+                    <span>
+                        <strong>Layanan Digital 24 Jam:</strong> Akses katalog OPAC, e-journal internasional, dan repository skripsi tetap dapat diakses kapan saja secara daring.
+                    </span>
+                </div>
+                <a href="{{ route('opac') }}" class="font-semibold text-emerald-800 hover:text-emerald-950 underline shrink-0">
+                    Jelajahi OPAC &rarr;
+                </a>
+            </div>
         </section>
     </div>
 @endsection

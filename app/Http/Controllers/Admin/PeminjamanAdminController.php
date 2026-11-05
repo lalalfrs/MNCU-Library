@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -437,5 +438,52 @@ class PeminjamanAdminController extends Controller
             'success' => true,
             'data' => $hasil,
         ], 200);
+    }
+
+    /**
+     * Admin mengubah status pembayaran denda (Belum Lunas / Lunas) bermodel dropdown.
+     */
+    public function updateStatusDenda(Request $request, string $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status_pembayaran_denda' => 'required|in:Belum Lunas,Lunas',
+            'catatan_denda' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $currentUserId = Auth::user()?->id_pengguna;
+            $loan = $this->peminjamanService->updateStatusPembayaranDenda(
+                $id,
+                $validated['status_pembayaran_denda'],
+                $currentUserId,
+                $validated['catatan_denda'] ?? null
+            );
+
+            $statusText = $loan->status_pembayaran_denda === 'Lunas' ? 'LUNAS (Cash)' : 'BELUM LUNAS';
+
+            return back()->with('success', "Status denda transaksi {$loan->id_peminjaman} ({$loan->pengguna->nama_lengkap}) berhasil diperbarui menjadi {$statusText}.");
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+    }
+
+    /**
+     * Cetak dokumen resmi formulir rincian denda keterlambatan (A4 formal, tanda tangan peminjam & pustakawan).
+     */
+    public function cetakDenda(Request $request, string $id): View
+    {
+        $loan = PeminjamanBuku::with([
+            'pengguna.prodi',
+            'pengguna.peran',
+            'buku.penulis',
+            'buku.penerbit',
+            'eksemplar',
+            'pustakawanDenda',
+        ])->findOrFail($id);
+
+        $currentUser = Auth::user();
+        $pustakawan = $loan->pustakawanDenda ?: $currentUser;
+
+        return view('admin.peminjaman.cetak-denda', compact('loan', 'pustakawan', 'currentUser'));
     }
 }

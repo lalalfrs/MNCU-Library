@@ -199,7 +199,8 @@ class PeminjamanTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('admin.peminjaman.show', $loan->id_peminjaman));
         $response->assertStatus(200);
         $response->assertSee('Informasi Keterlambatan');
-        $response->assertSee('tidak diberlakukan sanksi denda finansial');
+        $response->assertSee('Rp 500 / hari');
+        $response->assertSee('Cash / Tunai');
     }
 
     /**
@@ -351,5 +352,146 @@ class PeminjamanTest extends TestCase
         $this->assertEquals('Penangguhan Peminjaman 1 Bulan', $overdueLoan->sanksi);
         $this->assertEquals('Aktif', $overdueLoan->status_sanksi);
         $this->assertNotNull($overdueLoan->tanggal_sanksi);
+    }
+
+    /**
+     * Denda dihitung Rp 500 per hari keterlambatan dan metode pembayaran default adalah Cash.
+     */
+    public function test_overdue_loan_calculates_fine_at_500_per_day_cash(): void
+    {
+        $loan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+        $loan->update([
+            'tanggal_pinjam' => now()->subDays(10)->toDateString(),
+            'tanggal_jatuh_tempo' => now()->subDays(3)->toDateString(),
+            'status' => 'Terlambat',
+            'hari_keterlambatan' => 3,
+        ]);
+
+        $this->assertEquals(3, $loan->hitungHariTerlambat());
+        $this->assertEquals(1500, $loan->hitungNominalDenda()); // 3 hari * 500 = 1500
+        $this->assertTrue($loan->memilikiDenda());
+    }
+
+    /**
+     * Form denda masuk ke Inbox user yang telat mengembalikan buku dengan opsi Cash dan tarif Rp 500/hari.
+     */
+    public function test_user_inbox_displays_denda_form_with_cash_option(): void
+    {
+        $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+        $overdueLoan->update([
+            'id_pengguna' => $this->studentHasLoan->id_pengguna,
+            'tanggal_pinjam' => now()->subDays(10)->toDateString(),
+            'tanggal_jatuh_tempo' => now()->subDays(4)->toDateString(),
+            'status' => 'Terlambat',
+            'hari_keterlambatan' => 4,
+            'nominal_denda' => 2000,
+            'status_pembayaran_denda' => 'Belum Lunas',
+            'metode_pembayaran_denda' => 'Cash',
+        ]);
+
+        $response = $this->actingAs($this->studentHasLoan)->get(route('inbox'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Form Tagihan Denda Keterlambatan');
+        $response->assertSee('Rp 500 / hari');
+        $response->assertSee('Cash / Tunai');
+        $response->assertSee('Belum Lunas');
+        $response->assertSee('Rp 2.000');
+        $response->assertSee(route('inbox.denda', $overdueLoan->id_peminjaman));
+    }
+
+    /**
+     * Admin dapat mengubah status pelunasan denda bermodel dropdown (Belum Lunas -> Lunas).
+     */
+    public function test_admin_can_update_denda_payment_status_via_dropdown(): void
+    {
+        $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+        $overdueLoan->update([
+            'tanggal_jatuh_tempo' => now()->subDays(2)->toDateString(),
+            'status' => 'Terlambat',
+            'hari_keterlambatan' => 2,
+            'nominal_denda' => 1000,
+            'status_pembayaran_denda' => 'Belum Lunas',
+        ]);
+
+        // 1. Admin mengubah status menjadi Lunas
+        $response = $this->actingAs($this->admin)->post(route('admin.peminjaman.update-status-denda', $overdueLoan->id_peminjaman), [
+            'status_pembayaran_denda' => 'Lunas',
+            'catatan_denda' => 'Pembayaran tunai diterima langsung di meja sirkulasi.',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $overdueLoan->refresh();
+        $this->assertEquals('Lunas', $overdueLoan->status_pembayaran_denda);
+        $this->assertEquals('Cash', $overdueLoan->metode_pembayaran_denda);
+        $this->assertNotNull($overdueLoan->tanggal_pembayaran_denda);
+        $this->assertEquals($this->admin->id_pengguna, $overdueLoan->id_pustakawan_denda);
+
+        // 2. Admin dapat mengubah kembali status menjadi Belum Lunas jika diperlukan
+        $responseRevert = $this->actingAs($this->admin)->post(route('admin.peminjaman.update-status-denda', $overdueLoan->id_peminjaman), [
+            'status_pembayaran_denda' => 'Belum Lunas',
+        ]);
+        $responseRevert->assertRedirect();
+
+        $overdueLoan->refresh();
+        $this->assertEquals('Belum Lunas', $overdueLoan->status_pembayaran_denda);
+        $this->assertNull($overdueLoan->tanggal_pembayaran_denda);
+    }
+
+    /**
+     * Superadmin dan Admin dapat membuka dan mencetak dokumen rincian denda resmi A4
+     * yang memuat tanda tangan peminjam yang terlambat dan nama pustakawan.
+     */
+    public function test_superadmin_can_print_formal_a4_denda_document_with_signatures(): void
+    {
+        $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+        $overdueLoan->update([
+            'tanggal_jatuh_tempo' => now()->subDays(5)->toDateString(),
+            'status' => 'Terlambat',
+            'hari_keterlambatan' => 5,
+            'nominal_denda' => 2500,
+            'status_pembayaran_denda' => 'Belum Lunas',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.peminjaman.cetak-denda', $overdueLoan->id_peminjaman));
+
+        $response->assertStatus(200);
+        $response->assertSee('Surat Rincian Denda Keterlambatan Pengembalian Buku');
+        $response->assertSee('Universitas MNC');
+        $response->assertSee('Rp 500 / hari');
+        $response->assertSee('Cash / Tunai');
+        $response->assertSee('Rp 2.500');
+        $response->assertSee('5 Hari');
+        // Tanda tangan peminjam yang terlambat
+        $response->assertSee('Peminjam / Pemustaka Yang Terlambat');
+        $response->assertSee($overdueLoan->pengguna->nama_lengkap);
+        // Tanda tangan & nama pustakawan
+        $response->assertSee('Petugas Pustakawan / Administrasi Sirkulasi');
+        $response->assertSee($this->admin->nama_lengkap);
+    }
+
+    /**
+     * Pemustaka yang telat dapat melihat lembar dokumen rincian dendanya dari inbox.
+     */
+    public function test_user_can_view_own_denda_slip_from_inbox(): void
+    {
+        $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
+        $overdueLoan->update([
+            'id_pengguna' => $this->studentHasLoan->id_pengguna,
+            'tanggal_jatuh_tempo' => now()->subDays(2)->toDateString(),
+            'status' => 'Terlambat',
+            'hari_keterlambatan' => 2,
+            'nominal_denda' => 1000,
+            'status_pembayaran_denda' => 'Belum Lunas',
+        ]);
+
+        $response = $this->actingAs($this->studentHasLoan)->get(route('inbox.denda', $overdueLoan->id_peminjaman));
+
+        $response->assertStatus(200);
+        $response->assertSee('Surat Rincian Denda Keterlambatan');
+        $response->assertSee($this->studentHasLoan->nama_lengkap);
+        $response->assertSee('Rp 1.000');
     }
 }

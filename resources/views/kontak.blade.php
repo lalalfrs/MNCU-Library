@@ -30,7 +30,7 @@
                     $contacts = [
                         [
                             'label' => 'Alamat',
-                            'value' => 'Gedung Perpustakaan MNC University, Jl. Haji Ten No.34, RT.7/RW.2, Kebon Sirih, Kec. Menteng, Kota Jakarta Pusat, DKI Jakarta 10340',
+                            'value' => 'Gedung Perpustakaan MNC University, Jl. Panjang Blok A8, Jl. Green Garden Pintu Utara, RT.1/RW.3, Kedoya Utara, Kec. Kebon Jeruk, Kota Jakarta Barat, DKI Jakarta 11520',
                             'icon' => 'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
                             'iconBox' => 'bg-[#E11D48]/8 text-[#E11D48]',
                             'accentLine' => 'from-[#F43F5E] to-[#EC4899]',
@@ -151,7 +151,7 @@
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h2 id="judul-lokasi-kontak" class="text-base font-medium text-ink lg:text-xl">Lokasi Perpustakaan</h2>
-                    <p class="mt-1 text-[13px] text-muted lg:text-base">Jl. Haji Ten No.34, Kebon Sirih, Jakarta Pusat</p>
+                    <p class="mt-1 text-[13px] text-muted lg:text-base">Gedung Perpustakaan MNC University, Jl. Panjang Blok A8, Jl. Green Garden Pintu Utara, RT.1/RW.3, Kedoya Utara, Kebon Jeruk, Jakarta Barat, DKI Jakarta 11520</p>
                 </div>
                 <a href="https://www.google.com/maps/search/?api=1&query=MNC+University" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
                     Buka di Google Maps

@@ -887,8 +887,7 @@
                                                 onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
                                             >
                                         @endif
-                                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
-                                            <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                                        <span class="absolute top-3 left-3 inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
                                             {{ $newsItem['category'] ?? 'Berita Kampus' }}
                                         </span>
                                     </div>
@@ -900,7 +899,7 @@
                                         <span class="mt-2 line-clamp-2 text-base font-bold text-ink group-hover:text-primary transition-colors lg:text-lg">{{ $newsItem['title'] }}</span>
                                         <span class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $newsItem['excerpt'] }}</span>
                                         <span class="mt-auto pt-4 flex items-center justify-between border-t border-slate-100 text-xs sm:text-sm font-bold text-primary">
-                                            <span>Baca berita</span>
+                                            <span>Baca Berita</span>
                                             <span class="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-200 group-hover:translate-x-1 group-hover:bg-primary group-hover:text-white shadow-xs">
                                                 <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                                             </span>
@@ -1088,7 +1087,7 @@
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h2 id="judul-lokasi" class="text-base font-medium text-ink lg:text-xl">Lokasi Perpustakaan</h2>
-                    <p class="mt-1 text-[13px] text-muted lg:text-base">Gedung Perpustakaan MNC University, Jl. Haji Ten No. 34, RT.7/RW.2, Kebon Sirih, Menteng, Jakarta Pusat, DKI Jakarta 10340</p>
+                    <p class="mt-1 text-[13px] text-muted lg:text-base">Gedung Perpustakaan MNC University, Jl. Panjang Blok A8, Jl. Green Garden Pintu Utara, RT.1/RW.3, Kedoya Utara, Kebon Jeruk, Jakarta Barat, DKI Jakarta 11520</p>
                 </div>
                 <a href="https://www.google.com/maps/search/?api=1&query=MNC+University" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-medium text-primary hover:underline lg:text-base">
                     Buka di Google Maps

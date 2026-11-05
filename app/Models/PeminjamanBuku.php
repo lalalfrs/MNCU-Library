@@ -14,6 +14,8 @@ class PeminjamanBuku extends Model
 {
     use HasFactory, HasLibraryId;
 
+    public const TARIF_DENDA_PER_HARI = 500;
+
     protected $table = 'peminjaman_buku';
 
     protected $primaryKey = 'id_peminjaman';
@@ -44,6 +46,12 @@ class PeminjamanBuku extends Model
         'tanggal_sanksi',
         'notifikasi_peringatan_dikirim',
         'tanggal_notifikasi',
+        'nominal_denda',
+        'status_pembayaran_denda',
+        'metode_pembayaran_denda',
+        'tanggal_pembayaran_denda',
+        'id_pustakawan_denda',
+        'catatan_denda',
     ];
 
     protected function casts(): array
@@ -58,6 +66,8 @@ class PeminjamanBuku extends Model
             'tanggal_sanksi' => 'datetime',
             'notifikasi_peringatan_dikirim' => 'boolean',
             'tanggal_notifikasi' => 'datetime',
+            'nominal_denda' => 'integer',
+            'tanggal_pembayaran_denda' => 'datetime',
         ];
     }
 
@@ -89,6 +99,55 @@ class PeminjamanBuku extends Model
     public function eksemplar(): BelongsTo
     {
         return $this->belongsTo(EksemplarBuku::class, 'id_eksemplar', 'id_eksemplar');
+    }
+
+    public function pustakawanDenda(): BelongsTo
+    {
+        return $this->belongsTo(Pengguna::class, 'id_pustakawan_denda', 'id_pengguna');
+    }
+
+    /**
+     * Hitung total nominal denda keterlambatan (Rp 500 per hari keterlambatan).
+     */
+    public function hitungNominalDenda(?Carbon $tanggalCek = null): int
+    {
+        $hari = $this->hari_keterlambatan > 0 ? $this->hari_keterlambatan : $this->hitungHariTerlambat($tanggalCek);
+
+        return max(0, $hari) * self::TARIF_DENDA_PER_HARI;
+    }
+
+    /**
+     * Cek apakah peminjaman memiliki kewajiban denda keterlambatan.
+     */
+    public function memilikiDenda(?Carbon $tanggalCek = null): bool
+    {
+        return $this->hitungNominalDenda($tanggalCek) > 0 || ($this->nominal_denda ?? 0) > 0;
+    }
+
+    /**
+     * Status denda peminjaman (Lunas / Belum Lunas / Tidak Ada).
+     */
+    public function getStatusDenda(): string
+    {
+        if ($this->status_pembayaran_denda === 'Lunas') {
+            return 'Lunas';
+        }
+
+        if ($this->memilikiDenda()) {
+            return $this->status_pembayaran_denda ?: 'Belum Lunas';
+        }
+
+        return 'Tidak Ada';
+    }
+
+    public function isDendaLunas(): bool
+    {
+        return $this->status_pembayaran_denda === 'Lunas';
+    }
+
+    public function isDendaBelumLunas(): bool
+    {
+        return $this->memilikiDenda() && $this->status_pembayaran_denda !== 'Lunas';
     }
 
     /**

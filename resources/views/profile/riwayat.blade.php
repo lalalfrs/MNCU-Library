@@ -193,44 +193,50 @@
         {{-- TAMPILAN INTERAKTIF LAYAR / SCREEN (print:hidden) --}}
         <div class="print:hidden space-y-6">
             {{-- Page Header & Actions --}}
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-line pb-6">
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Riwayat Peminjaman Buku</h1>
-                        <span class="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-primary border border-blue-200">
-                            Pemustaka
-                        </span>
-                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Riwayat Peminjaman Buku</h1>
                     <p class="mt-1 text-xs text-muted sm:text-sm">
                         Lacak status sirkulasi buku yang sedang Anda pinjam, riwayat pengembalian, dan tanggal jatuh tempo.
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <button
-                        type="button"
-                        onclick="window.print()"
-                        class="btn-press inline-flex min-h-[42px] items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-xs transition-all hover:bg-primary-dark active:scale-95"
-                        title="Cetak Bukti Riwayat / Simpan PDF"
-                    >
-                        <i class="fa-solid fa-print text-xs" aria-hidden="true"></i>
-                        <span>Cetak PDF</span>
-                    </button>
-                    <button
-                        type="button"
-                        onclick="openPdfPreviewModal()"
-                        class="btn-press inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-xs transition-all hover:border-primary hover:text-primary active:scale-95"
-                        title="Pratinjau Lembar Bebas Sirkulasi"
-                    >
-                        <i class="fa-solid fa-eye text-xs text-primary" aria-hidden="true"></i>
-                        <span>Pratinjau Lembar</span>
-                    </button>
-                    <a
-                        href="{{ route('opac') }}"
-                        class="btn-press inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50 active:scale-95"
-                    >
-                        <i class="fa-solid fa-book-open text-xs text-muted" aria-hidden="true"></i>
-                        <span>Katalog OPAC</span>
-                    </a>
+                <div class="flex flex-wrap items-center gap-3">
+                    {{-- Segmented Navigation Tab --}}
+                    <div class="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-medium">
+                        <a href="{{ route('profile.show') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                            <i class="fa-solid fa-id-card text-xs"></i>
+                            <span>Ringkasan</span>
+                        </a>
+                        <span class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-white px-3.5 py-1.5 font-semibold text-primary shadow-sm">
+                            <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
+                            <span>Riwayat Peminjaman</span>
+                        </span>
+                        <a href="{{ route('profile.edit') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                            <i class="fa-solid fa-user-pen text-xs"></i>
+                            <span>Edit Profil</span>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onclick="window.print()"
+                            class="btn-press inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-3.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-primary-dark active:scale-95 cursor-pointer"
+                            title="Cetak Bukti Riwayat / Simpan PDF"
+                        >
+                            <i class="fa-solid fa-print text-xs" aria-hidden="true"></i>
+                            <span>Cetak PDF</span>
+                        </button>
+                        <button
+                            type="button"
+                            onclick="openPdfPreviewModal()"
+                            class="btn-press inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-line bg-white px-3 text-xs font-semibold text-ink shadow-xs transition-all hover:border-primary hover:text-primary active:scale-95 cursor-pointer"
+                            title="Pratinjau Lembar Bebas Sirkulasi"
+                        >
+                            <i class="fa-solid fa-eye text-xs text-primary" aria-hidden="true"></i>
+                            <span>Pratinjau</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -458,14 +464,27 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 text-right whitespace-nowrap print:hidden">
-                                    <a
-                                        href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
-                                        class="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-medium text-ink hover:bg-slate-50 hover:text-primary transition-colors"
-                                        title="Buka katalog buku di OPAC"
-                                    >
-                                        <i class="fa-solid fa-book-open text-xs text-muted" aria-hidden="true"></i>
-                                        <span>Lihat di OPAC</span>
-                                    </a>
+                                    <div class="inline-flex items-center gap-1.5">
+                                        @if ($hariTerlambat > 0 || $pinjam->status === 'Terlambat' || ($pinjam->nominal_denda && $pinjam->nominal_denda > 0))
+                                            <a
+                                                href="{{ route('inbox.denda', $pinjam->id_peminjaman) }}"
+                                                target="_blank"
+                                                class="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-800 hover:bg-purple-100 transition-colors shadow-2xs"
+                                                title="Lihat / Cetak Formulir Dokumen Denda Resmi"
+                                            >
+                                                <i class="fa-solid fa-receipt text-xs"></i>
+                                                <span>Form Denda</span>
+                                            </a>
+                                        @endif
+                                        <a
+                                            href="{{ route('opac', ['cari' => $pinjam->buku?->judul_buku ?? '']) }}"
+                                            class="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-medium text-ink hover:bg-slate-50 hover:text-primary transition-colors"
+                                            title="Buka katalog buku di OPAC"
+                                        >
+                                            <i class="fa-solid fa-book-open text-xs text-muted" aria-hidden="true"></i>
+                                            <span>Lihat di OPAC</span>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

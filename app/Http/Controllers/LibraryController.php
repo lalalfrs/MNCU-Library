@@ -7,6 +7,7 @@ use App\Models\EksemplarBuku;
 use App\Models\JenisBuku;
 use App\Models\KunjunganBuku;
 use App\Models\PeminjamanBuku;
+use App\Models\Pengguna;
 use App\Models\Prodi;
 use App\Models\ProfilPustakawan;
 use App\Models\SubjekBuku;
@@ -768,6 +769,18 @@ class LibraryController extends Controller
             ->latest()
             ->get();
 
+        // 5. Transaksi dengan Kewajiban / Riwayat Denda Keterlambatan (Cash Rp 500/hari)
+        $dendaLoans = PeminjamanBuku::with(['buku.penulis', 'eksemplar'])
+            ->where('id_pengguna', $user->id_pengguna)
+            ->where(function ($sub): void {
+                $sub->where('status', 'Terlambat')
+                    ->orWhere('hari_keterlambatan', '>', 0)
+                    ->orWhere('nominal_denda', '>', 0)
+                    ->orWhereNotNull('status_pembayaran_denda');
+            })
+            ->orderByDesc('tanggal_jatuh_tempo')
+            ->get();
+
         return view('inbox.index', [
             'user' => $user,
             'tab' => $tab,
@@ -776,8 +789,37 @@ class LibraryController extends Controller
             'activeLoans' => $activeLoans,
             'pendingRequests' => $pendingRequests,
             'historyLoans' => $historyLoans,
+            'dendaLoans' => $dendaLoans,
             'maxLoans' => PeminjamanService::MAKSIMAL_PINJAMAN,
         ]);
+    }
+
+    /**
+     * Tampilkan formulir / bukti rincian tagihan denda keterlambatan buku untuk pemustaka dari inbox.
+     */
+    public function cetakDendaSlip(Request $request, string $idPeminjaman): View
+    {
+        $user = Auth::user();
+        $loan = PeminjamanBuku::with([
+            'pengguna.prodi',
+            'pengguna.peran',
+            'buku.penulis',
+            'buku.penerbit',
+            'eksemplar',
+            'pustakawanDenda',
+        ])->findOrFail($idPeminjaman);
+
+        if ($loan->id_pengguna !== $user->id_pengguna && ! $user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki hak akses untuk melihat dokumen denda transaksi ini.');
+        }
+
+        $pustakawan = $loan->pustakawanDenda ?: Pengguna::whereHas('peran', function ($q): void {
+            $q->whereIn('nama_peran', ['Pustakawan', 'Kepala Perpustakaan', 'Super Admin']);
+        })->first();
+
+        $currentUser = $user;
+
+        return view('admin.peminjaman.cetak-denda', compact('loan', 'pustakawan', 'currentUser'));
     }
 
     /**

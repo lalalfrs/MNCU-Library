@@ -10,6 +10,7 @@
         $pendingCount = $pendingRequests->count();
         $historyCount = $historyLoans->count();
         $remainingQuota = max(0, $maxLoans - $activeCount);
+        $dendaCount = isset($dendaLoans) ? $dendaLoans->where('status_pembayaran_denda', '!=', 'Lunas')->count() : 0;
     @endphp
 
     <div class="mx-auto flex w-full max-w-[1380px] flex-1 flex-col gap-6 px-3 py-6 sm:px-4 lg:px-6 lg:py-8">
@@ -29,6 +30,12 @@
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800 border border-rose-300">
                             <span class="size-2 rounded-full bg-rose-600 animate-ping"></span>
                             <span>{{ $alertCount }} Peringatan Deadline</span>
+                        </span>
+                    @endif
+                    @if ($dendaCount > 0)
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800 border border-rose-300">
+                            <i class="fa-solid fa-receipt text-xs"></i>
+                            <span>{{ $dendaCount }} Tagihan Denda</span>
                         </span>
                     @endif
                 </div>
@@ -183,6 +190,60 @@
                                             <span>Tanggal Pinjam: <strong class="text-ink">{{ $alertLoan->tanggal_pinjam?->format('d M Y') ?? '-' }}</strong></span>
                                             <span>Deadline Kembali: <strong class="{{ $isOverdue ? 'text-rose-700' : 'text-amber-800' }}">{{ $alertLoan->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}</strong></span>
                                         </div>
+
+                                        {{-- Formulir Tagihan Denda Keterlambatan (Cash Rp 500/hari) --}}
+                                        @if ($isOverdue)
+                                            @php
+                                                $nominalDenda = $alertLoan->hitungNominalDenda();
+                                                $statusDenda = $alertLoan->status_pembayaran_denda ?: 'Belum Lunas';
+                                            @endphp
+                                            <div class="mt-3 rounded-xl border border-rose-200 bg-white/95 p-3.5 shadow-2xs">
+                                                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-100 pb-2">
+                                                    <span class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900">
+                                                        <i class="fa-solid fa-receipt text-rose-600"></i>
+                                                        <span>Form Tagihan Denda Keterlambatan</span>
+                                                    </span>
+                                                    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold {{ $statusDenda === 'Lunas' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                        Status: {{ $statusDenda }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                                    <div class="rounded-lg bg-slate-50 p-2 border border-slate-100">
+                                                        <span class="text-[10px] text-slate-500 block">Keterlambatan</span>
+                                                        <strong class="font-bold text-rose-700 text-xs sm:text-sm">{{ $hariTerlambat }} Hari</strong>
+                                                    </div>
+                                                    <div class="rounded-lg bg-slate-50 p-2 border border-slate-100">
+                                                        <span class="text-[10px] text-slate-500 block">Tarif Satuan</span>
+                                                        <strong class="font-mono text-slate-900 text-xs sm:text-sm">Rp 500 / hari</strong>
+                                                    </div>
+                                                    <div class="rounded-lg bg-slate-50 p-2 border border-slate-100">
+                                                        <span class="text-[10px] text-slate-500 block">Total Denda</span>
+                                                        <strong class="font-mono text-rose-800 text-xs sm:text-sm font-extrabold">Rp {{ number_format($nominalDenda, 0, ',', '.') }}</strong>
+                                                    </div>
+                                                    <div class="rounded-lg bg-slate-50 p-2 border border-slate-100">
+                                                        <span class="text-[10px] text-slate-500 block">Opsi Pembayaran</span>
+                                                        <strong class="text-slate-900 text-xs sm:text-sm font-bold flex items-center gap-1">
+                                                            <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                                                            Cash / Tunai
+                                                        </strong>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-rose-100 text-[11px] text-slate-600">
+                                                    <span><i class="fa-solid fa-circle-info text-primary mr-1"></i>Pembayaran denda hanya dapat diserahkan tunai di Meja Sirkulasi Perpustakaan Lantai 2.</span>
+                                                    <a
+                                                        href="{{ route('inbox.denda', $alertLoan->id_peminjaman) }}"
+                                                        target="_blank"
+                                                        class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-dark underline"
+                                                        title="Cetak & Buka Lembar Rincian Dokumen Denda"
+                                                    >
+                                                        <i class="fa-solid fa-file-invoice text-xs"></i>
+                                                        <span>Buka Dokumen Rincian Denda Resmi &rarr;</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -218,6 +279,98 @@
                 </div>
             @endif
         </section>
+
+        {{-- Bagian Khusus: Rekapitulasi Tagihan Denda Keterlambatan (Cash Rp 500/hari) --}}
+        @if ($dendaLoans->isNotEmpty())
+            <section aria-labelledby="heading-denda-rekap" class="rounded-2xl border border-rose-300 bg-white p-5 shadow-xs sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-xs">
+                            <i class="fa-solid fa-receipt text-base"></i>
+                        </span>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 id="heading-denda-rekap" class="text-base font-bold text-ink sm:text-lg">
+                                    Formulir &amp; Tagihan Denda Keterlambatan
+                                </h2>
+                                <span class="rounded-full bg-rose-100 border border-rose-200 px-2.5 py-0.5 text-xs font-bold text-rose-800">
+                                    {{ $dendaLoans->count() }} Transaksi
+                                </span>
+                            </div>
+                            <p class="text-xs text-muted">
+                                Perhitungan denda keterlambatan buku sebesar Rp 500 per hari dengan opsi pembayaran TUNAI (CASH) di Meja Sirkulasi Perpustakaan MNC University.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-left text-xs text-ink">
+                        <thead class="border-b border-line bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">ID &amp; Judul Buku</th>
+                                <th scope="col" class="px-4 py-3">Batas Waktu</th>
+                                <th scope="col" class="px-4 py-3">Keterlambatan</th>
+                                <th scope="col" class="px-4 py-3">Tarif &amp; Total Denda</th>
+                                <th scope="col" class="px-4 py-3">Opsi Bayar</th>
+                                <th scope="col" class="px-4 py-3">Status Denda</th>
+                                <th scope="col" class="px-4 py-3 text-right">Dokumen Rincian</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line/70">
+                            @foreach ($dendaLoans as $dLoan)
+                                @php
+                                    $dHari = $dLoan->hari_keterlambatan > 0 ? $dLoan->hari_keterlambatan : $dLoan->hitungHariTerlambat();
+                                    $dNominal = $dLoan->nominal_denda > 0 ? $dLoan->nominal_denda : ($dHari * \App\Models\PeminjamanBuku::TARIF_DENDA_PER_HARI);
+                                    $dStatus = $dLoan->status_pembayaran_denda ?: 'Belum Lunas';
+                                    $isDlunas = $dStatus === 'Lunas';
+                                @endphp
+                                <tr class="hover:bg-slate-50/70 transition-colors">
+                                    <td class="px-4 py-3.5">
+                                        <span class="font-mono font-bold text-slate-700 block">{{ $dLoan->id_peminjaman }}</span>
+                                        <span class="font-semibold text-ink line-clamp-1 max-w-[240px]">{{ $dLoan->buku?->judul_buku }}</span>
+                                        <span class="text-[10px] text-muted">Eksemplar: {{ $dLoan->eksemplar?->kode_inventaris ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-slate-700">
+                                        {{ $dLoan->tanggal_jatuh_tempo ? $dLoan->tanggal_jatuh_tempo->format('d M Y') : '-' }}
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <span class="font-bold text-rose-700 block">{{ $dHari }} Hari</span>
+                                        <span class="text-[10px] text-slate-500">{{ $dLoan->tanggal_kembali ? 'Selesai' : 'Belum Kembali' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3.5 font-mono">
+                                        <span class="text-[10px] text-slate-400 block">Rp 500 &times; {{ $dHari }} hr</span>
+                                        <strong class="text-sm font-extrabold text-rose-800">Rp {{ number_format($dNominal, 0, ',', '.') }}</strong>
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <span class="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+                                            <i class="fa-solid fa-money-bill-wave text-emerald-600 text-xs"></i>
+                                            Cash / Tunai
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold {{ $isDlunas ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                            {{ $dStatus }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-right">
+                                        <a
+                                            href="{{ route('inbox.denda', $dLoan->id_peminjaman) }}"
+                                            target="_blank"
+                                            class="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:border-purple-300 shadow-2xs transition-colors"
+                                            title="Cetak &amp; Buka Lembar Rincian Dokumen Denda Resmi"
+                                        >
+                                            <i class="fa-solid fa-print text-xs"></i>
+                                            <span>Dokumen Rincian</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        @endif
 
         {{-- Bagian Utama 2: Daftar Pinjaman Aktif & Pengajuan Pemustaka --}}
         <section aria-labelledby="heading-daftar-pinjaman" class="rounded-2xl border border-line bg-white p-5 shadow-xs sm:p-6">

@@ -28,8 +28,7 @@
             <article class="flex flex-col rounded-2xl border border-line bg-white p-6 shadow-card lg:p-10">
                 <header class="border-b border-line pb-6">
                     <div class="flex flex-wrap items-center gap-2.5">
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                            <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                        <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                             {{ $berita->category }}
                         </span>
                         <time datetime="{{ $berita->published_at->toDateString() }}" class="text-xs text-muted sm:text-sm">

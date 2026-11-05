@@ -79,6 +79,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('/opac/pinjam', [LibraryController::class, 'pinjamBuku'])->name('opac.pinjam');
     Route::post('/opac/kembalikan', [LibraryController::class, 'kembalikanBukuMandiri'])->name('opac.kembalikan');
     Route::post('/opac/ajukan-pengembalian', [LibraryController::class, 'ajukanPengembalianBuku'])->name('opac.ajukan-pengembalian');
+    Route::get('/inbox/denda/{peminjaman}', [LibraryController::class, 'cetakDendaSlip'])->name('inbox.denda');
 });
 
 Route::get('/repository', [LibraryController::class, 'repository'])->name('repository');
@@ -118,6 +119,8 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     Route::post('peminjaman/{peminjaman}/tolak-pinjam', [PeminjamanAdminController::class, 'tolakPeminjaman'])->name('peminjaman.tolak-pinjam');
     Route::post('peminjaman/{peminjaman}/kirim-peringatan', [PeminjamanAdminController::class, 'kirimPeringatan'])->name('peminjaman.kirim-peringatan');
     Route::post('peminjaman/{peminjaman}/input-keterlambatan', [PeminjamanAdminController::class, 'inputKeterlambatan'])->name('peminjaman.input-keterlambatan');
+    Route::post('peminjaman/{peminjaman}/update-status-denda', [PeminjamanAdminController::class, 'updateStatusDenda'])->name('peminjaman.update-status-denda');
+    Route::get('peminjaman/{peminjaman}/cetak-denda', [PeminjamanAdminController::class, 'cetakDenda'])->name('peminjaman.cetak-denda');
 
     // 6. Statistik Perpustakaan Sesuai Flowchart
     Route::get('statistik', [StatisticAdminController::class, 'index'])->name('statistics.index');

@@ -219,8 +219,13 @@
                                     </div>
                                 </td>
 
-                                {{-- 4. Status & Keterlambatan (Hanya tampilkan keterlambatan tanpa sanksi) --}}
+                                {{-- 4. Status, Keterlambatan & Denda Tunai --}}
                                 <td class="px-4 py-3.5 sm:px-6">
+                                    @php
+                                        $nominalDendaRow = $loan->hitungNominalDenda();
+                                        $hasDenda = ($loan->hari_keterlambatan > 0) || $isLate || ($loan->nominal_denda && $loan->nominal_denda > 0);
+                                    @endphp
+
                                     @if ($isReturned)
                                         <div class="flex flex-col items-start gap-1">
                                             <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
@@ -238,7 +243,7 @@
                                         </div>
                                     @elseif ($loan->status === 'Menunggu Verifikasi')
                                         <div class="flex flex-col items-start gap-1">
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300 animate-pulse">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 border border-amber-300">
                                                 <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
                                                 Menunggu Verifikasi
                                             </span>
@@ -260,17 +265,13 @@
                                         </div>
                                     @elseif ($isLate)
                                         <div class="flex flex-col items-start gap-1">
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-800 animate-pulse">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-bold text-rose-800">
                                                 <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
                                                 Terlambat {{ $hariTerlambat }} Hari
                                             </span>
                                             @if ($loan->sanksi)
                                                 <span class="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-800 border border-rose-200">
                                                     <i class="fa-solid fa-gavel text-[9px] mr-1"></i>{{ $loan->sanksi }}
-                                                </span>
-                                            @else
-                                                <span class="text-[10px] text-muted">
-                                                    Belum ada sanksi dicatat
                                                 </span>
                                             @endif
                                             @if ($loan->notifikasi_peringatan_dikirim)
@@ -294,6 +295,33 @@
                                             </span>
                                         </div>
                                     @endif
+
+                                    {{-- Info Denda & Dropdown Status Pelunasan oleh Admin --}}
+                                    @if ($hasDenda)
+                                        <div class="mt-2 pt-2 border-t border-slate-100 flex flex-col items-start gap-1">
+                                            <div class="flex items-center gap-1.5 text-[11px]">
+                                                <span class="text-slate-500">Denda:</span>
+                                                <strong class="font-mono text-rose-700 font-bold">Rp {{ number_format($nominalDendaRow, 0, ',', '.') }}</strong>
+                                                <span class="text-[10px] text-slate-400">(Cash)</span>
+                                            </div>
+                                            <form action="{{ route('admin.peminjaman.update-status-denda', $loan->id_peminjaman) }}" method="POST" class="inline-block mt-0.5">
+                                                @csrf
+                                                <select
+                                                    name="status_pembayaran_denda"
+                                                    onchange="this.form.submit()"
+                                                    class="cursor-pointer rounded-lg border py-0.5 px-2 text-[10px] font-bold shadow-2xs transition-colors focus:outline-none focus:ring-1 focus:ring-primary {{ $loan->status_pembayaran_denda === 'Lunas' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-rose-300 bg-rose-50 text-rose-800' }}"
+                                                    title="Ubah status denda (Lunas / Belum Lunas)"
+                                                >
+                                                    <option value="Belum Lunas" {{ $loan->status_pembayaran_denda !== 'Lunas' ? 'selected' : '' }}>
+                                                        🔴 Belum Lunas
+                                                    </option>
+                                                    <option value="Lunas" {{ $loan->status_pembayaran_denda === 'Lunas' ? 'selected' : '' }}>
+                                                        🟢 Lunas (Cash)
+                                                    </option>
+                                                </select>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- 5. Aksi --}}
@@ -307,6 +335,18 @@
                                         >
                                             <i class="fa-solid fa-eye text-xs"></i>
                                         </a>
+
+                                        {{-- Tombol Cetak Dokumen Denda Resmi jika Terlambat atau ada Denda --}}
+                                        @if ($hasDenda)
+                                            <a
+                                                href="{{ route('admin.peminjaman.cetak-denda', $loan->id_peminjaman) }}"
+                                                target="_blank"
+                                                class="inline-flex size-8 items-center justify-center rounded-lg border border-purple-200 bg-purple-50 text-purple-700 transition-colors hover:bg-purple-100 hover:border-purple-300 shadow-2xs"
+                                                title="Cetak Dokumen Formulir Rincian Denda Resmi (Tanda Tangan Peminjam & Pustakawan)"
+                                            >
+                                                <i class="fa-solid fa-print text-xs"></i>
+                                            </a>
+                                        @endif
 
                                         @if (! $isReturned)
                                             @if ($loan->status === 'Menunggu Verifikasi')

@@ -62,6 +62,10 @@
                         <i class="fa-solid fa-id-card text-xs"></i>
                         <span>Ringkasan</span>
                     </a>
+                    <a href="{{ route('profile.riwayat') }}" class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-slate-600 transition-colors hover:text-ink hover:bg-white/60">
+                        <i class="fa-solid fa-clock-rotate-left text-xs" aria-hidden="true"></i>
+                        <span>Riwayat Peminjaman</span>
+                    </a>
                     <span class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-white px-3.5 py-1.5 font-semibold text-primary shadow-sm">
                         <i class="fa-solid fa-user-pen text-xs"></i>
                         <span>Edit Profil</span>

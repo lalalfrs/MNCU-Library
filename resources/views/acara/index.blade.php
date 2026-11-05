@@ -136,78 +136,80 @@
                                     </div>
                                 </div>
                             @endif
-                            <div class="p-6">
-                                <div class="flex items-start justify-between gap-4">
-                                    @if (!$item->image)
-                                        {{-- Calendar Badge when no poster image --}}
-                                        <div class="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-muted/20 text-muted' : 'bg-primary text-white shadow-xs' }}">
-                                            <span class="text-xl font-bold leading-none">{{ $item->event_date->format('d') }}</span>
-                                            <span class="mt-1 text-xs font-medium uppercase">{{ $item->event_date->translatedFormat('M Y') }}</span>
-                                        </div>
-                                    @endif
+                            <div class="flex flex-1 flex-col justify-between p-6">
+                                <div>
+                                    <div class="flex items-start justify-between gap-4">
+                                        @if (!$item->image)
+                                            {{-- Calendar Badge when no poster image --}}
+                                            <div class="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl {{ $isPast ? 'bg-muted/20 text-muted' : 'bg-primary text-white shadow-xs' }}">
+                                                <span class="text-xl font-bold leading-none">{{ $item->event_date->format('d') }}</span>
+                                                <span class="mt-1 text-xs font-medium uppercase">{{ $item->event_date->translatedFormat('M Y') }}</span>
+                                            </div>
+                                        @endif
 
-                                    <div class="flex flex-1 flex-col">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span class="rounded-full bg-subtle px-2.5 py-0.5 text-xs font-medium text-ink-secondary border border-line">
-                                                {{ $item->category }}
-                                            </span>
-                                            @if (!$item->image)
-                                                @if ($isPast)
-                                                    <span class="rounded-full bg-muted/15 px-2.5 py-0.5 text-xs font-medium text-muted">
-                                                        Selesai
-                                                    </span>
-                                                @else
-                                                    <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                                                        Terbuka
-                                                    </span>
+                                        <div class="flex flex-1 flex-col">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="rounded-full bg-subtle px-2.5 py-0.5 text-xs font-medium text-ink-secondary border border-line">
+                                                    {{ $item->category }}
+                                                </span>
+                                                @if (!$item->image)
+                                                    @if ($isPast)
+                                                        <span class="rounded-full bg-muted/15 px-2.5 py-0.5 text-xs font-medium text-muted">
+                                                            Selesai
+                                                        </span>
+                                                    @else
+                                                        <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                                            Terbuka
+                                                        </span>
+                                                    @endif
                                                 @endif
-                                            @endif
+                                            </div>
+
+                                            <h3 class="mt-2 text-lg font-bold text-ink transition-colors group-hover:text-primary lg:text-xl">
+                                                <a href="{{ route('acara.show', $item->slug) }}" class="focus:outline-hidden">
+                                                    {{ $item->title }}
+                                                </a>
+                                            </h3>
                                         </div>
-
-                                        <h3 class="mt-2 text-lg font-bold text-ink transition-colors group-hover:text-primary lg:text-xl">
-                                            <a href="{{ route('acara.show', $item->slug) }}" class="focus:outline-hidden">
-                                                {{ $item->title }}
-                                            </a>
-                                        </h3>
                                     </div>
-                                </div>
 
-                                <p class="mt-4 line-clamp-2 text-sm leading-relaxed text-ink-secondary">
-                                    {{ $item->excerpt }}
-                                </p>
+                                    <p class="mt-4 line-clamp-2 text-sm leading-relaxed text-ink-secondary">
+                                        {{ $item->excerpt }}
+                                    </p>
 
-                                {{-- Event Details Meta --}}
-                                <div class="mt-4 space-y-2 rounded-xl bg-subtle p-3.5 text-xs text-ink-secondary">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        <span>{{ $item->start_time }} &ndash; {{ $item->end_time }} WIB</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                        <span class="truncate">{{ $item->location }}</span>
-                                    </div>
-                                    @if ($item->speaker)
+                                    {{-- Event Details Meta --}}
+                                    <div class="mt-4 space-y-2 rounded-xl bg-subtle p-3.5 text-xs text-ink-secondary">
                                         <div class="flex items-center gap-2">
-                                            <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                            <span class="truncate font-medium text-ink">{{ $item->speaker }}</span>
+                                            <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            <span>{{ $item->start_time }} &ndash; {{ $item->end_time }} WIB</span>
                                         </div>
-                                    @endif
+                                        <div class="flex items-center gap-2">
+                                            <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                            <span class="truncate">{{ $item->location }}</span>
+                                        </div>
+                                        @if ($item->speaker)
+                                            <div class="flex items-center gap-2">
+                                                <svg class="size-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                <span class="truncate font-medium text-ink">{{ $item->speaker }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="mt-6 flex items-center justify-between border-t border-line pt-4">
-                                <span class="text-xs text-muted">
-                                    @if ($item->quota)
-                                        Kuota: {{ $item->quota }} Peserta
-                                    @else
-                                        Terbuka untuk Umum
-                                    @endif
-                                </span>
-                                
-                                <a href="{{ route('acara.show', $item->slug) }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:underline">
-                                    Lihat Detail Acara
-                                    <svg class="size-4 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-                                </a>
+                                <div class="mt-6 flex items-center justify-between border-t border-slate-200/80 pt-4 text-xs">
+                                    <span class="text-muted">
+                                        @if ($item->quota)
+                                            Kuota: {{ $item->quota }} Peserta
+                                        @else
+                                            Terbuka untuk Umum
+                                        @endif
+                                    </span>
+                                    
+                                    <a href="{{ route('acara.show', $item->slug) }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:underline">
+                                        <span>Lihat Detail Acara</span>
+                                        <svg class="size-4 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                                    </a>
+                                </div>
                             </div>
                         </article>
                     @endforeach

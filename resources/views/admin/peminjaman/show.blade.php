@@ -47,6 +47,18 @@
                     <span>Kembali</span>
                 </a>
 
+                @if ($loan->hari_keterlambatan > 0 || $loan->isTerlambat() || ($loan->nominal_denda && $loan->nominal_denda > 0))
+                    <a
+                        href="{{ route('admin.peminjaman.cetak-denda', $loan->id_peminjaman) }}"
+                        target="_blank"
+                        class="h-10 inline-flex items-center gap-2 rounded-xl border border-purple-300 bg-purple-50 px-4 text-xs font-semibold text-purple-800 hover:bg-purple-100 transition-colors shadow-2xs"
+                        title="Cetak Formulir Rincian Denda Dokumen Resmi (Tanda Tangan Peminjam & Pustakawan)"
+                    >
+                        <i class="fa-solid fa-print text-xs"></i>
+                        <span>Cetak Form Denda</span>
+                    </a>
+                @endif
+
                 @if (! $loan->tanggal_kembali)
                     {{-- Tombol Pengembalian --}}
                     <form action="{{ route('admin.peminjaman.kembalikan', $loan->id_peminjaman) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memproses pengembalian buku ini? Stok eksemplar akan bertambah kembali.')">
@@ -77,28 +89,107 @@
             </div>
         </div>
 
-        {{-- Kartu Status Keterlambatan Khusus --}}
-        @if ($loan->isTerlambat() || $loan->hari_keterlambatan > 0)
-            <div class="rounded-2xl border border-rose-200 bg-rose-50/70 p-5 shadow-xs">
-                <div class="flex items-start gap-3">
-                    <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-                        <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                    </span>
-                    <div class="space-y-1">
-                        <h2 class="text-sm font-bold text-rose-900 sm:text-base">
-                            Informasi Keterlambatan: {{ $loan->hari_keterlambatan > 0 ? $loan->hari_keterlambatan : $hariTerlambat }} Hari Melewati Batas Waktu
-                        </h2>
-                        <p class="text-xs text-rose-800">
-                            Batas waktu pengembalian buku ini adalah <strong>{{ $loan->tanggal_jatuh_tempo->format('d F Y') }}</strong>. Sesuai kebijakan tata tertib, <strong>tidak diberlakukan sanksi denda finansial</strong> kepada mahasiswa, hanya metrik keterlambatan yang dicatat untuk evaluasi sirkulasi pustaka.
-                        </p>
-                        @if ($loan->notifikasi_peringatan_dikirim)
-                            <p class="pt-1 text-[11px] font-semibold text-amber-800">
-                                <i class="fa-solid fa-bell text-amber-600"></i>
-                                Notifikasi peringatan telah dikirimkan pada: {{ $loan->tanggal_notifikasi ? $loan->tanggal_notifikasi->format('d M Y H:i') : '-' }} WIB.
+        {{-- Kartu Status Keterlambatan & Form Denda --}}
+        @if ($loan->isTerlambat() || $loan->hari_keterlambatan > 0 || ($loan->nominal_denda && $loan->nominal_denda > 0))
+            @php
+                $durasiTerlambat = $loan->hari_keterlambatan > 0 ? $loan->hari_keterlambatan : $hariTerlambat;
+                $nominalDenda = $loan->hitungNominalDenda();
+                $statusDenda = $loan->status_pembayaran_denda ?: 'Belum Lunas';
+            @endphp
+            <div class="rounded-2xl border border-rose-200 bg-rose-50/70 p-5 shadow-xs space-y-4">
+                <div class="flex items-start justify-between gap-3 flex-wrap">
+                    <div class="flex items-start gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-xs">
+                            <i class="fa-solid fa-receipt text-base"></i>
+                        </span>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-sm font-bold text-rose-950 sm:text-base">
+                                    Informasi Keterlambatan &amp; Tagihan Denda: {{ $durasiTerlambat }} Hari Melewati Batas
+                                </h2>
+                                <span class="rounded-full px-2.5 py-0.5 text-xs font-bold {{ $statusDenda === 'Lunas' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                    Status Denda: {{ $statusDenda }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-rose-800 leading-relaxed">
+                                Batas waktu pengembalian buku ini adalah <strong>{{ $loan->tanggal_jatuh_tempo->format('d F Y') }}</strong>. Sesuai kebijakan tata tertib, peminjam yang terlambat dikenakan denda sebesar <strong>Rp 500 / hari</strong> dengan opsi pembayaran <strong>Cash (Tunai)</strong> di Meja Sirkulasi Perpustakaan.
                             </p>
-                        @endif
+                        </div>
+                    </div>
+
+                    {{-- Tombol Cetak Form Denda Cepat --}}
+                    <a
+                        href="{{ route('admin.peminjaman.cetak-denda', $loan->id_peminjaman) }}"
+                        target="_blank"
+                        class="btn-press inline-flex items-center gap-1.5 rounded-xl bg-purple-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-purple-800 transition-colors"
+                        title="Buka Dokumen Cetak Rincian Denda Resmi A4"
+                    >
+                        <i class="fa-solid fa-print text-xs"></i>
+                        <span>Cetak Dokumen Denda (A4)</span>
+                    </a>
+                </div>
+
+                {{-- Grid Metrik Denda --}}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-rose-200">
+                    <div class="rounded-xl bg-white p-3 border border-rose-200 shadow-2xs">
+                        <span class="text-[11px] text-slate-500 block">Keterlambatan</span>
+                        <strong class="text-base font-extrabold text-rose-700">{{ $durasiTerlambat }} Hari</strong>
+                    </div>
+                    <div class="rounded-xl bg-white p-3 border border-rose-200 shadow-2xs">
+                        <span class="text-[11px] text-slate-500 block">Tarif Denda Satuan</span>
+                        <strong class="text-base font-bold text-slate-900 font-mono">Rp 500 / hari</strong>
+                    </div>
+                    <div class="rounded-xl bg-white p-3 border border-rose-200 shadow-2xs">
+                        <span class="text-[11px] text-slate-500 block">Total Denda Tunai</span>
+                        <strong class="text-base font-extrabold text-slate-950 font-mono">Rp {{ number_format($nominalDenda, 0, ',', '.') }}</strong>
+                    </div>
+                    <div class="rounded-xl bg-white p-3 border border-rose-200 shadow-2xs">
+                        <span class="text-[11px] text-slate-500 block">Metode Pembayaran</span>
+                        <strong class="text-base font-bold text-emerald-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                            Cash / Tunai
+                        </strong>
                     </div>
                 </div>
+
+                {{-- Form Dropdown Pengubah Status Denda oleh Admin --}}
+                <div class="rounded-xl bg-white p-3.5 border border-rose-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <form action="{{ route('admin.peminjaman.update-status-denda', $loan->id_peminjaman) }}" method="POST" class="flex flex-wrap items-center gap-3">
+                        @csrf
+                        <label for="status-denda-select" class="text-xs font-bold text-slate-800">
+                            Kelola Status Pelunasan Denda:
+                        </label>
+                        <select
+                            name="status_pembayaran_denda"
+                            id="status-denda-select"
+                            onchange="this.form.submit()"
+                            class="rounded-xl border py-1.5 px-3 text-xs font-bold shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary {{ $statusDenda === 'Lunas' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-rose-300 bg-rose-50 text-rose-800' }}"
+                        >
+                            <option value="Belum Lunas" {{ $statusDenda !== 'Lunas' ? 'selected' : '' }}>🔴 Belum Lunas (Wajib Bayar Cash)</option>
+                            <option value="Lunas" {{ $statusDenda === 'Lunas' ? 'selected' : '' }}>🟢 Lunas (Telah Diselesaikan Tunai)</option>
+                        </select>
+                        <button type="submit" class="btn-press rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors">
+                            Simpan Perubahan
+                        </button>
+                    </form>
+
+                    @if ($loan->status_pembayaran_denda === 'Lunas')
+                        <div class="text-[11px] text-emerald-800 font-medium">
+                            <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>
+                            Telah dilunasi pada: <strong>{{ $loan->tanggal_pembayaran_denda ? $loan->tanggal_pembayaran_denda->format('d M Y H:i') : '-' }} WIB</strong>
+                            @if ($loan->pustakawanDenda)
+                                (Diterima oleh: {{ $loan->pustakawanDenda->nama_lengkap }})
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                @if ($loan->notifikasi_peringatan_dikirim)
+                    <p class="pt-1 text-[11px] font-semibold text-amber-800">
+                        <i class="fa-solid fa-bell text-amber-600"></i>
+                        Notifikasi peringatan keterlambatan telah terkirim pada: {{ $loan->tanggal_notifikasi ? $loan->tanggal_notifikasi->format('d M Y H:i') : '-' }} WIB.
+                    </p>
+                @endif
             </div>
         @endif
 

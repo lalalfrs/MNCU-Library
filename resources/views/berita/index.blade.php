@@ -78,11 +78,11 @@
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                     @foreach ($beritas as $item)
                         <article class="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-raised">
-                            <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5">
+                            <a href="{{ route('berita.show', $item->slug) }}" class="relative block aspect-video overflow-hidden bg-gradient-to-br from-primary/10 via-track to-primary/5 focus:outline-hidden" tabindex="-1" aria-hidden="true">
                                 @if ($item->image)
                                     <img
                                         src="{{ filter_var($item->image, FILTER_VALIDATE_URL) ? $item->image : asset($item->image) }}"
-                                        alt="{{ $item->title }}"
+                                        alt=""
                                         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
                                         onerror="this.onerror=null; this.src='{{ asset('images/berita/berita-digital-library.jpg') }}';"
@@ -97,11 +97,10 @@
                                         </svg>
                                     </div>
                                 @endif
-                                <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
-                                    <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                                <span class="absolute top-4 left-4 inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary shadow-xs backdrop-blur-xs">
                                     {{ $item->category }}
                                 </span>
-                            </div>
+                            </a>
 
                             <div class="flex flex-1 flex-col p-6">
                                 <div class="flex items-center gap-3 text-xs text-muted">
@@ -122,13 +121,13 @@
                                     {{ $item->excerpt }}
                                 </p>
 
-                                <div class="mt-auto pt-6 flex items-center justify-between border-t border-line text-sm font-semibold text-primary">
+                                <a href="{{ route('berita.show', $item->slug) }}" class="mt-auto pt-6 flex items-center justify-between border-t border-line text-sm font-semibold text-primary transition-colors hover:text-primary-dark group-hover:underline focus:outline-hidden">
                                     <span>Baca Berita</span>
                                     <svg class="size-4 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <path d="M5 12h14"></path>
                                         <path d="m12 5 7 7-7 7"></path>
                                     </svg>
-                                </div>
+                                </a>
                             </div>
                         </article>
                     @endforeach

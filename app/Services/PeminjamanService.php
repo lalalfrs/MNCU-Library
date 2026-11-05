@@ -412,12 +412,22 @@ class PeminjamanService
             }
 
             // 1. Buku berhasil dikembalikan oleh user (status menjadi Kembali)
-            $peminjaman->update([
+            $updateData = [
                 'tanggal_kembali' => Carbon::now()->toDateString(),
                 'status' => 'Kembali',
                 'hari_keterlambatan' => $hariTerlambat,
                 'catatan_keterlambatan' => $catatanKeterlambatan,
-            ]);
+            ];
+
+            if ($hariTerlambat > 0) {
+                $updateData['nominal_denda'] = $hariTerlambat * PeminjamanBuku::TARIF_DENDA_PER_HARI;
+                $updateData['metode_pembayaran_denda'] = 'Cash';
+                if (! $peminjaman->status_pembayaran_denda) {
+                    $updateData['status_pembayaran_denda'] = 'Belum Lunas';
+                }
+            }
+
+            $peminjaman->update($updateData);
 
             // 2. Status buku akan kembali bertambah (eksemplar status kembali 'Tersedia')
             $peminjaman->eksemplar->update([
@@ -470,12 +480,22 @@ class PeminjamanService
             }
 
             // 1. Update status peminjaman menjadi Selesai / Kembali
-            $peminjaman->update([
+            $updateData = [
                 'tanggal_kembali' => Carbon::now()->toDateString(),
                 'status' => 'Kembali',
                 'hari_keterlambatan' => $hariTerlambat,
                 'catatan_keterlambatan' => $catatanKeterlambatan,
-            ]);
+            ];
+
+            if ($hariTerlambat > 0) {
+                $updateData['nominal_denda'] = $hariTerlambat * PeminjamanBuku::TARIF_DENDA_PER_HARI;
+                $updateData['metode_pembayaran_denda'] = 'Cash';
+                if (! $peminjaman->status_pembayaran_denda) {
+                    $updateData['status_pembayaran_denda'] = 'Belum Lunas';
+                }
+            }
+
+            $peminjaman->update($updateData);
 
             // 2. Status buku akan kembali bertambah (eksemplar kembali Tersedia)
             $peminjaman->eksemplar->update([
@@ -535,12 +555,22 @@ class PeminjamanService
 
             if ($isOverdue) {
                 $newStatus = $loan->status === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi' : 'Terlambat';
-                $loan->update([
+                $updatePayload = [
                     'status' => $newStatus,
                     'hari_keterlambatan' => $hariTerlambat,
                     'notifikasi_peringatan_dikirim' => true,
                     'tanggal_notifikasi' => $loan->tanggal_notifikasi ?: Carbon::now(),
-                ]);
+                ];
+
+                if ($hariTerlambat > 0) {
+                    $updatePayload['nominal_denda'] = $hariTerlambat * PeminjamanBuku::TARIF_DENDA_PER_HARI;
+                    $updatePayload['metode_pembayaran_denda'] = 'Cash';
+                    if (! $loan->status_pembayaran_denda) {
+                        $updatePayload['status_pembayaran_denda'] = 'Belum Lunas';
+                    }
+                }
+
+                $loan->update($updatePayload);
                 $updatedCount++;
             } elseif (! $loan->notifikasi_peringatan_dikirim) {
                 // Menyentuh H-1 (24 jam sebelum deadline) atau Hari-H jatuh tempo
@@ -651,5 +681,54 @@ class PeminjamanService
         ]);
 
         return $peminjaman->fresh(['pengguna', 'buku', 'eksemplar']);
+    }
+
+    /**
+     * Update status pembayaran denda keterlambatan (Lunas / Belum Lunas) dengan opsi pembayaran Cash (Rp 500/hari).
+     */
+    public function updateStatusPembayaranDenda(
+        string $idPeminjaman,
+        string $status,
+        ?string $idPustakawan = null,
+        ?string $catatan = null
+    ): PeminjamanBuku {
+        $peminjaman = PeminjamanBuku::with(['pengguna', 'buku', 'eksemplar'])->findOrFail($idPeminjaman);
+
+        if (! in_array($status, ['Belum Lunas', 'Lunas'], true)) {
+            throw ValidationException::withMessages([
+                'status_pembayaran_denda' => ['Status pembayaran denda tidak valid. Pilih Belum Lunas atau Lunas.'],
+            ]);
+        }
+
+        $nominal = $peminjaman->hitungNominalDenda();
+        if ($nominal === 0 && ($peminjaman->nominal_denda ?? 0) === 0) {
+            throw ValidationException::withMessages([
+                'status_pembayaran_denda' => ['Transaksi peminjaman ini tidak memiliki kewajiban denda keterlambatan.'],
+            ]);
+        }
+
+        $nominalDenda = ($peminjaman->nominal_denda && $peminjaman->nominal_denda > 0) ? $peminjaman->nominal_denda : $nominal;
+
+        $updateData = [
+            'nominal_denda' => $nominalDenda,
+            'metode_pembayaran_denda' => 'Cash',
+            'status_pembayaran_denda' => $status,
+            'catatan_denda' => $catatan ?: $peminjaman->catatan_denda,
+        ];
+
+        if ($status === 'Lunas') {
+            $updateData['tanggal_pembayaran_denda'] = Carbon::now();
+            $updateData['id_pustakawan_denda'] = $idPustakawan;
+            if ($peminjaman->status_sanksi === 'Aktif') {
+                $updateData['status_sanksi'] = 'Selesai';
+            }
+        } else {
+            $updateData['tanggal_pembayaran_denda'] = null;
+            $updateData['id_pustakawan_denda'] = null;
+        }
+
+        $peminjaman->update($updateData);
+
+        return $peminjaman->fresh(['pengguna', 'buku', 'eksemplar', 'pustakawanDenda']);
     }
 }

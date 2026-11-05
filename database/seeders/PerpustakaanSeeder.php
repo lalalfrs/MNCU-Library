@@ -414,9 +414,9 @@ class PerpustakaanSeeder extends Seeder
             foreach ($penulisIds as $penulisId) {
                 $existing = BukuPenulis::where('id_buku', $buku->id_buku)->where('id_penulis', $penulisId)->first();
                 if (! $existing) {
-                    $nextBp = BukuPenulis::count() + 1;
+                    $maxBp = (int) substr(BukuPenulis::max('id_buku_penulis') ?? 'MNCU00000', 4);
                     BukuPenulis::create([
-                        'id_buku_penulis' => sprintf('MNCU%05d', $nextBp),
+                        'id_buku_penulis' => sprintf('MNCU%05d', $maxBp + 1),
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
                         'id_penulis' => $penulisId,
@@ -428,9 +428,9 @@ class PerpustakaanSeeder extends Seeder
             foreach ($subjekIds as $subjekId) {
                 $existing = BukuSubjek::where('id_buku', $buku->id_buku)->where('id_subjek_buku', $subjekId)->first();
                 if (! $existing) {
-                    $nextBs = BukuSubjek::count() + 1;
+                    $maxBs = (int) substr(BukuSubjek::max('id_buku_subjek') ?? 'MNCU00000', 4);
                     BukuSubjek::create([
-                        'id_buku_subjek' => sprintf('MNCU%05d', $nextBs),
+                        'id_buku_subjek' => sprintf('MNCU%05d', $maxBs + 1),
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
                         'id_subjek_buku' => $subjekId,
@@ -448,9 +448,9 @@ class PerpustakaanSeeder extends Seeder
                         'status' => $copy['status'],
                     ]);
                 } else {
-                    $nextEk = EksemplarBuku::count() + 1;
+                    $maxEk = (int) substr(EksemplarBuku::max('id_eksemplar') ?? 'MNCU00000', 4);
                     EksemplarBuku::create([
-                        'id_eksemplar' => sprintf('MNCU%05d', $nextEk),
+                        'id_eksemplar' => sprintf('MNCU%05d', $maxEk + 1),
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
                         'kode_inventaris' => $copy['kode'],
@@ -466,9 +466,9 @@ class PerpustakaanSeeder extends Seeder
             if ($existingKjb) {
                 $existingKjb->update(['jumlah_kunjungan' => $visits]);
             } else {
-                $nextKjb = KunjunganBuku::count() + 1;
+                $maxKjb = (int) substr(KunjunganBuku::max('id_kunjungan_buku') ?? 'MNCU00000', 4);
                 KunjunganBuku::create([
-                    'id_kunjungan_buku' => sprintf('MNCU%05d', $nextKjb),
+                    'id_kunjungan_buku' => sprintf('MNCU%05d', $maxKjb + 1),
                     'uuid' => (string) Str::uuid(),
                     'id_buku' => $buku->id_buku,
                     'jumlah_kunjungan' => $visits,
@@ -744,7 +744,13 @@ class PerpustakaanSeeder extends Seeder
             );
         }
 
-        // 15. Table: peminjaman_buku (Simulasi sirkulasi & kalkulasi keterlambatan tanpa sanksi denda)
+        // 15. Table: peminjaman_buku (Simulasi sirkulasi keterlambatan & tagihan denda Cash Rp 500/hari)
+        $eks1 = EksemplarBuku::where('kode_inventaris', 'INV-BK001-03')->value('id_eksemplar') ?? EksemplarBuku::where('id_buku', 'MNCU00001')->value('id_eksemplar');
+        $eks2 = EksemplarBuku::where('kode_inventaris', 'INV-BK002-01')->value('id_eksemplar') ?? EksemplarBuku::where('id_buku', 'MNCU00002')->value('id_eksemplar');
+        $eks3 = EksemplarBuku::where('kode_inventaris', 'INV-BK003-01')->value('id_eksemplar') ?? EksemplarBuku::where('id_buku', 'MNCU00003')->value('id_eksemplar');
+        $eks4 = EksemplarBuku::where('kode_inventaris', 'INV-BK004-01')->value('id_eksemplar') ?? EksemplarBuku::where('id_buku', 'MNCU00004')->value('id_eksemplar');
+
+        // Kasus 1: Ahmad Fauzi Rahman - Sedang Terlambat 15 Hari & BELUM LUNAS (Denda 15 x 500 = Rp 7.500)
         PeminjamanBuku::updateOrCreate(
             ['id_peminjaman' => 'PJ00001'],
             [
@@ -752,19 +758,28 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_pengguna' => 'MNCU00004',
                 'id_buku' => 'MNCU00001',
-                'id_eksemplar' => 'MNCU00002',
-                'tanggal_pinjam' => now()->subDays(19)->toDateString(),
-                'tanggal_jatuh_tempo' => now()->subDays(5)->toDateString(),
+                'id_eksemplar' => $eks1,
+                'tanggal_pinjam' => now()->subDays(29)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->subDays(15)->toDateString(),
                 'tanggal_kembali' => null,
                 'status' => 'Terlambat',
-                'hari_keterlambatan' => 5,
-                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 14 hari tanpa sanksi denda.',
+                'hari_keterlambatan' => 15,
+                'catatan_keterlambatan' => 'Peminjaman melewati batas jatuh tempo 15 hari. Wajib membayar denda Rp 7.500 secara tunai (Cash) di Meja Sirkulasi Perpustakaan.',
                 'notifikasi_peringatan_dikirim' => true,
-                'tanggal_notifikasi' => now()->subDays(4),
+                'tanggal_notifikasi' => now()->subDays(15),
+                'nominal_denda' => 7500,
+                'metode_pembayaran_denda' => 'Cash',
+                'status_pembayaran_denda' => 'Belum Lunas',
+                'tanggal_pembayaran_denda' => null,
+                'id_pustakawan_denda' => null,
+                'catatan_denda' => 'Tagihan denda keterlambatan 15 hari sebesar Rp 7.500 (Cash) belum dibayarkan.',
             ]
         );
-        EksemplarBuku::where('id_eksemplar', 'MNCU00002')->update(['status' => 'Dipinjam']);
+        if ($eks1) {
+            EksemplarBuku::where('id_eksemplar', $eks1)->update(['status' => 'Dipinjam']);
+        }
 
+        // Kasus 2: Nabila Putri Ramadhani - Selesai Kembali Tepat Waktu (Bebas Denda)
         PeminjamanBuku::updateOrCreate(
             ['id_peminjaman' => 'PJ00002'],
             [
@@ -772,16 +787,80 @@ class PerpustakaanSeeder extends Seeder
                 'uuid' => (string) Str::uuid(),
                 'id_pengguna' => 'MNCU00006',
                 'id_buku' => 'MNCU00002',
-                'id_eksemplar' => 'MNCU00004',
+                'id_eksemplar' => $eks2,
                 'tanggal_pinjam' => now()->subDays(10)->toDateString(),
                 'tanggal_jatuh_tempo' => now()->addDays(4)->toDateString(),
                 'tanggal_kembali' => now()->subDays(1)->toDateString(),
                 'status' => 'Kembali',
                 'hari_keterlambatan' => 0,
-                'catatan_keterlambatan' => 'Buku kembali dalam kondisi fisik baik dan rapi.',
+                'catatan_keterlambatan' => 'Buku kembali dalam kondisi fisik baik dan tepat waktu.',
                 'notifikasi_peringatan_dikirim' => false,
                 'tanggal_notifikasi' => null,
+                'nominal_denda' => 0,
+                'metode_pembayaran_denda' => 'Cash',
+                'status_pembayaran_denda' => null,
             ]
         );
+        if ($eks2) {
+            EksemplarBuku::where('id_eksemplar', $eks2)->update(['status' => 'Tersedia']);
+        }
+
+        // Kasus 3: Prof. Dr. Hendra Gunawan - Sedang Terlambat 8 Hari & BELUM LUNAS (Denda 8 x 500 = Rp 4.000)
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00003'],
+            [
+                'id_peminjaman' => 'PJ00003',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00005',
+                'id_buku' => 'MNCU00003',
+                'id_eksemplar' => $eks3,
+                'tanggal_pinjam' => now()->subDays(22)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->subDays(8)->toDateString(),
+                'tanggal_kembali' => null,
+                'status' => 'Terlambat',
+                'hari_keterlambatan' => 8,
+                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 8 hari. Tagihan denda Rp 4.000 (Cash) belum dilunasi.',
+                'notifikasi_peringatan_dikirim' => true,
+                'tanggal_notifikasi' => now()->subDays(8),
+                'nominal_denda' => 4000,
+                'metode_pembayaran_denda' => 'Cash',
+                'status_pembayaran_denda' => 'Belum Lunas',
+                'tanggal_pembayaran_denda' => null,
+                'id_pustakawan_denda' => null,
+                'catatan_denda' => 'Belum membayar denda tunai di meja sirkulasi.',
+            ]
+        );
+        if ($eks3) {
+            EksemplarBuku::where('id_eksemplar', $eks3)->update(['status' => 'Dipinjam']);
+        }
+
+        // Kasus 4: Nabila Putri Ramadhani - Pernah Terlambat 6 Hari & SUDAH LUNAS MEMBAYAR (Denda 6 x 500 = Rp 3.000)
+        PeminjamanBuku::updateOrCreate(
+            ['id_peminjaman' => 'PJ00004'],
+            [
+                'id_peminjaman' => 'PJ00004',
+                'uuid' => (string) Str::uuid(),
+                'id_pengguna' => 'MNCU00006',
+                'id_buku' => 'MNCU00004',
+                'id_eksemplar' => $eks4,
+                'tanggal_pinjam' => now()->subDays(24)->toDateString(),
+                'tanggal_jatuh_tempo' => now()->subDays(10)->toDateString(),
+                'tanggal_kembali' => now()->subDays(4)->toDateString(),
+                'status' => 'Kembali',
+                'hari_keterlambatan' => 6,
+                'catatan_keterlambatan' => 'Dikembalikan terlambat 6 hari. Denda tunai Rp 3.000 telah diselesaikan lunas di meja sirkulasi.',
+                'notifikasi_peringatan_dikirim' => true,
+                'tanggal_notifikasi' => now()->subDays(10),
+                'nominal_denda' => 3000,
+                'metode_pembayaran_denda' => 'Cash',
+                'status_pembayaran_denda' => 'Lunas',
+                'tanggal_pembayaran_denda' => now()->subDays(4)->setHour(10)->setMinute(30),
+                'id_pustakawan_denda' => 'MNCU00002',
+                'catatan_denda' => 'Denda keterlambatan 6 hari sebesar Rp 3.000 telah lunas dibayar tunai (Cash) dan diterima oleh pustakawan Sarah Amalia, S.I.Pust.',
+            ]
+        );
+        if ($eks4) {
+            EksemplarBuku::where('id_eksemplar', $eks4)->update(['status' => 'Tersedia']);
+        }
     }
 }
