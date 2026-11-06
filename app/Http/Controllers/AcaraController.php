@@ -44,7 +44,7 @@ class AcaraController extends Controller
             $query->where('kategori_acara', $kategori);
         }
 
-        $acaras = $query->paginate(8)->withQueryString();
+        $acaras = $query->paginate(9)->withQueryString();
         $categories = Acara::where('is_active', true)->distinct()->pluck('kategori_acara');
 
         return view('acara.index', compact('acaras', 'categories', 'q', 'kategori', 'waktu'));
