@@ -13,9 +13,9 @@
         <div class="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,#ffffff_0%,transparent_60%)]" aria-hidden="true"></div>
 
         <div class="relative z-10 mx-auto w-full max-w-[1570px] px-3 sm:px-4 lg:px-6 xl:px-8 responsive-desktop-container">
-            {{-- Baris Atas: Breadcrumb & Aksi Cepat Admin/Pustakawan --}}
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
-                <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs text-blue-100 sm:text-sm">
+            {{-- Baris Atas: Breadcrumb & Aksi Cepat Admin/Pustakawan (Diketengahkan) --}}
+            <div class="flex flex-col items-center justify-center gap-3 mb-6 sm:mb-8 text-center">
+                <nav aria-label="Breadcrumb" class="flex flex-wrap items-center justify-center gap-2 text-xs text-blue-100 sm:text-sm">
                     <a href="{{ route('beranda') }}" class="hover:text-white transition-colors underline-offset-4 hover:underline">Beranda</a>
                     <svg class="size-3.5 text-blue-200/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                     <span class="font-medium text-blue-100">Layanan Perpustakaan</span>
@@ -24,7 +24,7 @@
                 </nav>
 
                 @if (Auth::check() && (Auth::user()->isSuperAdmin() || Auth::user()->isPustakawan()))
-                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
                         <a
                             href="{{ route('admin.books.create') }}"
                             class="btn-press btn-sheen inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-amber-500 px-3.5 py-2 font-semibold text-white shadow-xs transition-all hover:bg-amber-600"

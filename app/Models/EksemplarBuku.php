@@ -26,10 +26,27 @@ class EksemplarBuku extends Model
         'uuid',
         'id_buku',
         'kode_inventaris',
+        'nomor_barcode',
         'nomor_panggil',
         'lokasi_rak',
         'status',
     ];
+
+    /**
+     * Accessor nomor barcode dengan fallback otomatis dari kode inventaris.
+     */
+    public function getNomorBarcodeAttribute(?string $value): ?string
+    {
+        if (! empty($value)) {
+            return $value;
+        }
+
+        if (! empty($this->kode_inventaris)) {
+            return str_replace('INV-', 'BC-', $this->kode_inventaris);
+        }
+
+        return null;
+    }
 
     public function getIdPrefix(): string
     {

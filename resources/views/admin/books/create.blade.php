@@ -410,10 +410,10 @@
                                         name="kode_barcode"
                                         id="kode_barcode"
                                         value="{{ old('kode_barcode') }}"
-                                        placeholder="Contoh: INV-MNCU-001 atau scan barcode..."
+                                        placeholder="Contoh: BC-BK001-01 atau scan barcode..."
                                         class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3.5 font-mono text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none"
                                     >
-                                    <p class="mt-1 text-[10px] leading-normal text-muted">Jika kosong, sistem membuat kode otomatis INV-BK...</p>
+                                    <p class="mt-1 text-[10px] leading-normal text-muted">Jika kosong, sistem membuat kode otomatis BC-BK... &amp; INV-BK...</p>
                                 </div>
 
                                 <div>

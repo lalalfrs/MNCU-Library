@@ -78,6 +78,7 @@ class BookController extends Controller
                     })
                     ->orWhereHas('eksemplar', function ($ekSub) use ($q): void {
                         $ekSub->where('kode_inventaris', 'like', "%{$q}%")
+                            ->orWhere('nomor_barcode', 'like', "%{$q}%")
                             ->orWhere('nomor_panggil', 'like', "%{$q}%");
                     });
             });
@@ -271,9 +272,13 @@ class BookController extends Controller
 
             for ($i = 1; $i <= $stokAwal; $i++) {
                 if ($i === 1 && $inputBarcode !== '') {
-                    $kodeInventaris = $inputBarcode;
+                    $kodeInventaris = str_starts_with($inputBarcode, 'BC-')
+                        ? str_replace('BC-', 'INV-', $inputBarcode)
+                        : $inputBarcode;
+                    $barcode = $inputBarcode;
                 } else {
                     $kodeInventaris = 'INV-'.$book->id_buku.'-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+                    $barcode = 'BC-'.$book->id_buku.'-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT);
                 }
 
                 $uniqueCode = $kodeInventaris;
@@ -288,6 +293,7 @@ class BookController extends Controller
                 $ek = EksemplarBuku::create([
                     'id_buku' => $book->id_buku,
                     'kode_inventaris' => $uniqueCode,
+                    'nomor_barcode' => $barcode,
                     'nomor_panggil' => $nomorPanggilCopy,
                     'lokasi_rak' => $lokasiRak !== '' ? $lokasiRak : 'Lantai 2, Rak Koleksi',
                     'status' => 'Tersedia',
@@ -354,7 +360,7 @@ class BookController extends Controller
             $eksemplar = $book->eksemplar->first();
         }
 
-        $barcodeText = $eksemplar ? $eksemplar->kode_inventaris : ($book->isbn ?: $book->id_buku);
+        $barcodeText = $eksemplar ? ($eksemplar->nomor_barcode ?: $eksemplar->kode_inventaris) : ($book->isbn ?: $book->id_buku);
         $barcodeSvg = $barcodeService->generateSvg($barcodeText, 30, false);
         $nomorPanggil = $eksemplar?->nomor_panggil ?: ($book->isbn ?: $book->id_buku);
 
@@ -480,11 +486,12 @@ class BookController extends Controller
 
         $validated = $request->validate([
             'kode_inventaris' => ['nullable', 'string', 'max:50', 'unique:eksemplar_buku,kode_inventaris'],
+            'nomor_barcode' => ['nullable', 'string', 'max:60'],
             'nomor_panggil' => ['nullable', 'string', 'max:50'],
             'lokasi_rak' => ['nullable', 'string', 'max:100'],
             'status' => ['required', 'string', 'in:Tersedia,Dipinjam,Rusak,Hilang,Perbaikan'],
         ], [
-            'kode_inventaris.unique' => 'Kode inventaris / barcode ini sudah terdaftar di sistem.',
+            'kode_inventaris.unique' => 'Kode inventaris ini sudah terdaftar di sistem.',
             'status.in' => 'Status eksemplar tidak valid.',
         ]);
 
@@ -496,6 +503,10 @@ class BookController extends Controller
                 $candidate = 'INV-'.$book->id_buku.'-'.str_pad((string) $nextIndex, 2, '0', STR_PAD_LEFT);
             }
             $validated['kode_inventaris'] = $candidate;
+        }
+
+        if (empty($validated['nomor_barcode'])) {
+            $validated['nomor_barcode'] = str_replace('INV-', 'BC-', $validated['kode_inventaris']);
         }
 
         $validated['id_buku'] = $book->id_buku;
@@ -535,6 +546,7 @@ class BookController extends Controller
             // Update metadata eksemplar jika diubah
             $eksemplar->update([
                 'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                'nomor_barcode' => $request->input('nomor_barcode', $eksemplar->nomor_barcode),
                 'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
                 'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
             ]);
@@ -578,6 +590,7 @@ class BookController extends Controller
                 // Update metadata eksemplar jika diubah
                 $eksemplar->update([
                     'kode_inventaris' => $request->input('kode_inventaris', $eksemplar->kode_inventaris),
+                    'nomor_barcode' => $request->input('nomor_barcode', $eksemplar->nomor_barcode),
                     'nomor_panggil' => $request->input('nomor_panggil', $eksemplar->nomor_panggil),
                     'lokasi_rak' => $request->input('lokasi_rak', $eksemplar->lokasi_rak),
                 ]);
@@ -590,6 +603,7 @@ class BookController extends Controller
         // Perubahan status umum selain meminjam baru
         $validated = $request->validate([
             'kode_inventaris' => ['required', 'string', 'max:50', 'unique:eksemplar_buku,kode_inventaris,'.$eksemplar->id_eksemplar.',id_eksemplar'],
+            'nomor_barcode' => ['nullable', 'string', 'max:60'],
             'nomor_panggil' => ['nullable', 'string', 'max:50'],
             'lokasi_rak' => ['nullable', 'string', 'max:100'],
             'status' => ['required', 'string', 'in:Tersedia,Dipinjam,Rusak,Hilang,Perbaikan'],
@@ -597,6 +611,10 @@ class BookController extends Controller
             'kode_inventaris.required' => 'Kode inventaris tidak boleh kosong.',
             'kode_inventaris.unique' => 'Kode inventaris ini sudah digunakan oleh eksemplar lain.',
         ]);
+
+        if (empty($validated['nomor_barcode'])) {
+            $validated['nomor_barcode'] = str_replace('INV-', 'BC-', $validated['kode_inventaris']);
+        }
 
         $eksemplar->update($validated);
 

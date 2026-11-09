@@ -489,7 +489,7 @@
                             <th scope="col" class="px-5 py-3.5">Format &amp; Kategori</th>
                             <th scope="col" class="px-5 py-3.5">Ketersediaan Stok</th>
                             <th scope="col" class="px-5 py-3.5">Penerbit &amp; Tahun</th>
-                            <th scope="col" class="px-5 py-3.5">ISBN</th>
+                            <th scope="col" class="px-5 py-3.5">ISBN &amp; Barcode</th>
                             <th scope="col" class="px-5 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -579,9 +579,18 @@
                                     </div>
                                 </td>
 
-                                {{-- ISBN --}}
-                                <td class="px-5 py-4 whitespace-nowrap font-mono text-xs text-muted">
-                                    {{ $book->isbn ?? '-' }}
+                                {{-- ISBN & Barcode --}}
+                                <td class="px-5 py-4 whitespace-nowrap text-xs">
+                                    <div class="font-mono text-muted text-xs">{{ $book->isbn ?? '-' }}</div>
+                                    @if ($firstCopy?->nomor_barcode)
+                                        <div class="mt-1 inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-primary">
+                                            <i class="fa-solid fa-barcode text-[10px]"></i>
+                                            <span>{{ $firstCopy->nomor_barcode }}</span>
+                                            @if ($totalEk > 1)
+                                                <span class="text-[10px] text-muted font-normal">(+{{ $totalEk - 1 }})</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- Aksi --}}

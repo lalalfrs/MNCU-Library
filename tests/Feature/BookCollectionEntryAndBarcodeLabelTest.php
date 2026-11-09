@@ -239,4 +239,62 @@ class BookCollectionEntryAndBarcodeLabelTest extends TestCase
         $response->assertRedirect(route('admin.acara.index'));
         $this->assertDatabaseHas('acara_perpustakaan', ['nama_acara' => 'Webinar Nasional AI 2026']);
     }
+
+    /**
+     * Admin dapat menambahkan dan memperbarui nomor barcode pada eksemplar buku fisik.
+     */
+    public function test_admin_can_add_and_update_exemplar_barcode_number(): void
+    {
+        $book = Buku::firstOrFail();
+
+        // 1. Tambah eksemplar baru dengan nomor barcode kustom
+        $response = $this->actingAs($this->admin)->post(route('admin.books.eksemplar.store', $book->id_buku), [
+            'kode_inventaris' => 'INV-TEST-BC-01',
+            'nomor_barcode' => 'BC-SCAN-778899',
+            'nomor_panggil' => '005.1 TST c.9',
+            'lokasi_rak' => 'Lantai 2, Rak Uji',
+            'status' => 'Tersedia',
+        ]);
+
+        $response->assertRedirect(route('admin.books.show', $book->id_buku));
+        $this->assertDatabaseHas('eksemplar_buku', [
+            'id_buku' => $book->id_buku,
+            'kode_inventaris' => 'INV-TEST-BC-01',
+            'nomor_barcode' => 'BC-SCAN-778899',
+        ]);
+
+        $ek = EksemplarBuku::where('kode_inventaris', 'INV-TEST-BC-01')->firstOrFail();
+        $this->assertEquals('BC-SCAN-778899', $ek->nomor_barcode);
+
+        // 2. Ubah nomor barcode eksemplar
+        $updateResponse = $this->actingAs($this->admin)->put(route('admin.books.eksemplar.update', [$book->id_buku, $ek->id_eksemplar]), [
+            'kode_inventaris' => 'INV-TEST-BC-01',
+            'nomor_barcode' => 'BC-MODIFIED-112233',
+            'nomor_panggil' => '005.1 TST c.9',
+            'lokasi_rak' => 'Lantai 2, Rak Uji Baru',
+            'status' => 'Tersedia',
+        ]);
+
+        $updateResponse->assertRedirect(route('admin.books.show', $book->id_buku));
+        $this->assertDatabaseHas('eksemplar_buku', [
+            'id_eksemplar' => $ek->id_eksemplar,
+            'nomor_barcode' => 'BC-MODIFIED-112233',
+            'lokasi_rak' => 'Lantai 2, Rak Uji Baru',
+        ]);
+    }
+
+    /**
+     * Memastikan seluruh eksemplar yang ada memiliki nomor barcode terisi dan valid.
+     */
+    public function test_all_seeded_exemplars_have_valid_barcodes(): void
+    {
+        $emptyBarcodes = EksemplarBuku::whereNull('nomor_barcode')->orWhere('nomor_barcode', '')->count();
+        $this->assertEquals(0, $emptyBarcodes, 'Semua eksemplar fisik di database wajib memiliki nomor barcode.');
+
+        $exemplars = EksemplarBuku::all();
+        $this->assertGreaterThan(0, $exemplars->count());
+        foreach ($exemplars as $ek) {
+            $this->assertNotEmpty($ek->nomor_barcode);
+        }
+    }
 }

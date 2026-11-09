@@ -257,12 +257,44 @@ class LibraryPagesTest extends TestCase
 
         $response = $this->getJson(route('kehadiran.lookup', [
             'identitas' => '99999',
-            'kategori' => 'Mahasiswa',
+            'kategori' => 'NIM / NIP',
         ]));
 
         $response->assertStatus(200);
         $response->assertJson([
             'found' => false,
+        ]);
+    }
+
+    /**
+     * Uji endpoint pencarian dengan kategori terpadu NIM / NIP (Mahasiswa & Tendik/Dosen).
+     */
+    public function test_kehadiran_lookup_finds_users_with_unified_nim_nip_category(): void
+    {
+        $this->seed(PerpustakaanSeeder::class);
+
+        // Cari Mahasiswa via NIM / NIP
+        $resMhs = $this->getJson(route('kehadiran.lookup', [
+            'identitas' => '20001',
+            'kategori' => 'NIM / NIP',
+        ]));
+        $resMhs->assertStatus(200);
+        $resMhs->assertJson([
+            'found' => true,
+            'nama_lengkap' => 'Ahmad Fauzi Rahman',
+            'nomor_identitas' => '20001',
+        ]);
+
+        // Cari Dosen via NIM / NIP
+        $resDosen = $this->getJson(route('kehadiran.lookup', [
+            'identitas' => '10001',
+            'kategori' => 'NIM / NIP',
+        ]));
+        $resDosen->assertStatus(200);
+        $resDosen->assertJson([
+            'found' => true,
+            'nama_lengkap' => 'Prof. Dr. Hendra Gunawan, S.E., M.M.',
+            'nomor_identitas' => '10001',
         ]);
     }
 }

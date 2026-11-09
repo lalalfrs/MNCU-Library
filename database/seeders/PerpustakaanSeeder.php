@@ -440,9 +440,11 @@ class PerpustakaanSeeder extends Seeder
 
             // Eksemplar
             foreach ($copies as $copy) {
+                $barcode = $copy['barcode'] ?? str_replace('INV-', 'BC-', $copy['kode']);
                 $existing = EksemplarBuku::where('kode_inventaris', $copy['kode'])->first();
                 if ($existing) {
                     $existing->update([
+                        'nomor_barcode' => $barcode,
                         'nomor_panggil' => $copy['panggil'],
                         'lokasi_rak' => $copy['rak'],
                         'status' => $copy['status'],
@@ -454,6 +456,7 @@ class PerpustakaanSeeder extends Seeder
                         'uuid' => (string) Str::uuid(),
                         'id_buku' => $buku->id_buku,
                         'kode_inventaris' => $copy['kode'],
+                        'nomor_barcode' => $barcode,
                         'nomor_panggil' => $copy['panggil'],
                         'lokasi_rak' => $copy['rak'],
                         'status' => $copy['status'],

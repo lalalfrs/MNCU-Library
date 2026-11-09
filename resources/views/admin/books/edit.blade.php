@@ -129,6 +129,41 @@
                             </button>
                         </div>
                     </div>
+
+                    {{-- Informasi Eksemplar & Barcode --}}
+                    <div class="mt-5 border-t border-line pt-4">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <span class="text-xs font-semibold text-ink flex items-center gap-1.5">
+                                <i class="fa-solid fa-barcode text-primary"></i>
+                                <span>Barcode &amp; Eksemplar</span>
+                            </span>
+                            <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary">
+                                {{ $book->eksemplar->count() }} Fisik
+                            </span>
+                        </div>
+                        <div class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                            @forelse ($book->eksemplar as $ek)
+                                <div class="flex items-center justify-between rounded-lg border border-line bg-slate-50 px-2.5 py-1.5 text-xs">
+                                    <div class="min-w-0">
+                                        <div class="font-mono font-semibold text-ink truncate">{{ $ek->nomor_barcode ?: '-' }}</div>
+                                        <div class="text-[10px] text-muted font-mono truncate">{{ $ek->kode_inventaris }}</div>
+                                    </div>
+                                    <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium {{ $ek->status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                                        {{ $ek->status }}
+                                    </span>
+                                </div>
+                            @empty
+                                <p class="text-xs text-muted italic">Belum ada eksemplar fisik.</p>
+                            @endforelse
+                        </div>
+                        <a
+                            href="{{ route('admin.books.show', $book->id_buku) }}"
+                            class="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary/5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                        >
+                            <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                            <span>Kelola &amp; Edit Barcode</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 

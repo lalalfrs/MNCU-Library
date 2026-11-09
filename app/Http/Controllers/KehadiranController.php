@@ -127,10 +127,15 @@ class KehadiranController extends Controller
             $userId = $matchedUser?->id_pengguna;
         }
 
+        $kategoriPengunjung = $validated['kategori_pengunjung'] ?? 'Umum';
+        if ($kategoriPengunjung !== 'Umum' && isset($matchedUser) && $matchedUser) {
+            $kategoriPengunjung = $matchedUser->peran?->nama_peran ?? $kategoriPengunjung;
+        }
+
         VisitorLog::create([
             'id_pengguna' => $userId,
             'nama_pengunjung' => trim($validated['nama_pengunjung']),
-            'kategori_pengunjung' => $validated['kategori_pengunjung'] ?? 'Umum',
+            'kategori_pengunjung' => $kategoriPengunjung,
             'identitas_pengunjung' => trim($validated['identitas_pengunjung']),
             'keperluan' => ! empty($validated['keperluan']) ? trim($validated['keperluan']) : 'Kunjungan Perpustakaan',
             'waktu_kunjungan' => now(),

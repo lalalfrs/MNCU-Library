@@ -53,13 +53,13 @@
                         Daftar Kehadiran Pengunjung Perpustakaan
                     </h1>
                     <p class="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        Silakan isi nama lengkap serta identitas Anda (NIM untuk Mahasiswa, NIP untuk Dosen atau Tendik, atau Alamat untuk Pengunjung Umum). Setiap pengisian daftar hadir akan tercatat langsung pada <strong>Statistik Kunjungan Perpustakaan</strong>.
+                        Silakan isi nama lengkap serta identitas Anda (NIM/NIP untuk Mahasiswa, Dosen, atau Tendik, atau Alamat untuk Pengunjung Umum). Setiap pengisian daftar hadir akan tercatat langsung pada <strong>Statistik Kunjungan Perpustakaan</strong>.
                     </p>
 
                     <form action="{{ route('kehadiran.store') }}" method="POST" class="mt-6 space-y-5">
                         @csrf
 
-                        {{-- Pilihan Kategori Pengunjung --}}
+                        {{-- Pilihan Kategori Pengunjung (2 Pilihan: NIM / NIP dan Umum) --}}
                         <div>
                             <label class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-2">
                                 Kategori Pengunjung
@@ -67,19 +67,14 @@
                             @php
                                 $defaultKategori = old('kategori_pengunjung');
                                 if (! $defaultKategori && auth()->check()) {
-                                    if (auth()->user()->isDosen() || auth()->user()->isTendik() || auth()->user()->isSuperAdmin() || auth()->user()->isPustakawan()) {
-                                        $defaultKategori = 'Dosen / Tendik';
-                                    } else {
-                                        $defaultKategori = 'Mahasiswa';
-                                    }
+                                    $defaultKategori = 'NIM / NIP';
                                 }
-                                $defaultKategori = $defaultKategori ?: 'Mahasiswa';
+                                $defaultKategori = $defaultKategori ?: 'NIM / NIP';
                             @endphp
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3" id="kategori-pengunjung-group">
                                 @foreach ([
-                                    ['value' => 'Mahasiswa', 'icon' => 'fa-user-graduate', 'label' => 'NIM', 'placeholder' => 'Masukkan 5 digit NIM (cth: 20001)', 'hint' => 'Ketik 5 digit NIM Anda. Nama akan otomatis terdeteksi dari database.'],
-                                    ['value' => 'Dosen / Tendik', 'icon' => 'fa-chalkboard-user', 'label' => 'NIP', 'placeholder' => 'Masukkan 5 digit NIP (cth: 10001 atau 30001)', 'hint' => 'Ketik 5 digit NIP Dosen atau Tendik. Nama akan otomatis terdeteksi dari database.'],
-                                    ['value' => 'Umum', 'icon' => 'fa-users', 'label' => 'Alamat', 'placeholder' => 'Masukkan Alamat domisili / instansi', 'hint' => 'Masukkan alamat domisili atau instansi asal Anda.'],
+                                    ['value' => 'NIM / NIP', 'icon' => 'fa-id-card', 'label' => 'NIM / NIP', 'placeholder' => 'Masukkan 5 digit NIM atau NIP (cth: 20001 / 10001)', 'hint' => 'Ketik 5 digit NIM Mahasiswa atau NIP Dosen/Tendik. Nama akan otomatis terdeteksi dari database.'],
+                                    ['value' => 'Umum', 'icon' => 'fa-users', 'label' => 'Alamat Domisili / Instansi', 'placeholder' => 'Masukkan alamat domisili atau instansi asal Anda', 'hint' => 'Masukkan alamat domisili atau instansi asal Anda.'],
                                 ] as $kat)
                                     <label class="cursor-pointer">
                                         <input
@@ -92,7 +87,7 @@
                                             class="peer sr-only kategori-radio"
                                             {{ $defaultKategori === $kat['value'] ? 'checked' : '' }}
                                         >
-                                        <div class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 transition-all peer-checked:border-[#0b2a5b] peer-checked:bg-[#0b2a5b] peer-checked:text-white hover:border-slate-300">
+                                        <div class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 transition-all peer-checked:border-[#0b2a5b] peer-checked:bg-[#0b2a5b] peer-checked:text-white hover:border-slate-300">
                                             <i class="fa-solid {{ $kat['icon'] }} text-xs"></i>
                                             <span>{{ $kat['value'] }}</span>
                                         </div>
@@ -105,7 +100,7 @@
                             {{-- Input Var: NIM / NIP / Alamat sesuai Kategori Pengunjung (Untuk Civitas ditaruh di atas) --}}
                             <div id="wrapper-identitas">
                                 <label for="identitas_pengunjung" class="block text-xs sm:text-sm font-bold text-[#0b1f3a] mb-1.5">
-                                    <span id="label-identitas">NIM</span> <span class="text-rose-600">*</span>
+                                    <span id="label-identitas">{{ $defaultKategori === 'Umum' ? 'Alamat Domisili / Instansi' : 'NIM / NIP' }}</span> <span class="text-rose-600">*</span>
                                 </label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
@@ -119,7 +114,7 @@
                                         required
                                         maxlength="255"
                                         autocomplete="off"
-                                        placeholder="Masukkan 5 digit NIM (cth: 20001)"
+                                        placeholder="{{ $defaultKategori === 'Umum' ? 'Masukkan alamat domisili atau instansi asal Anda' : 'Masukkan 5 digit NIM atau NIP (cth: 20001 / 10001)' }}"
                                         class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-10 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0b2a5b] focus:outline-none focus:ring-2 focus:ring-[#0b2a5b]/20"
                                     >
                                     <span id="identitas-status-icon" class="hidden absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none" aria-hidden="true">
@@ -128,7 +123,7 @@
                                 </div>
                                 <div id="identitas-feedback"></div>
                                 <p id="hint-identitas" class="mt-1.5 text-[11px] sm:text-xs text-slate-500">
-                                    Ketik 5 digit NIM Anda. Sistem akan mencari dan mengisi nama otomatis di bawah.
+                                    {{ $defaultKategori === 'Umum' ? 'Masukkan alamat domisili atau instansi asal Anda.' : 'Ketik 5 digit NIM Mahasiswa atau NIP Dosen/Tendik. Nama akan otomatis terdeteksi dari database.' }}
                                 </p>
                                 @error('identitas_pengunjung')
                                     <p class="mt-1 text-xs font-medium text-rose-600">{{ $message }}</p>
@@ -351,12 +346,12 @@
 
             function getActiveKategori() {
                 const checked = document.querySelector('.kategori-radio:checked');
-                return checked ? checked.value : 'Mahasiswa';
+                return checked ? checked.value : 'NIM / NIP';
             }
 
             function updateLayoutAndPlaceholders() {
                 const checked = document.querySelector('.kategori-radio:checked');
-                const kategori = checked ? checked.value : 'Mahasiswa';
+                const kategori = checked ? checked.value : 'NIM / NIP';
                 const isUmum = (kategori === 'Umum');
 
                 if (checked) {

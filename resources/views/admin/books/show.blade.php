@@ -277,20 +277,35 @@
 
                     <form action="{{ route('admin.books.eksemplar.store', $book->id_buku) }}" method="POST" class="p-5 sm:p-6 space-y-4">
                         @csrf
-                        <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+                        <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-5">
                             {{-- Kode Inventaris --}}
                             <div>
                                 <label for="kode_inventaris" class="block text-xs font-semibold text-ink">
-                                    Kode Inventaris / Barcode
+                                    Kode Inventaris
                                 </label>
                                 <input
                                     type="text"
                                     name="kode_inventaris"
                                     id="kode_inventaris"
                                     placeholder="Otomatis jika kosong"
-                                    class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+                                    class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none font-mono"
                                 >
                                 <span class="text-[10px] text-muted">Contoh: INV-{{ $book->id_buku }}-01</span>
+                            </div>
+
+                            {{-- Nomor Barcode --}}
+                            <div>
+                                <label for="nomor_barcode" class="block text-xs font-semibold text-ink">
+                                    Nomor Barcode
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nomor_barcode"
+                                    id="nomor_barcode"
+                                    placeholder="Otomatis / scan barcode"
+                                    class="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink placeholder:text-muted focus:border-primary focus:outline-none font-mono"
+                                >
+                                <span class="text-[10px] text-muted">Contoh: BC-{{ $book->id_buku }}-01</span>
                             </div>
 
                             {{-- Nomor Panggil --}}
@@ -371,6 +386,7 @@
                                 <tr>
                                     <th class="px-4 py-3">No</th>
                                     <th class="px-4 py-3">Kode Inventaris</th>
+                                    <th class="px-4 py-3">Nomor Barcode</th>
                                     <th class="px-4 py-3">Nomor Panggil</th>
                                     <th class="px-4 py-3">Lokasi Rak</th>
                                     <th class="px-4 py-3 text-center">Status Eksemplar</th>
@@ -385,6 +401,12 @@
                                             <span class="font-mono font-bold text-ink">{{ $ek->kode_inventaris }}</span>
                                             <span class="block text-[10px] text-muted font-mono">{{ $ek->id_eksemplar }}</span>
                                         </td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20">
+                                                <i class="fa-solid fa-barcode text-[10px]"></i>
+                                                <span>{{ $ek->nomor_barcode ?: '-' }}</span>
+                                            </span>
+                                        </td>
                                         <td class="px-4 py-3 font-mono text-primary font-medium">
                                             {{ $ek->nomor_panggil ?? '-' }}
                                         </td>
@@ -398,6 +420,7 @@
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="kode_inventaris" value="{{ $ek->kode_inventaris }}">
+                                                <input type="hidden" name="nomor_barcode" value="{{ $ek->nomor_barcode }}">
                                                 <input type="hidden" name="nomor_panggil" value="{{ $ek->nomor_panggil }}">
                                                 <input type="hidden" name="lokasi_rak" value="{{ $ek->lokasi_rak }}">
 
@@ -507,7 +530,7 @@
 
                     <div>
                         <label for="edit_kode_inventaris" class="block text-xs font-semibold text-ink">
-                            Kode Inventaris / Barcode
+                            Kode Inventaris
                         </label>
                         <input
                             type="text"
@@ -516,6 +539,20 @@
                             required
                             class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none font-mono"
                         >
+                    </div>
+
+                    <div>
+                        <label for="edit_nomor_barcode" class="block text-xs font-semibold text-ink">
+                            Nomor Barcode
+                        </label>
+                        <input
+                            type="text"
+                            name="nomor_barcode"
+                            id="edit_nomor_barcode"
+                            placeholder="Contoh: BC-BK001-01 atau hasil scan barcode"
+                            class="mt-1 h-10 w-full rounded-xl border border-line bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none font-mono"
+                        >
+                        <span class="text-[10px] text-muted">Bisa diedit manual atau di-scan langsung dari stiker barcode fisik.</span>
                     </div>
 
                     <div>
@@ -619,6 +656,7 @@
                 @method('PUT')
                 <input type="hidden" name="status" value="Dipinjam">
                 <input type="hidden" name="kode_inventaris" id="modal_pinjam_kode_inventaris" value="">
+                <input type="hidden" name="nomor_barcode" id="modal_pinjam_nomor_barcode" value="">
                 <input type="hidden" name="nomor_panggil" id="modal_pinjam_nomor_panggil" value="">
                 <input type="hidden" name="lokasi_rak" id="modal_pinjam_lokasi_rak" value="">
 
@@ -627,6 +665,7 @@
                     <div>
                         <span class="text-muted block text-[10px]">Eksemplar Fisik:</span>
                         <strong id="display_kode_inventaris" class="font-mono text-ink text-xs font-bold">-</strong>
+                        <span id="display_nomor_barcode" class="block font-mono text-[11px] text-primary font-semibold"></span>
                     </div>
                     <div class="text-right">
                         <span class="text-muted block text-[10px]">Lokasi Rak:</span>
@@ -774,6 +813,7 @@
             currentEditingEksemplar = ek;
             form.action = "{{ route('admin.books.eksemplar.update', [$book->id_buku, ':id']) }}".replace(':id', ek.id_eksemplar);
             document.getElementById('edit_kode_inventaris').value = ek.kode_inventaris || '';
+            document.getElementById('edit_nomor_barcode').value = ek.nomor_barcode || '';
             document.getElementById('edit_nomor_panggil').value = ek.nomor_panggil || '';
             document.getElementById('edit_lokasi_rak').value = ek.lokasi_rak || '';
             document.getElementById('edit_status').value = ek.status || 'Tersedia';
@@ -792,6 +832,7 @@
             if (this.value === 'Dipinjam' && currentEditingEksemplar && currentEditingEksemplar.status !== 'Dipinjam') {
                 const targetEk = { ...currentEditingEksemplar };
                 targetEk.kode_inventaris = document.getElementById('edit_kode_inventaris').value || targetEk.kode_inventaris;
+                targetEk.nomor_barcode = document.getElementById('edit_nomor_barcode').value || targetEk.nomor_barcode;
                 targetEk.nomor_panggil = document.getElementById('edit_nomor_panggil').value || targetEk.nomor_panggil;
                 targetEk.lokasi_rak = document.getElementById('edit_lokasi_rak').value || targetEk.lokasi_rak;
 
@@ -833,9 +874,13 @@
 
             form.action = "{{ route('admin.books.eksemplar.update', [$book->id_buku, ':id']) }}".replace(':id', ek.id_eksemplar);
             document.getElementById('modal_pinjam_kode_inventaris').value = ek.kode_inventaris || '';
+            const barcodeField = document.getElementById('modal_pinjam_nomor_barcode');
+            if (barcodeField) barcodeField.value = ek.nomor_barcode || '';
             document.getElementById('modal_pinjam_nomor_panggil').value = ek.nomor_panggil || '';
             document.getElementById('modal_pinjam_lokasi_rak').value = ek.lokasi_rak || '';
             document.getElementById('display_kode_inventaris').textContent = ek.kode_inventaris || '-';
+            const displayBc = document.getElementById('display_nomor_barcode');
+            if (displayBc) displayBc.textContent = ek.nomor_barcode ? ('Barcode: ' + ek.nomor_barcode) : '';
             document.getElementById('display_lokasi_rak').textContent = ek.lokasi_rak || 'Lantai 2, Rak Koleksi';
 
             // Reset pilihan user & kotak eligibilitas
