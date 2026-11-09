@@ -124,13 +124,16 @@
                             <th class="border border-slate-300 px-2 py-1.5 text-left">JUDUL BUKU &amp; KODE BARCODE</th>
                             <th class="border border-slate-300 px-2 py-1.5 w-24 text-center">TGL PINJAM</th>
                             <th class="border border-slate-300 px-2 py-1.5 w-24 text-center">JATUH TEMPO</th>
-                            <th class="border border-slate-300 px-2 py-1.5 w-32 text-center">STATUS PINJAMAN</th>
+                            <th class="border border-slate-300 px-2 py-1.5 w-36 text-center">STATUS PINJAMAN &amp; DENDA</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($daftarBukuBelumKembali as $idx => $item)
                             @php
                                 $hariTelat = $item->hitungHariTerlambat();
+                                $nominalDenda = $item->nominal_denda > 0 ? $item->nominal_denda : $item->hitungNominalDenda();
+                                $hasDenda = $item->memilikiDenda() || $nominalDenda > 0;
+                                $isLunas = $item->isDendaLunas();
                             @endphp
                             <tr class="text-slate-800">
                                 <td class="border border-slate-300 px-1.5 py-1 text-center font-medium">{{ $idx + 1 }}</td>
@@ -148,13 +151,29 @@
                                 <td class="border border-slate-300 px-2 py-1 text-center font-semibold {{ $hariTelat > 0 ? 'text-rose-700' : 'text-slate-800' }} whitespace-nowrap">
                                     {{ $item->tanggal_jatuh_tempo ? $item->tanggal_jatuh_tempo->format('d M Y') : '-' }}
                                 </td>
-                                <td class="border border-slate-300 px-2 py-1 text-center whitespace-nowrap">
+                                <td class="border border-slate-300 px-2 py-1 text-center leading-tight">
                                     @if ($item->status === 'Menunggu Verifikasi')
-                                        <span class="font-bold text-blue-700">Verifikasi Admin</span>
+                                        <span class="font-bold text-blue-700 block text-[9.5px]">Verifikasi Admin</span>
                                     @elseif ($hariTelat > 0 || $item->status === 'Terlambat')
-                                        <span class="font-bold text-rose-700">Terlambat {{ $hariTelat }} Hari</span>
+                                        <span class="font-bold text-rose-700 block text-[9.5px]">Terlambat {{ $hariTelat }} Hari</span>
                                     @else
-                                        <span class="font-bold text-emerald-700">Masa Pinjam Aktif</span>
+                                        <span class="font-bold text-emerald-700 block text-[9.5px]">Masa Pinjam Aktif</span>
+                                    @endif
+
+                                    @if ($hasDenda)
+                                        @if ($isLunas)
+                                            <span class="mt-0.5 inline-block rounded bg-emerald-50 px-1.5 py-0.5 text-[8.5px] font-bold text-emerald-800 border border-emerald-300">
+                                                Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} (Lunas)
+                                            </span>
+                                        @else
+                                            <span class="mt-0.5 inline-block rounded bg-rose-50 px-1.5 py-0.5 text-[8.5px] font-bold text-rose-800 border border-rose-300">
+                                                Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} (Belum Lunas)
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="mt-0.5 inline-block text-[8px] text-slate-500 font-medium">
+                                            Bebas Denda
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
@@ -518,13 +537,16 @@
                                 <th class="px-3.5 py-2.5 font-semibold">Judul Buku &amp; Barcode</th>
                                 <th class="px-3.5 py-2.5 font-semibold">Tgl Pinjam</th>
                                 <th class="px-3.5 py-2.5 font-semibold">Jatuh Tempo</th>
-                                <th class="px-3.5 py-2.5 font-semibold">Status / Terlambat</th>
+                                <th class="px-3.5 py-2.5 font-semibold">Status Pinjaman &amp; Denda</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-line">
                             @forelse ($daftarBukuBelumKembali as $idx => $item)
                                 @php
                                     $hariTelat = $item->hitungHariTerlambat();
+                                    $nominalDenda = $item->nominal_denda > 0 ? $item->nominal_denda : $item->hitungNominalDenda();
+                                    $hasDenda = $item->memilikiDenda() || $nominalDenda > 0;
+                                    $isLunas = $item->isDendaLunas();
                                 @endphp
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-3.5 py-3 text-muted">{{ $idx + 1 }}</td>
@@ -543,19 +565,40 @@
                                         {{ $item->tanggal_jatuh_tempo ? $item->tanggal_jatuh_tempo->format('d M Y') : '-' }}
                                     </td>
                                     <td class="px-3.5 py-3 whitespace-nowrap">
-                                        @if ($item->status === 'Menunggu Verifikasi')
-                                            <span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
-                                                Menunggu Verifikasi Admin
-                                            </span>
-                                        @elseif ($hariTelat > 0 || $item->status === 'Terlambat')
-                                            <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-800">
-                                                Terlambat {{ $hariTelat }} Hari
-                                            </span>
-                                        @else
-                                            <span class="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                                                Masa Pinjam Aktif
-                                            </span>
-                                        @endif
+                                        <div class="flex flex-col gap-1 items-start">
+                                            @if ($item->status === 'Menunggu Verifikasi')
+                                                <span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                                                    Menunggu Verifikasi Admin
+                                                </span>
+                                            @elseif ($hariTelat > 0 || $item->status === 'Terlambat')
+                                                <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-800">
+                                                    Terlambat {{ $hariTelat }} Hari
+                                                </span>
+                                            @else
+                                                <span class="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                                                    Masa Pinjam Aktif
+                                                </span>
+                                            @endif
+
+                                            @if ($hasDenda)
+                                                @if ($isLunas)
+                                                    <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                                                        <i class="fa-solid fa-circle-check text-[10px]"></i>
+                                                        Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} &bull; Lunas
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-[10.5px] font-semibold text-red-700 ring-1 ring-inset ring-red-600/20">
+                                                        <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                                                        Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} &bull; Belum Lunas
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="inline-flex items-center gap-1 text-[10.5px] text-muted font-medium">
+                                                    <i class="fa-solid fa-shield-check text-emerald-600 text-[10px]"></i>
+                                                    Bebas Denda
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -782,22 +825,47 @@
                                         <th class="border border-slate-300 px-2 py-1 text-left">JUDUL BUKU &amp; BARCODE</th>
                                         <th class="border border-slate-300 px-2 py-1 text-center">TGL PINJAM</th>
                                         <th class="border border-slate-300 px-2 py-1 text-center">JATUH TEMPO</th>
-                                        <th class="border border-slate-300 px-2 py-1 text-center">STATUS</th>
+                                        <th class="border border-slate-300 px-2 py-1 text-center">STATUS PINJAMAN &amp; DENDA</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($daftarBukuBelumKembali as $idx => $item)
                                         @php
                                             $hariTelat = $item->hitungHariTerlambat();
+                                            $nominalDenda = $item->nominal_denda > 0 ? $item->nominal_denda : $item->hitungNominalDenda();
+                                            $hasDenda = $item->memilikiDenda() || $nominalDenda > 0;
+                                            $isLunas = $item->isDendaLunas();
                                         @endphp
                                         <tr>
                                             <td class="border border-slate-300 px-1.5 py-1 text-center">{{ $idx + 1 }}</td>
                                             <td class="border border-slate-300 px-2 py-1 font-semibold">{{ $item->pengguna?->nama_lengkap ?? 'Member' }}</td>
                                             <td class="border border-slate-300 px-2 py-1">{{ $item->buku?->judul_buku ?? 'Buku' }} ({{ $item->eksemplar?->nomor_barcode ?? '-' }})</td>
                                             <td class="border border-slate-300 px-2 py-1 text-center">{{ $item->tanggal_pinjam ? $item->tanggal_pinjam->format('d M Y') : '-' }}</td>
-                                            <td class="border border-slate-300 px-2 py-1 text-center">{{ $item->tanggal_jatuh_tempo ? $item->tanggal_jatuh_tempo->format('d M Y') : '-' }}</td>
-                                            <td class="border border-slate-300 px-2 py-1 text-center font-bold {{ $hariTelat > 0 ? 'text-rose-700' : 'text-emerald-700' }}">
-                                                {{ $hariTelat > 0 ? 'Terlambat '.$hariTelat.' Hari' : 'Masa Pinjam Aktif' }}
+                                            <td class="border border-slate-300 px-2 py-1 text-center {{ $hariTelat > 0 ? 'text-rose-700 font-bold' : '' }}">{{ $item->tanggal_jatuh_tempo ? $item->tanggal_jatuh_tempo->format('d M Y') : '-' }}</td>
+                                            <td class="border border-slate-300 px-2 py-1 text-center leading-tight">
+                                                @if ($hariTelat > 0 || $item->status === 'Terlambat')
+                                                    <span class="font-bold text-rose-700 block text-[9.5px]">Terlambat {{ $hariTelat }} Hari</span>
+                                                @elseif ($item->status === 'Menunggu Verifikasi')
+                                                    <span class="font-bold text-blue-700 block text-[9.5px]">Verifikasi Admin</span>
+                                                @else
+                                                    <span class="font-bold text-emerald-700 block text-[9.5px]">Masa Pinjam Aktif</span>
+                                                @endif
+
+                                                @if ($hasDenda)
+                                                    @if ($isLunas)
+                                                        <span class="mt-0.5 inline-block text-[8.5px] font-bold text-emerald-700">
+                                                            Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} (Lunas)
+                                                        </span>
+                                                    @else
+                                                        <span class="mt-0.5 inline-block text-[8.5px] font-bold text-rose-700">
+                                                            Denda: Rp {{ number_format($nominalDenda, 0, ',', '.') }} (Belum Lunas)
+                                                        </span>
+                                                    @endif
+                                                @else
+                                                    <span class="mt-0.5 inline-block text-[8px] text-slate-500 font-medium">
+                                                        Bebas Denda
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty

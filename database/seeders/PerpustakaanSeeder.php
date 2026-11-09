@@ -805,7 +805,7 @@ class PerpustakaanSeeder extends Seeder
             EksemplarBuku::where('id_eksemplar', $eks2)->update(['status' => 'Tersedia']);
         }
 
-        // Kasus 3: Prof. Dr. Hendra Gunawan - Sedang Terlambat 8 Hari & BELUM LUNAS (Denda 8 x 500 = Rp 4.000)
+        // Kasus 3: Prof. Dr. Hendra Gunawan - Sedang Terlambat 8 Hari & SUDAH LUNAS MEMBAYAR DENDA di Meja Sirkulasi (Denda 8 x 500 = Rp 4.000)
         PeminjamanBuku::updateOrCreate(
             ['id_peminjaman' => 'PJ00003'],
             [
@@ -819,15 +819,15 @@ class PerpustakaanSeeder extends Seeder
                 'tanggal_kembali' => null,
                 'status' => 'Terlambat',
                 'hari_keterlambatan' => 8,
-                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 8 hari. Tagihan denda Rp 4.000 (Cash) belum dilunasi.',
+                'catatan_keterlambatan' => 'Peminjaman melewati batas tempo 8 hari. Denda tunai Rp 4.000 telah dilunasi di meja sirkulasi namun buku masih dalam tanggungan pemustaka.',
                 'notifikasi_peringatan_dikirim' => true,
                 'tanggal_notifikasi' => now()->subDays(8),
                 'nominal_denda' => 4000,
                 'metode_pembayaran_denda' => 'Cash',
-                'status_pembayaran_denda' => 'Belum Lunas',
-                'tanggal_pembayaran_denda' => null,
-                'id_pustakawan_denda' => null,
-                'catatan_denda' => 'Belum membayar denda tunai di meja sirkulasi.',
+                'status_pembayaran_denda' => 'Lunas',
+                'tanggal_pembayaran_denda' => now()->subDays(2)->setHour(10)->setMinute(30),
+                'id_pustakawan_denda' => 'MNCU00002',
+                'catatan_denda' => 'Denda keterlambatan 8 hari sebesar Rp 4.000 telah lunas dibayar tunai (Cash) dan diterima oleh pustakawan Sarah Amalia, S.I.Pust.',
             ]
         );
         if ($eks3) {

@@ -8,6 +8,7 @@ use App\Models\PeminjamanBuku;
 use App\Models\Pengguna;
 use Database\Seeders\PerpustakaanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -388,6 +389,8 @@ class PeminjamanTest extends TestCase
      */
     public function test_overdue_loan_calculates_fine_at_500_per_day_cash(): void
     {
+        Carbon::setTestNow(Carbon::parse('2026-11-05 12:00:00'));
+        \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-11-05 12:00:00'));
         $loan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
         $loan->update([
             'tanggal_pinjam' => now()->subDays(10)->toDateString(),
@@ -399,6 +402,8 @@ class PeminjamanTest extends TestCase
         $this->assertEquals(3, $loan->hitungHariTerlambat());
         $this->assertEquals(1500, $loan->hitungNominalDenda()); // 3 hari * 500 = 1500
         $this->assertTrue($loan->memilikiDenda());
+        Carbon::setTestNow();
+        \Illuminate\Support\Carbon::setTestNow();
     }
 
     /**
@@ -406,6 +411,8 @@ class PeminjamanTest extends TestCase
      */
     public function test_user_inbox_displays_denda_form_with_cash_option(): void
     {
+        Carbon::setTestNow(Carbon::parse('2026-11-05 12:00:00'));
+        \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-11-05 12:00:00'));
         $overdueLoan = PeminjamanBuku::whereNull('tanggal_kembali')->firstOrFail();
         $overdueLoan->update([
             'id_pengguna' => $this->studentHasLoan->id_pengguna,
@@ -427,6 +434,8 @@ class PeminjamanTest extends TestCase
         $response->assertSee('Belum Lunas');
         $response->assertSee('Rp 2.000');
         $response->assertSee(route('inbox.denda', $overdueLoan->id_peminjaman));
+        Carbon::setTestNow();
+        \Illuminate\Support\Carbon::setTestNow();
     }
 
     /**

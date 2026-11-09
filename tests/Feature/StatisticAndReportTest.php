@@ -104,10 +104,23 @@ class StatisticAndReportTest extends TestCase
         $response->assertSee('PERPUSTAKAAN MNC UNIVERSITY');
         $response->assertSee('Dr. H. Muhammad Arifin, M.Hum.');
 
+        $response->assertSee('STATUS PINJAMAN &amp; DENDA', false);
+        $response->assertSee('Status Pinjaman &amp; Denda', false);
+        $response->assertSee('Belum Lunas');
+        $response->assertSee('Lunas');
+
         // Tes Export CSV
         $respCsv = $this->actingAs($this->superAdmin)->get(route('admin.reports.export-csv'));
         $respCsv->assertStatus(200);
         $this->assertStringContainsString('text/csv', (string) $respCsv->headers->get('content-type'));
+
+        ob_start();
+        $respCsv->sendContent();
+        $csvContent = ob_get_clean();
+
+        $this->assertStringContainsString('Status Tagihan Denda', $csvContent);
+        $this->assertStringContainsString('Nominal Denda (Rp)', $csvContent);
+        $this->assertStringContainsString('Belum Lunas', $csvContent);
     }
 
     /**

@@ -137,7 +137,7 @@ class ReportAdminController extends Controller
 
             // Tabel Buku Belum Dikembalikan
             fputcsv($handle, ['--- DATA BUKU YANG BELUM DIKEMBALIKAN ---']);
-            fputcsv($handle, ['No', 'ID Peminjaman', 'Nama Member', 'NIM/NIDN', 'Judul Buku', 'No. Barcode', 'Tanggal Pinjam', 'Jatuh Tempo', 'Status', 'Hari Keterlambatan']);
+            fputcsv($handle, ['No', 'ID Peminjaman', 'Nama Member', 'NIM/NIDN', 'Judul Buku', 'No. Barcode', 'Tanggal Pinjam', 'Jatuh Tempo', 'Status Pinjaman', 'Hari Keterlambatan', 'Nominal Denda (Rp)', 'Status Tagihan Denda']);
 
             $belumKembali = PeminjamanBuku::with(['pengguna', 'buku', 'eksemplar'])
                 ->whereNull('tanggal_kembali')
@@ -147,6 +147,12 @@ class ReportAdminController extends Controller
 
             $no = 1;
             foreach ($belumKembali as $pinjam) {
+                $hariTelat = $pinjam->hitungHariTerlambat();
+                $nominalDenda = $pinjam->nominal_denda > 0 ? $pinjam->nominal_denda : $pinjam->hitungNominalDenda();
+                $statusDenda = $pinjam->memilikiDenda() || $nominalDenda > 0
+                    ? ($pinjam->isDendaLunas() ? 'Lunas' : 'Belum Lunas')
+                    : 'Tidak Ada Denda';
+
                 fputcsv($handle, [
                     $no++,
                     $pinjam->id_peminjaman,
@@ -157,7 +163,9 @@ class ReportAdminController extends Controller
                     $pinjam->tanggal_pinjam ? $pinjam->tanggal_pinjam->format('Y-m-d') : '-',
                     $pinjam->tanggal_jatuh_tempo ? $pinjam->tanggal_jatuh_tempo->format('Y-m-d') : '-',
                     $pinjam->status,
-                    $pinjam->hitungHariTerlambat(),
+                    $hariTelat,
+                    $nominalDenda,
+                    $statusDenda,
                 ]);
             }
 
