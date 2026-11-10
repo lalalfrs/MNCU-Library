@@ -153,6 +153,36 @@ class BookStockAndOpacTest extends TestCase
         $response->assertSee('Sedang Dipinjam');
         $response->assertSee('Ketersediaan Stok');
         $response->assertSee('Tersedia');
+        $response->assertSee('stok=tersedia');
+        $response->assertSee('stok=dipinjam');
+        $response->assertSee('stok=eksemplar');
+    }
+
+    /**
+     * Pastikan kartu metrik stok dapat diklik dan menyaring koleksi buku secara fungsional.
+     */
+    public function test_admin_book_index_stock_cards_are_clickable_and_filter_correctly(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->first();
+
+        // 1. Filter Stok Siap Pinjam
+        $responseTersedia = $this->actingAs($admin)->get(route('admin.books.index', ['stok' => 'tersedia']));
+        $responseTersedia->assertStatus(200);
+        $responseTersedia->assertSee('Menyaring stok:');
+        $responseTersedia->assertSee('Stok Siap Pinjam');
+
+        // 2. Filter Sedang Dipinjam
+        $responseDipinjam = $this->actingAs($admin)->get(route('admin.books.index', ['stok' => 'dipinjam']));
+        $responseDipinjam->assertStatus(200);
+        $responseDipinjam->assertSee('Menyaring stok:');
+        $responseDipinjam->assertSee('Sedang Dipinjam');
+        $responseDipinjam->assertSee(route('admin.peminjaman.index', ['status' => 'dipinjam']));
+
+        // 3. Filter Memiliki Eksemplar Fisik
+        $responseEksemplar = $this->actingAs($admin)->get(route('admin.books.index', ['stok' => 'eksemplar']));
+        $responseEksemplar->assertStatus(200);
+        $responseEksemplar->assertSee('Menyaring stok:');
+        $responseEksemplar->assertSee('Memiliki Eksemplar Fisik');
     }
 
     /**
@@ -470,24 +500,23 @@ class BookStockAndOpacTest extends TestCase
     }
 
     /**
-     * Admin dapat menghapus buku beserta seluruh eksemplar dan riwayat peminjamannya secara tuntas tanpa error foreign key constraint.
+     * Aturan: Koleksi buku yang eksemplarnya sedang dipinjam dilarang dihapus.
      */
-    public function test_admin_can_delete_book_and_clean_up_all_copies_and_loans(): void
+    public function test_admin_cannot_delete_book_when_copies_are_being_borrowed(): void
     {
         $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
         $student = Pengguna::where('id_pengguna', 'MNCU00004')->firstOrFail();
 
-        // Buat buku sementara beserta eksemplar dan simulasi data pinjaman
         $book = Buku::create([
             'id_buku' => 'MNCU99998',
             'uuid' => (string) Str::uuid(),
             'id_jenis_buku' => 'MNCU00001',
             'id_kategori_buku' => 'MNCU00001',
             'id_penerbit' => 'MNCU00001',
-            'judul_buku' => 'Buku Uji Hapus Cascade',
+            'judul_buku' => 'Buku Uji Sedang Dipinjam',
             'isbn' => '978-000-0000-98-8',
             'tahun_terbit' => 2024,
-            'deskripsi' => 'Deskripsi buku uji coba',
+            'deskripsi' => 'Deskripsi buku uji pinjam',
         ]);
 
         $eksemplar = EksemplarBuku::create([
@@ -497,7 +526,7 @@ class BookStockAndOpacTest extends TestCase
             'lokasi_rak' => 'Lantai 2',
         ]);
 
-        $peminjaman = PeminjamanBuku::create([
+        PeminjamanBuku::create([
             'id_peminjaman' => 'PJ99998',
             'uuid' => (string) Str::uuid(),
             'id_pengguna' => $student->id_pengguna,
@@ -508,17 +537,89 @@ class BookStockAndOpacTest extends TestCase
             'status' => 'Dipinjam',
         ]);
 
-        $this->assertDatabaseHas('buku', ['id_buku' => 'MNCU99998']);
-        $this->assertDatabaseHas('eksemplar_buku', ['id_eksemplar' => $eksemplar->id_eksemplar]);
-        $this->assertDatabaseHas('peminjaman_buku', ['id_peminjaman' => 'PJ99998']);
+        $response = $this->actingAs($admin)->delete(route('admin.books.destroy', $book->id_buku));
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('buku', [
+            'id_buku' => 'MNCU99998',
+            'deleted_at' => null,
+        ]);
+    }
+
+    /**
+     * Admin dapat menghapus buku ke Recycle Bin (Soft Delete) saat tidak ada pinjaman aktif.
+     */
+    public function test_admin_can_soft_delete_book_to_recycle_bin(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
+
+        $book = Buku::create([
+            'id_buku' => 'MNCU99997',
+            'uuid' => (string) Str::uuid(),
+            'id_jenis_buku' => 'MNCU00001',
+            'id_kategori_buku' => 'MNCU00001',
+            'id_penerbit' => 'MNCU00001',
+            'judul_buku' => 'Buku Uji Soft Delete',
+            'isbn' => '978-000-0000-97-7',
+            'tahun_terbit' => 2024,
+            'deskripsi' => 'Deskripsi buku uji soft delete',
+        ]);
 
         $response = $this->actingAs($admin)->delete(route('admin.books.destroy', $book->id_buku));
 
         $response->assertRedirect(route('admin.books.index'));
         $response->assertSessionHas('success');
-        $this->assertDatabaseMissing('buku', ['id_buku' => 'MNCU99998']);
-        $this->assertDatabaseMissing('eksemplar_buku', ['id_eksemplar' => $eksemplar->id_eksemplar]);
-        $this->assertDatabaseMissing('peminjaman_buku', ['id_peminjaman' => 'PJ99998']);
+        $this->assertSoftDeleted('buku', ['id_buku' => 'MNCU99997']);
+    }
+
+    /**
+     * Admin dapat melihat buku di Recycle Bin, memulihkannya (restore), atau menghapus permanen (force delete).
+     */
+    public function test_admin_can_view_recycle_bin_restore_and_force_delete(): void
+    {
+        $admin = Pengguna::where('email', 'arifin@mncu.ac.id')->firstOrFail();
+
+        $book = Buku::create([
+            'id_buku' => 'MNCU99996',
+            'uuid' => (string) Str::uuid(),
+            'id_jenis_buku' => 'MNCU00001',
+            'id_kategori_buku' => 'MNCU00001',
+            'id_penerbit' => 'MNCU00001',
+            'judul_buku' => 'Buku Uji Recycle Bin Full Cycle',
+            'isbn' => '978-000-0000-96-6',
+            'tahun_terbit' => 2024,
+            'deskripsi' => 'Deskripsi recycle bin',
+        ]);
+
+        // 1. Pindahkan ke kotak sampah (soft delete)
+        $this->actingAs($admin)->delete(route('admin.books.destroy', $book->id_buku));
+        $this->assertSoftDeleted('buku', ['id_buku' => 'MNCU99996']);
+
+        // 2. Buka halaman Kotak Sampah (Recycle Bin)
+        $responseTrash = $this->actingAs($admin)->get(route('admin.books.trash'));
+        $responseTrash->assertStatus(200);
+        $responseTrash->assertSee('Kotak Sampah Koleksi (Recycle Bin)');
+        $responseTrash->assertSee('Buku Uji Recycle Bin Full Cycle');
+        $responseTrash->assertSee('Restore');
+        $responseTrash->assertSee('Hapus Permanen');
+
+        // 3. Opsi Restore (Pulihkan)
+        $responseRestore = $this->actingAs($admin)->post(route('admin.books.restore', $book->id_buku));
+        $responseRestore->assertRedirect(route('admin.books.trash'));
+        $responseRestore->assertSessionHas('success');
+        $this->assertDatabaseHas('buku', [
+            'id_buku' => 'MNCU99996',
+            'deleted_at' => null,
+        ]);
+
+        // 4. Hapus lagi lalu lakukan Hapus Permanen (Force Delete)
+        $this->actingAs($admin)->delete(route('admin.books.destroy', $book->id_buku));
+        $this->assertSoftDeleted('buku', ['id_buku' => 'MNCU99996']);
+
+        $responseForce = $this->actingAs($admin)->delete(route('admin.books.force-delete', $book->id_buku));
+        $responseForce->assertRedirect(route('admin.books.trash'));
+        $responseForce->assertSessionHas('success');
+        $this->assertDatabaseMissing('buku', ['id_buku' => 'MNCU99996']);
     }
 
     /**

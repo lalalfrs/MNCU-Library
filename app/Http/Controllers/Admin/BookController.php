@@ -64,6 +64,7 @@ class BookController extends Controller
         $totalCopies = EksemplarBuku::count();
         $availableCopies = EksemplarBuku::where('status', 'Tersedia')->count();
         $borrowedCopies = EksemplarBuku::where('status', 'Dipinjam')->count();
+        $trashedCount = Buku::onlyTrashed()->count();
 
         $query = Buku::with(['jenisBuku', 'kategoriBuku', 'penerbit', 'penulis', 'eksemplar']);
 
@@ -124,6 +125,12 @@ class BookController extends Controller
             $query->whereHas('eksemplar', function ($sq): void {
                 $sq->where('status', 'Tersedia');
             });
+        } elseif ($statusStok === 'dipinjam') {
+            $query->whereHas('eksemplar', function ($sq): void {
+                $sq->where('status', 'Dipinjam');
+            });
+        } elseif ($statusStok === 'eksemplar') {
+            $query->has('eksemplar');
         } elseif ($statusStok === 'habis') {
             $query->has('eksemplar')->whereDoesntHave('eksemplar', function ($sq): void {
                 $sq->where('status', 'Tersedia');
@@ -172,7 +179,8 @@ class BookController extends Controller
             'totalBooks',
             'totalCopies',
             'availableCopies',
-            'borrowedCopies'
+            'borrowedCopies',
+            'trashedCount'
         ));
     }
 
@@ -756,18 +764,105 @@ class BookController extends Controller
     }
 
     /**
-     * Hapus koleksi buku dari database beserta seluruh eksemplar dan riwayat peminjamannya.
+     * Pindahkan koleksi buku ke Kotak Sampah (Soft Delete).
+     * Aturan: Buku yang eksemplarnya sedang dipinjam dilarang dihapus.
      */
     public function destroy(string $id): RedirectResponse
     {
-        $book = Buku::with('eksemplar')->findOrFail($id);
+        $book = Buku::with(['eksemplar', 'peminjaman'])->findOrFail($id);
         $judul = $book->judul_buku;
+
+        // Aturan validasi: Periksa apakah ada eksemplar yang sedang dipinjam pemustaka
+        $borrowedCopiesCount = $book->eksemplar()->where('status', 'Dipinjam')->count();
+        $activeLoansCount = $book->peminjaman()->where(function ($q): void {
+            $q->whereIn('status', ['Dipinjam', 'Menunggu Verifikasi', 'Menunggu Persetujuan'])
+                ->whereNull('tanggal_kembali');
+        })->count();
+
+        if ($borrowedCopiesCount > 0 || $activeLoansCount > 0) {
+            $totalPinjam = max($borrowedCopiesCount, $activeLoansCount);
+
+            return redirect()->back()
+                ->with('error', "Koleksi buku \"{$judul}\" tidak dapat dihapus karena masih ada {$totalPinjam} eksemplar yang sedang dipinjam pemustaka.");
+        }
+
+        $book->delete();
+
+        return redirect()->route('admin.books.index')
+            ->with('success', "Koleksi buku \"{$judul}\" berhasil dipindahkan ke Kotak Sampah (Recycle Bin).");
+    }
+
+    /**
+     * Tampilkan daftar koleksi buku yang berada di Kotak Sampah (Recycle Bin).
+     */
+    public function trash(Request $request): View
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        $query = Buku::onlyTrashed()->with(['jenisBuku', 'kategoriBuku', 'penerbit', 'penulis', 'eksemplar']);
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q): void {
+                $sub->where('judul_buku', 'like', "%{$q}%")
+                    ->orWhere('isbn', 'like', "%{$q}%")
+                    ->orWhereHas('penulis', function ($authorSub) use ($q): void {
+                        $authorSub->where('nama_penulis', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('eksemplar', function ($ekSub) use ($q): void {
+                        $ekSub->where('kode_inventaris', 'like', "%{$q}%")
+                            ->orWhere('nomor_barcode', 'like', "%{$q}%")
+                            ->orWhere('nomor_panggil', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        $trashedBooks = $query->latest('deleted_at')->paginate(12)->withQueryString();
+        $totalTrashed = Buku::onlyTrashed()->count();
+
+        return view('admin.books.trash', compact('trashedBooks', 'totalTrashed', 'q'));
+    }
+
+    /**
+     * Pulihkan koleksi buku dari Kotak Sampah kembali ke katalog aktif.
+     */
+    public function restore(string $id): RedirectResponse
+    {
+        $book = Buku::onlyTrashed()->findOrFail($id);
+        $judul = $book->judul_buku;
+
+        $book->restore();
+
+        return redirect()->route('admin.books.trash')
+            ->with('success', "Koleksi buku \"{$judul}\" berhasil dipulihkan kembali ke katalog perpustakaan.");
+    }
+
+    /**
+     * Hapus koleksi buku secara permanen beserta seluruh eksemplar dan riwayatnya.
+     */
+    public function forceDelete(string $id): RedirectResponse
+    {
+        $book = Buku::onlyTrashed()->with(['eksemplar', 'peminjaman'])->findOrFail($id);
+        $judul = $book->judul_buku;
+
+        // Validasi pengamanan tambahan: periksa apakah ada eksemplar yang masih berstatus dipinjam
+        $borrowedCopiesCount = $book->eksemplar()->where('status', 'Dipinjam')->count();
+        $activeLoansCount = $book->peminjaman()->where(function ($q): void {
+            $q->whereIn('status', ['Dipinjam', 'Menunggu Verifikasi', 'Menunggu Persetujuan'])
+                ->whereNull('tanggal_kembali');
+        })->count();
+
+        if ($borrowedCopiesCount > 0 || $activeLoansCount > 0) {
+            $totalPinjam = max($borrowedCopiesCount, $activeLoansCount);
+
+            return redirect()->back()
+                ->with('error', "Koleksi buku \"{$judul}\" tidak dapat dihapus permanen karena masih tercatat memiliki {$totalPinjam} pinjaman aktif.");
+        }
 
         try {
             DB::transaction(function () use ($book): void {
                 $eksemplarIds = $book->eksemplar->pluck('id_eksemplar')->filter()->values()->all();
 
-                // 1. Bersihkan seluruh transaksi/riwayat peminjaman terkait buku atau eksemplarnya
+                // 1. Bersihkan transaksi/riwayat peminjaman terkait buku atau eksemplarnya
                 PeminjamanBuku::where('id_buku', $book->id_buku)
                     ->when(! empty($eksemplarIds), function ($query) use ($eksemplarIds): void {
                         $query->orWhereIn('id_eksemplar', $eksemplarIds);
@@ -792,15 +887,76 @@ class BookController extends Controller
                     }
                 }
 
-                // 6. Hapus katalog buku
-                $book->delete();
+                // 6. Hapus permanen buku dari database
+                $book->forceDelete();
             });
 
-            return redirect()->route('admin.books.index')
-                ->with('success', "Buku \"{$judul}\" beserta seluruh eksemplar dan riwayat sirkulasinya berhasil dihapus.");
+            return redirect()->route('admin.books.trash')
+                ->with('success', "Koleksi buku \"{$judul}\" berhasil dihapus secara permanen dari sistem.");
         } catch (\Throwable $e) {
-            return redirect()->route('admin.books.index')
-                ->with('error', "Gagal menghapus buku \"{$judul}\": {$e->getMessage()}");
+            return redirect()->route('admin.books.trash')
+                ->with('error', "Gagal menghapus permanen buku \"{$judul}\": {$e->getMessage()}");
         }
+    }
+
+    /**
+     * Pulihkan semua koleksi buku yang ada di Kotak Sampah ke katalog aktif.
+     */
+    public function restoreAll(): RedirectResponse
+    {
+        $count = Buku::onlyTrashed()->count();
+
+        if ($count === 0) {
+            return redirect()->route('admin.books.trash')
+                ->with('info', 'Kotak Sampah sudah kosong, tidak ada buku untuk dipulihkan.');
+        }
+
+        Buku::onlyTrashed()->restore();
+
+        return redirect()->route('admin.books.trash')
+            ->with('success', "Sebanyak {$count} koleksi buku berhasil dipulihkan dari Kotak Sampah.");
+    }
+
+    /**
+     * Kosongkan Kotak Sampah dengan menghapus seluruh buku di dalamnya secara permanen.
+     */
+    public function emptyTrash(): RedirectResponse
+    {
+        $trashedBooks = Buku::onlyTrashed()->with(['eksemplar', 'peminjaman'])->get();
+
+        if ($trashedBooks->isEmpty()) {
+            return redirect()->route('admin.books.trash')
+                ->with('info', 'Kotak Sampah sudah dalam keadaan kosong.');
+        }
+
+        $deletedCount = 0;
+        foreach ($trashedBooks as $book) {
+            $borrowedCopiesCount = $book->eksemplar()->where('status', 'Dipinjam')->count();
+            if ($borrowedCopiesCount > 0) {
+                continue;
+            }
+
+            DB::transaction(function () use ($book): void {
+                $eksemplarIds = $book->eksemplar->pluck('id_eksemplar')->filter()->values()->all();
+                PeminjamanBuku::where('id_buku', $book->id_buku)
+                    ->when(! empty($eksemplarIds), fn ($query) => $query->orWhereIn('id_eksemplar', $eksemplarIds))
+                    ->delete();
+                $book->kunjungan()->delete();
+                BukuPenulis::where('id_buku', $book->id_buku)->delete();
+                $book->subjek()->detach();
+                $book->eksemplar()->delete();
+                if ($book->sampul_buku) {
+                    $this->mediaUploadService->deleteImage($book->sampul_buku);
+                    if (str_starts_with($book->sampul_buku, 'images/buku/uploads/') && file_exists(public_path($book->sampul_buku))) {
+                        @unlink(public_path($book->sampul_buku));
+                    }
+                }
+                $book->forceDelete();
+            });
+            $deletedCount++;
+        }
+
+        return redirect()->route('admin.books.trash')
+            ->with('success', "Sebanyak {$deletedCount} koleksi buku di Kotak Sampah berhasil dihapus secara permanen.");
     }
 }

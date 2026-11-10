@@ -96,6 +96,11 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->as('admin.')->group(
     Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // 2. Manajemen Buku & Stok Eksemplar
+    Route::get('buku/sampah', [BookController::class, 'trash'])->name('books.trash');
+    Route::post('buku/sampah/restore-all', [BookController::class, 'restoreAll'])->name('books.restore-all');
+    Route::delete('buku/sampah/empty', [BookController::class, 'emptyTrash'])->name('books.empty-trash');
+    Route::post('buku/{id}/restore', [BookController::class, 'restore'])->name('books.restore');
+    Route::delete('buku/{id}/force-delete', [BookController::class, 'forceDelete'])->name('books.force-delete');
     Route::get('buku/{buku}/cetak-label/{eksemplar?}', [BookController::class, 'cetakLabel'])->name('books.cetak-label');
     Route::resource('buku', BookController::class)->names('books');
     Route::post('buku/{buku}/kata-kunci', [BookController::class, 'updateKataKunci'])->name('books.kata-kunci.update');

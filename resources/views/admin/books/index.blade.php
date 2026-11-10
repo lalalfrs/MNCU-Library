@@ -60,6 +60,21 @@
                     <span class="hidden sm:inline">Katalog OPAC</span>
                 </a>
 
+                {{-- Tombol Kotak Sampah (Recycle Bin) --}}
+                <a
+                    href="{{ route('admin.books.trash') }}"
+                    class="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-white px-3.5 text-xs font-semibold text-ink shadow-xs transition-all hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 sm:h-11 sm:text-sm"
+                    title="Buka Kotak Sampah Koleksi Buku (Recycle Bin)"
+                >
+                    <i class="fa-solid fa-trash-can text-xs text-rose-500"></i>
+                    <span class="hidden sm:inline">Kotak Sampah</span>
+                    @if (($trashedCount ?? 0) > 0)
+                        <span class="flex size-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+                            {{ $trashedCount }}
+                        </span>
+                    @endif
+                </a>
+
                 {{-- Tombol Tambah Buku --}}
                 <a
                     href="{{ route('admin.books.create') }}"
@@ -71,50 +86,140 @@
             </div>
         </div>
 
-        {{-- 4 Kartu Metrik Inventaris Stok Global (Style Visual Sebelumnya) --}}
+        {{-- 4 Kartu Metrik Inventaris Stok Global (Klik untuk Filter Stok Koleksi) --}}
+        @php
+            $isFilterSemua = ($statusStok ?? '') === '';
+            $isFilterEksemplar = ($statusStok ?? '') === 'eksemplar';
+            $isFilterTersedia = ($statusStok ?? '') === 'tersedia';
+            $isFilterDipinjam = ($statusStok ?? '') === 'dipinjam';
+
+            $urlSemua = route('admin.books.index', array_merge(request()->except(['stok', 'page']), ['view' => $viewMode]));
+            $urlEksemplar = route('admin.books.index', array_merge(request()->except(['stok', 'page']), ['stok' => $isFilterEksemplar ? '' : 'eksemplar', 'view' => $viewMode]));
+            $urlTersedia = route('admin.books.index', array_merge(request()->except(['stok', 'page']), ['stok' => $isFilterTersedia ? '' : 'tersedia', 'view' => $viewMode]));
+            $urlDipinjam = route('admin.books.index', array_merge(request()->except(['stok', 'page']), ['stok' => $isFilterDipinjam ? '' : 'dipinjam', 'view' => $viewMode]));
+        @endphp
+
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <i class="fa-solid fa-book-bookmark text-sm"></i>
-                    </span>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider text-muted">Total Judul</span>
+            {{-- Kartu 1: Total Judul --}}
+            <div class="group relative flex flex-col justify-between rounded-2xl border p-4 shadow-card transition-all duration-200 {{ $isFilterSemua ? 'border-primary bg-primary/[0.03] ring-2 ring-primary/20 shadow-md' : 'border-line bg-white hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5' }}">
+                <a href="{{ $urlSemua }}" class="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Tampilkan semua judul buku terdaftar"></a>
+                <div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-105">
+                                <i class="fa-solid fa-book-bookmark text-sm"></i>
+                            </span>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted group-hover:text-primary transition-colors">Total Judul</span>
+                        </div>
+                        @if ($isFilterSemua)
+                            <span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                                <i class="fa-solid fa-check text-[9px]"></i> Semua
+                            </span>
+                        @else
+                            <span class="text-xs text-muted/60 group-hover:text-primary transition-colors">
+                                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                            </span>
+                        @endif
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-primary">{{ number_format($totalBooks ?? 0) }}</div>
                 </div>
-                <div class="mt-2 text-2xl font-bold text-primary">{{ number_format($totalBooks ?? 0) }}</div>
-                <span class="text-[11px] text-muted">Judul buku terdaftar</span>
+                <div class="mt-1 flex items-center justify-between text-[11px] text-muted">
+                    <span>Judul buku terdaftar</span>
+                    <span class="font-medium text-primary group-hover:underline">Lihat Semua</span>
+                </div>
             </div>
 
-            <div class="rounded-2xl border border-line bg-white p-4 shadow-card">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-9 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED]">
-                        <i class="fa-solid fa-boxes-stacked text-sm"></i>
-                    </span>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider text-muted">Total Eksemplar</span>
+            {{-- Kartu 2: Total Eksemplar --}}
+            <div class="group relative flex flex-col justify-between rounded-2xl border p-4 shadow-card transition-all duration-200 {{ $isFilterEksemplar ? 'border-[#7C3AED] bg-[#7C3AED]/[0.03] ring-2 ring-[#7C3AED]/20 shadow-md' : 'border-line bg-white hover:border-[#7C3AED]/50 hover:shadow-md hover:-translate-y-0.5' }}">
+                <a href="{{ $urlEksemplar }}" class="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]" aria-label="Filter koleksi buku yang memiliki eksemplar fisik"></a>
+                <div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED] transition-transform group-hover:scale-105">
+                                <i class="fa-solid fa-boxes-stacked text-sm"></i>
+                            </span>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted group-hover:text-[#7C3AED] transition-colors">Total Eksemplar</span>
+                        </div>
+                        @if ($isFilterEksemplar)
+                            <span class="inline-flex items-center gap-1 rounded-full bg-[#7C3AED]/10 px-2 py-0.5 text-[10px] font-bold text-[#7C3AED]">
+                                <i class="fa-solid fa-check text-[9px]"></i> Aktif
+                            </span>
+                        @else
+                            <span class="text-xs text-muted/60 group-hover:text-[#7C3AED] transition-colors">
+                                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                            </span>
+                        @endif
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-ink">{{ number_format($totalCopies ?? 0) }}</div>
                 </div>
-                <div class="mt-2 text-2xl font-bold text-ink">{{ number_format($totalCopies ?? 0) }}</div>
-                <span class="text-[11px] text-muted">Buku fisik di perpustakaan</span>
+                <div class="mt-1 flex items-center justify-between text-[11px] text-muted">
+                    <span>Buku fisik di perpustakaan</span>
+                    <span class="font-medium text-[#7C3AED] group-hover:underline">{{ $isFilterEksemplar ? 'Reset' : 'Filter Fisik' }}</span>
+                </div>
             </div>
 
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-card">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-                        <i class="fa-solid fa-circle-check text-sm"></i>
-                    </span>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">Stok Siap Pinjam</span>
+            {{-- Kartu 3: Stok Siap Pinjam --}}
+            <div class="group relative flex flex-col justify-between rounded-2xl border p-4 shadow-card transition-all duration-200 {{ $isFilterTersedia ? 'border-emerald-500 bg-emerald-50/80 ring-2 ring-emerald-500/25 shadow-md' : 'border-emerald-200 bg-emerald-50/40 hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5' }}">
+                <a href="{{ $urlTersedia }}" class="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600" aria-label="Filter buku dengan stok siap pinjam di rak"></a>
+                <div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 transition-transform group-hover:scale-105">
+                                <i class="fa-solid fa-circle-check text-sm"></i>
+                            </span>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">Stok Siap Pinjam</span>
+                        </div>
+                        @if ($isFilterTersedia)
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-200/90 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
+                                <i class="fa-solid fa-check text-[9px]"></i> Aktif
+                            </span>
+                        @else
+                            <span class="text-xs text-emerald-700/60 group-hover:text-emerald-800 transition-colors">
+                                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                            </span>
+                        @endif
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-emerald-900">{{ number_format($availableCopies ?? 0) }}</div>
                 </div>
-                <div class="mt-2 text-2xl font-bold text-emerald-900">{{ number_format($availableCopies ?? 0) }}</div>
-                <span class="text-[11px] text-emerald-700">Tersedia di rak</span>
+                <div class="mt-1 flex items-center justify-between text-[11px] text-emerald-700">
+                    <span>Tersedia di rak</span>
+                    <span class="font-medium text-emerald-800 group-hover:underline">{{ $isFilterTersedia ? 'Reset' : 'Filter Siap Pinjam' }}</span>
+                </div>
             </div>
 
-            <div class="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 shadow-card">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
-                        <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-                    </span>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-800">Sedang Dipinjam</span>
+            {{-- Kartu 4: Sedang Dipinjam --}}
+            <div class="group relative flex flex-col justify-between rounded-2xl border p-4 shadow-card transition-all duration-200 {{ $isFilterDipinjam ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-500/25 shadow-md' : 'border-amber-200 bg-amber-50/40 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5' }}">
+                <a href="{{ $urlDipinjam }}" class="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" aria-label="Filter buku yang sedang dipinjam pemustaka"></a>
+                <div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800 transition-transform group-hover:scale-105">
+                                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                            </span>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-800">Sedang Dipinjam</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <a
+                                href="{{ route('admin.peminjaman.index', ['status' => 'dipinjam']) }}"
+                                class="relative z-20 inline-flex items-center gap-1 rounded-lg border border-amber-300/80 bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 hover:text-amber-950 transition-colors shadow-2xs"
+                                title="Buka modul sirkulasi peminjaman di tab baru"
+                            >
+                                <span>Sirkulasi</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+                            </a>
+                            @if ($isFilterDipinjam)
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-200/90 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                                    <i class="fa-solid fa-check text-[9px]"></i> Aktif
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-amber-900">{{ number_format($borrowedCopies ?? 0) }}</div>
                 </div>
-                <div class="mt-2 text-2xl font-bold text-amber-900">{{ number_format($borrowedCopies ?? 0) }}</div>
-                <span class="text-[11px] text-amber-700">Di tangan pemustaka</span>
+                <div class="mt-1 flex items-center justify-between text-[11px] text-amber-700">
+                    <span>Di tangan pemustaka</span>
+                    <span class="font-medium text-amber-800 group-hover:underline">{{ $isFilterDipinjam ? 'Reset' : 'Filter Dipinjam' }}</span>
+                </div>
             </div>
         </div>
 
@@ -126,6 +231,9 @@
             <form method="GET" action="{{ route('admin.books.index') }}" id="filter-form" class="flex flex-col gap-3">
                 <input type="hidden" name="view" id="filter-view-input" value="{{ $viewMode }}">
                 <input type="hidden" name="sort" id="filter-sort-input" value="{{ $sort ?? 'terbaru' }}">
+                @if (($statusStok ?? '') !== '')
+                    <input type="hidden" name="stok" value="{{ $statusStok }}">
+                @endif
 
                 <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
                     <div class="relative flex-1">
@@ -297,7 +405,15 @@
                                     </label>
                                     <label class="flex items-center gap-2.5 cursor-pointer group">
                                         <input type="radio" name="stok" value="tersedia" @checked(($statusStok ?? '') === 'tersedia') class="size-4 border-line text-primary focus:ring-primary/20">
-                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Stok Siap Pinjam</span>
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Stok Siap Pinjam ({{ $availableCopies ?? 0 }})</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="dipinjam" @checked(($statusStok ?? '') === 'dipinjam') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Sedang Dipinjam ({{ $borrowedCopies ?? 0 }})</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="stok" value="eksemplar" @checked(($statusStok ?? '') === 'eksemplar') class="size-4 border-line text-primary focus:ring-primary/20">
+                                        <span class="text-xs text-ink-secondary group-hover:text-primary transition-colors">Memiliki Eksemplar Fisik</span>
                                     </label>
                                     <label class="flex items-center gap-2.5 cursor-pointer group">
                                         <input type="radio" name="stok" value="habis" @checked(($statusStok ?? '') === 'habis') class="size-4 border-line text-primary focus:ring-primary/20">
@@ -479,6 +595,50 @@
                     </div>
                 </div>
 
+                {{-- Banner Indikator Filter Stok Aktif --}}
+                @if (($statusStok ?? '') !== '')
+                    <div class="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-primary/20 bg-primary/[0.03] p-3 text-xs sm:px-4 shadow-2xs">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-ink-secondary">Menyaring stok:</span>
+                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 font-semibold text-ink shadow-xs">
+                                @if ($statusStok === 'tersedia')
+                                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                                    <span class="text-emerald-800">Stok Siap Pinjam</span>
+                                @elseif ($statusStok === 'dipinjam')
+                                    <span class="size-2 rounded-full bg-amber-500"></span>
+                                    <span class="text-amber-800">Sedang Dipinjam</span>
+                                @elseif ($statusStok === 'eksemplar')
+                                    <span class="size-2 rounded-full bg-[#7C3AED]"></span>
+                                    <span class="text-[#7C3AED]">Memiliki Eksemplar Fisik</span>
+                                @elseif ($statusStok === 'habis')
+                                    <span class="size-2 rounded-full bg-rose-500"></span>
+                                    <span class="text-rose-700">Semua Dipinjam / Habis</span>
+                                @elseif ($statusStok === 'kosong')
+                                    <span class="size-2 rounded-full bg-slate-400"></span>
+                                    <span class="text-slate-700">Belum Ada Eksemplar</span>
+                                @endif
+                                <a
+                                    href="{{ route('admin.books.index', array_merge(request()->except(['stok', 'page']), ['view' => $viewMode])) }}"
+                                    class="ml-1 text-muted hover:text-rose-600 transition-colors"
+                                    title="Hapus penyaringan stok ini"
+                                    aria-label="Hapus penyaringan stok"
+                                >
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </a>
+                            </span>
+                        </div>
+                        @if ($statusStok === 'dipinjam')
+                            <a
+                                href="{{ route('admin.peminjaman.index', ['status' => 'dipinjam']) }}"
+                                class="inline-flex items-center gap-1.5 font-semibold text-amber-800 hover:text-amber-950 transition-colors"
+                            >
+                                <span>Lihat detail peminjam di Modul Sirkulasi</span>
+                                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
         {{-- 1. TAMPILAN TABEL (ROW VIEW) DILENGKAPI KOLOM STOK --}}
         <div id="books-table-view" class="{{ $viewMode === 'grid' ? 'hidden' : '' }} overflow-hidden rounded-2xl border border-line bg-white shadow-card">
             <div class="overflow-x-auto">
@@ -625,23 +785,34 @@
                                             <i class="fa-regular fa-pen-to-square text-xs"></i>
                                         </a>
 
-                                        {{-- Hapus --}}
-                                        <form
-                                            action="{{ route('admin.books.destroy', $book->id_buku) }}"
-                                            method="POST"
-                                            onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplar dan riwayat peminjamannya?')"
-                                            class="inline-block"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
+                                        {{-- Hapus (Pindahkan ke Kotak Sampah) --}}
+                                        @if ($borrowedEk > 0)
                                             <button
-                                                type="submit"
-                                                class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
-                                                title="Hapus Buku Beserta Seluruh Eksemplar"
+                                                type="button"
+                                                class="inline-flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed transition-colors"
+                                                title="Buku tidak dapat dihapus karena masih ada {{ $borrowedEk }} eksemplar yang sedang dipinjam"
+                                                onclick="alert('Koleksi buku \'{{ addslashes($book->judul_buku) }}\' tidak dapat dihapus karena masih ada {{ $borrowedEk }} eksemplar yang sedang dipinjam pemustaka.')"
                                             >
                                                 <i class="fa-regular fa-trash-can text-xs"></i>
                                             </button>
-                                        </form>
+                                        @else
+                                            <form
+                                                action="{{ route('admin.books.destroy', $book->id_buku) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Pindahkan buku \'{{ addslashes($book->judul_buku) }}\' ke Kotak Sampah (Recycle Bin)?')"
+                                                class="inline-block"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button
+                                                    type="submit"
+                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
+                                                    title="Pindahkan ke Kotak Sampah"
+                                                >
+                                                    <i class="fa-regular fa-trash-can text-xs"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -834,23 +1005,34 @@
                                                 <i class="fa-regular fa-pen-to-square text-xs" aria-hidden="true"></i>
                                             </a>
 
-                                            {{-- Tombol Hapus Buku --}}
-                                            <form
-                                                action="{{ route('admin.books.destroy', $book->id_buku) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Hapus buku {{ $book->judul_buku }} beserta seluruh eksemplar dan riwayat peminjamannya?')"
-                                                class="inline-block"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
+                                            {{-- Tombol Hapus Buku (Pindahkan ke Kotak Sampah) --}}
+                                            @if ($borrowedEk > 0)
                                                 <button
-                                                    type="submit"
-                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
-                                                    title="Hapus Buku Beserta Seluruh Eksemplar"
+                                                    type="button"
+                                                    class="inline-flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed transition-colors"
+                                                    title="Buku tidak dapat dihapus karena masih ada {{ $borrowedEk }} eksemplar yang sedang dipinjam"
+                                                    onclick="alert('Koleksi buku \'{{ addslashes($book->judul_buku) }}\' tidak dapat dihapus karena masih ada {{ $borrowedEk }} eksemplar yang sedang dipinjam pemustaka.')"
                                                 >
                                                     <i class="fa-regular fa-trash-can text-xs" aria-hidden="true"></i>
                                                 </button>
-                                            </form>
+                                            @else
+                                                <form
+                                                    action="{{ route('admin.books.destroy', $book->id_buku) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Pindahkan buku \'{{ addslashes($book->judul_buku) }}\' ke Kotak Sampah (Recycle Bin)?')"
+                                                    class="inline-block"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button
+                                                        type="submit"
+                                                        class="inline-flex size-8 items-center justify-center rounded-lg border border-red-200 text-red-600 transition-colors hover:bg-red-50"
+                                                        title="Pindahkan ke Kotak Sampah"
+                                                    >
+                                                        <i class="fa-regular fa-trash-can text-xs" aria-hidden="true"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
